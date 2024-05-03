@@ -1,0 +1,124 @@
+<div class="row justify-content-center">
+    <mat-tab-group>
+      <mat-tab> 
+        <ng-template mat-tab-label>
+            <mat-icon>directions_car</mat-icon>
+             Vehiculo
+          </ng-template>
+        <form [formGroup]="vehicleFormGroup">
+            <div class="col-md-5 py-2 mx-auto">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Año</mat-label>
+                  <input matInput placeholder="Inserte el Año del Vehiculo" formControlName="fano" (change)="changeYears()">
+                </mat-form-field>
+            </div>
+            <div class="flex">
+                <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Marca</mat-label>
+                      <input type="text"
+                             placeholder="Seleccione Marca"
+                             aria-label="Seleccione"
+                             matInput
+                             [formControl]="brandControl"
+                             [matAutocomplete]="brand"
+                             >
+                             <mat-autocomplete #brand="matAutocomplete" (optionSelected)="onBrandSelection($event)">
+                              <mat-option *ngFor="let brand of filteredBrand | async" [value]="brand">
+                                {{ brand }}
+                              </mat-option>
+                            </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Modelo</mat-label>
+                      <input type="text"
+                            placeholder="Seleccione Modelo"
+                            aria-label="Seleccione"
+                            matInput
+                            [formControl]="modelControl"
+                            [matAutocomplete]="model"
+                            >
+                            <mat-autocomplete #model="matAutocomplete" (optionSelected)="onModelSelection($event)">
+                              <mat-option *ngFor="let model of filteredModel | async" [value]="model">
+                                {{ model }}
+                              </mat-option>
+                            </mat-autocomplete>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Version</mat-label>
+                      <input type="text"
+                            placeholder="Seleccione Version"
+                            aria-label="Seleccione"
+                            matInput
+                            [formControl]="versionControl"
+                            [matAutocomplete]="version"
+                           >
+                            <mat-autocomplete #version="matAutocomplete" (optionSelected)="onVersionSelection($event)">
+                              <mat-option *ngFor="let version of filteredVersion | async" [value]="version">
+                                {{ version }}
+                              </mat-option>
+                            </mat-autocomplete>
+                    </mat-form-field>
+                  </div>
+            </div>
+            <div class="flex">
+                <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Pasajeros</mat-label>
+                      <input matInput formControlName="npasajeros" >
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                        <mat-label>Color</mat-label>
+                        <input type="text"
+                              placeholder="Seleccione Color"
+                              aria-label="Seleccione"
+                              matInput
+                              [formControl]="colorControl"
+                              [matAutocomplete]="color"
+                              >
+                              <mat-autocomplete #color="matAutocomplete" (optionSelected)="onColorSelection($event)">
+                                <mat-option *ngFor="let color of filteredColor | async" [value]="color">
+                                  {{ color }}
+                                </mat-option>
+                              </mat-autocomplete>
+                      </mat-form-field>
+                  </div>
+                  <div class="col-md-4">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Placa</mat-label>
+                      <input matInput placeholder="Placa" formControlName="xplaca" [maxlength]="7" (input)="valueplate($event)">
+                    </mat-form-field>
+                  </div>
+            </div>
+        </form> 
+
+      </mat-tab>
+      <mat-tab> 
+        <ng-template mat-tab-label>
+            <mat-icon>checklist</mat-icon>
+               Coberturas
+        </ng-template>
+        <!-- Contenido de la pestaña "Second" -->
+      </mat-tab>
+      <mat-tab>  
+        <ng-template mat-tab-label>
+            <mat-icon>receiptlong</mat-icon>
+            Recibos
+        </ng-template>
+        <!-- Contenido de la pestaña "Third" -->
+      </mat-tab>
+      <mat-tab> 
+        <ng-template mat-tab-label>
+            <mat-icon>paid</mat-icon>
+            Comisiones
+        </ng-template> 
+        <!-- Contenido de la pestaña "Third" -->
+      </mat-tab>
+    </mat-tab-group>
+</div>

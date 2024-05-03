@@ -34,7 +34,7 @@
                            matInput
                            [formControl]="cedentsControl"
                            [matAutocomplete]="cedents"
-                           formControlName="ccedente"
+                           formControlName="xcedente"
                            required>
                            <mat-autocomplete #cedents="matAutocomplete">
                             <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
@@ -52,9 +52,8 @@
                            matInput
                            [formControl]="tradeControl"
                            [matAutocomplete]="trade"
-                           formControlName="cramos"
                            required>
-                           <mat-autocomplete #trade="matAutocomplete">
+                           <mat-autocomplete #trade="matAutocomplete" (optionSelected)="onTradeSelection($event)">
                             <mat-option *ngFor="let trade of filteredTrade | async" [value]="trade">
                               {{ trade }}
                             </mat-option>
@@ -106,32 +105,121 @@
                       <strong>Datos del Asegurado</strong>
                     </p>
                   
+                  <div class="row">
+                    <div class="col-md-12">
+                      <mat-form-field class="example-full-width">
+                        <mat-label>Clientes</mat-label>
+                        <input type="text"
+                              placeholder="Seleccione Clientes"
+                              aria-label="Seleccione"
+                              matInput
+                              [formControl]="clientsControl"
+                              [matAutocomplete]="clients"
+                              required>
+                              <mat-autocomplete #clients="matAutocomplete" (optionSelected)="onClientSelection($event)">
+                                <mat-option *ngFor="let clients of filteredClients | async" [value]="clients">
+                                  {{ clients }}
+                                </mat-option>
+                              </mat-autocomplete>
+                      </mat-form-field>
+                    </div>
+                 
+                    <div class="col-md-4">
+                      <mat-form-field>
+                        <mat-label>Identificación</mat-label>
+                        <mat-select formControlName="itipodoc">
+                          <mat-option value="V">V</mat-option>
+                          <mat-option value="P">P</mat-option>
+                          <mat-option value="E">E</mat-option>
+                          <mat-option value="J">J</mat-option>
+                          <mat-option value="C">C</mat-option>
+                          <mat-option value="G">G</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-md-8">
+                      <mat-form-field class="example-full-width">
+                        <mat-label>Documento de Identidad</mat-label>
+                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion">
+                      </mat-form-field>
+                    </div>
+                  </div>  
 
-                  <div class="col-md-12">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Clientes</mat-label>
-                      <input type="text"
-                             placeholder="Seleccione Clientes"
-                             aria-label="Seleccione"
-                             matInput
-                             [formControl]="clientsControl"
-                             [matAutocomplete]="clients"
-                             formControlName="ccliente"
-                             required>
-                             <mat-autocomplete #clients="matAutocomplete">
-                              <mat-option *ngFor="let clients of filteredClients | async" [value]="clients">
-                                {{ clients }}
-                              </mat-option>
-                            </mat-autocomplete>
-                    </mat-form-field>
-                  </div>
                 </div>
                 <div class="col-md-6">
                   <p class="text-center">
                     <strong>Datos del Tomador</strong>
                   </p>
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <mat-form-field class="example-full-width">
+                        <mat-label>Tomadores</mat-label>
+                        <input type="text"
+                              placeholder="Seleccione Tomadores"
+                              aria-label="Seleccione"
+                              matInput
+                              [formControl]="takersControl"
+                              [matAutocomplete]="takers"
+                              formControlName="xtomador"
+                              required>
+                              <mat-autocomplete #takers="matAutocomplete" (optionSelected)="onTakersSelection($event)">
+                                <mat-option *ngFor="let takers of filteredTakers | async" [value]="takers">
+                                  {{ takers }}
+                                </mat-option>
+                              </mat-autocomplete>
+                      </mat-form-field>
+                    </div>
+                 
+                    <div class="col-md-4">
+                      <mat-form-field>
+                        <mat-label>Identificación</mat-label>
+                        <mat-select formControlName="itipodoc_t">
+                          <mat-option value="V">V</mat-option>
+                          <mat-option value="P">P</mat-option>
+                          <mat-option value="E">E</mat-option>
+                          <mat-option value="J">J</mat-option>
+                          <mat-option value="C">C</mat-option>
+                          <mat-option value="G">G</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-md-8">
+                      <mat-form-field class="example-full-width">
+                        <mat-label>Documento de Identidad</mat-label>
+                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion_t">
+                      </mat-form-field>
+                    </div>
+                  </div>  
                 </div>
               </div>
+
+              <div class="col-md-6 mx-auto py-3">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Póliza</mat-label>
+                  <input matInput placeholder="Coloque el número de Póliza" formControlName="xpoliza">
+                </mat-form-field>
+              </div>
+
+              <div class="row justify-content-center py-3">
+                <div class="col-md-4 mx-auto">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Suma Asegurada</mat-label>
+                    <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="formatWithSeparator($event)">
+                  </mat-form-field>
+                </div>
+                <div class="col-md-4 mx-auto">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Prima</mat-label>
+                    <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatWithSeparator($event)">
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <div *ngIf="containerAuto">
+                <app-container-automobile ></app-container-automobile>
+              </div>
+              
             </form>
           </div>
         </div>

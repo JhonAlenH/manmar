@@ -14,6 +14,7 @@ import { TablesComponent } from '../../pages/tables/tables.component';
 import { EmissionsComponent } from '../../pages/emissions/emissions.component';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
 // import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
@@ -26,7 +27,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     NgbModule,
     ClipboardModule,
     ReactiveFormsModule,
-    
+
   ],
   declarations: [
     DashboardComponent,
@@ -34,7 +35,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     TablesComponent,
     IconsComponent,
     MapsComponent,
-    EmissionsComponent
+    EmissionsComponent,
+    ContainerAutomobileComponent
   ]
 })
 
