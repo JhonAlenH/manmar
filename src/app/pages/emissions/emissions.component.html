@@ -125,7 +125,7 @@
                     </div>
                  
                     <div class="col-md-4">
-                      <mat-form-field>
+                      <mat-form-field style="display: block">
                         <mat-label>Identificación</mat-label>
                         <mat-select formControlName="itipodoc">
                           <mat-option value="V">V</mat-option>
@@ -140,7 +140,7 @@
                     <div class="col-md-8">
                       <mat-form-field class="example-full-width">
                         <mat-label>Documento de Identidad</mat-label>
-                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion">
+                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion" >
                       </mat-form-field>
                     </div>
                   </div>  
@@ -171,8 +171,8 @@
                       </mat-form-field>
                     </div>
                  
-                    <div class="col-md-4">
-                      <mat-form-field>
+                    <div class="col-sm-12 col-md-4">
+                      <mat-form-field style="display: block">
                         <mat-label>Identificación</mat-label>
                         <mat-select formControlName="itipodoc_t">
                           <mat-option value="V">V</mat-option>
@@ -184,12 +184,108 @@
                         </mat-select>
                       </mat-form-field>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-12 col-md-8">
                       <mat-form-field class="example-full-width">
                         <mat-label>Documento de Identidad</mat-label>
-                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion_t">
+                        <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion_t" (change)="rif()">
                       </mat-form-field>
                     </div>
+                    <div class="col-sm-12" *ngIf="takersInfo">
+                      <mat-accordion class="example-headers-align" multi>
+                        <mat-expansion-panel>
+                          <mat-expansion-panel-header>
+                            <mat-panel-title>
+                              <p class="text-center">
+                                <strong>Información del Tomador</strong>
+                              </p>
+                            </mat-panel-title>
+                          </mat-expansion-panel-header>
+                      
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Profesión</mat-label>
+                                <textarea matInput placeholder="Coloque la Profesión" formControlName="xprofesion"></textarea>
+                              </mat-form-field>
+                            </div>
+                            <div class="col-md-6">
+                              <mat-form-field class="example-full-width">
+                                  <mat-label>Estado</mat-label>
+                                  <input type="text"
+                                         placeholder="Seleccione Estado"
+                                         aria-label="Seleccione"
+                                         matInput
+                                         [formControl]="stateControl"
+                                         [matAutocomplete]="state"
+                                         formControlName="xestado"
+                                         >
+                                         <mat-autocomplete #state="matAutocomplete" (optionSelected)="onStateSelection($event)">
+                                          <mat-option *ngFor="let state of filteredState | async" [value]="state">
+                                            {{ state }}
+                                          </mat-option>
+                                        </mat-autocomplete>
+                                </mat-form-field>
+                            </div>
+                            <div class="col-md-6">
+                                <mat-form-field class="example-full-width" >
+                                    <mat-label>Ciudad</mat-label>
+                                    <input type="text"
+                                          placeholder="Seleccione Ciudad"
+                                          aria-label="Seleccione"
+                                          matInput
+                                          [formControl]="cityControl"
+                                          [matAutocomplete]="city"
+                                          formControlName="xciudad"
+                                          >
+                                          <mat-autocomplete #city="matAutocomplete" (optionSelected)="onCitySelection($event)">
+                                            <mat-option *ngFor="let city of filteredCity | async" [value]="city">
+                                              {{ city }}
+                                            </mat-option>
+                                          </mat-autocomplete>
+                                </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Rif</mat-label>
+                                <input matInput placeholder="Rif" formControlName="xrif">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Domicilio</mat-label>
+                                <input matInput placeholder="Domicilio" formControlName="xdomicilio">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Zona Postal</mat-label>
+                                <input matInput placeholder="Coloque Zona Postal" formControlName="xzona_postal">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-8">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Correo</mat-label>
+                                <input matInput placeholder="Coloque Correo" formControlName="xcorreo">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput placeholder="Coloque Teléfono" formControlName="xtelefono">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Dirección</mat-label>
+                                <textarea matInput placeholder="Coloque Dirección" formControlName="xdireccion"></textarea>
+                              </mat-form-field>
+                            </div>
+                          </div>
+                      
+                        </mat-expansion-panel>
+                      </mat-accordion>
+                    </div>
+
                   </div>  
                 </div>
               </div>
@@ -211,13 +307,33 @@
                 <div class="col-md-4 mx-auto">
                   <mat-form-field class="example-full-width">
                     <mat-label>Prima</mat-label>
-                    <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatWithSeparator($event)">
+                    <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatPrima($event)" (change)="receipt()">
+                  </mat-form-field>
+                </div>
+                <div class="col-md-4 mx-auto">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Metodología de Pago</mat-label>
+                    <input type="text"
+                          placeholder="Seleccione Metodología de Pago"
+                          aria-label="Seleccione"
+                          matInput
+                          [formControl]="methodOfPaymentControl"
+                          [matAutocomplete]="method"
+                          formControlName="xmetodologiapago"
+                          required>
+                    <mat-autocomplete #method="matAutocomplete" (optionSelected)="onMethodOfPaymentSelection($event)">
+                      <mat-option *ngFor="let Payment of filteredMethodOfPayment | async" [value]="Payment">
+                        {{ Payment }}
+                      </mat-option>
+                    </mat-autocomplete>
                   </mat-form-field>
                 </div>
               </div>
 
               <div *ngIf="containerAuto">
-                <app-container-automobile ></app-container-automobile>
+                <app-container-automobile 
+                    [receiptData]="receiptData">
+                </app-container-automobile>
               </div>
               
             </form>
@@ -226,5 +342,9 @@
       </div>
     </div>
   </div>
+
+  <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" >
+    <mat-icon>save</mat-icon>
+  </button>
   
   

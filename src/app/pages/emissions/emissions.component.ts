@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
 import {
   MatSnackBar,
   MatSnackBarHorizontalPosition,
@@ -19,6 +20,7 @@ import {
   styleUrls: ['./emissions.component.scss']
 })
 export class EmissionsComponent implements OnInit {
+  @ViewChild(MatAccordion) accordion: MatAccordion;
   public copy: string;
   currentUser!: any
 
@@ -27,21 +29,35 @@ export class EmissionsComponent implements OnInit {
   coinsList: any[] = [];
   clientsList: any[] = [];
   takersList: any[] = [];
+  methodOfPaymentList: any[] = [];
+  stateList: any[] = [];
+  cityList: any[] = [];
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
   coinsControl = new FormControl('');
   clientsControl = new FormControl('');
   takersControl = new FormControl('');
+  methodOfPaymentControl = new FormControl('');
+  stateControl = new FormControl('');
+  cityControl = new FormControl('');
 
   filteredCedents!: Observable<string[]>;
   filteredTrade!: Observable<string[]>;
   filteredCoins!: Observable<string[]>;
   filteredClients!: Observable<string[]>;
   filteredTakers!: Observable<string[]>;
+  filteredMethodOfPayment!: Observable<string[]>;
+  filteredState!: Observable<string[]>;
+  filteredCity!: Observable<string[]>;
 
   containerAuto: boolean = false;
   containerSalud: boolean = false;
+  takersInfo: boolean = false;
+
+  someParamValue = 'Valor de ejemplo';
+  receiptData = {};
+  fdesde: any
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],
@@ -58,9 +74,23 @@ export class EmissionsComponent implements OnInit {
     xtomador: [''],
     itipodoc_t: [''],
     xdoc_identificacion_t: [''],
+    xprofesion: [''],
+    xrif: [''],
+    xdomicilio: [''],
+    cpais: [''],
+    xpais: [''],
+    cestado: [''],
+    xestado: [''],
+    cciudad: [''],
+    xciudad: [''],
+    xzona_postal: [''],
+    xdireccion: [''],
+    xcorreo: [''],
     xpoliza: [''],
     msuma_aseg: [''],
-    mprima: [''],
+    mprima: ['0,00'],
+    cmetodologiapago: [''],
+    xmetodologiapago: [''],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -74,13 +104,15 @@ export class EmissionsComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
-    
+  
     if(this.currentUser){
       this.getCedents();
       this.getTrades();
       this.getCoins();
       this.getClients();
       this.getTakers();
+      this.getMethodOfPayment()
+      this.getState();
     }
   }
 
@@ -88,6 +120,13 @@ export class EmissionsComponent implements OnInit {
     let value = event.target.value.replace(/\D/g, '');
     value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     event.target.value = value;
+  }
+
+  formatPrima(event: any) {
+    let value = event.target.value.replace(/\D/g, '');
+    value = (value / 100).toFixed(2);
+    event.target.value = value;
+    this.emissionsFormGroup.get('mprima')?.setValue(event.target.value)
   }
 
   getCedents(){
@@ -118,6 +157,26 @@ export class EmissionsComponent implements OnInit {
     return this.cedentsList
       .map(cedent => cedent.value)
       .filter(cedent => cedent.toLowerCase().includes(filterValue));
+  }
+
+  searchTakers(){
+    let data = {
+      xcedula: this.emissionsFormGroup.get('xdoc_identificacion')?.value
+    }
+    console.log(data)
+    this.http.get(environment.apiUrl + `/api/v1/valrep/takers/${data.xcedula}`).subscribe((response: any) => {
+      if(response.status){
+        if(response.data.ctomador){
+          this.emissionsFormGroup.get('ctomador')?.setValue(response.data.ctomador);
+          this.emissionsFormGroup.get('xtomador')?.setValue(response.data.xtomador);
+          this.emissionsFormGroup.get('itipodoc_t')?.setValue(response.data.icedula);
+          this.emissionsFormGroup.get('xdoc_identificacion_t')?.setValue(response.data.xcedula);
+        }else{
+          console.log('epaaaa')
+        }
+
+      }
+    })
   }
 
   getTrades(){
@@ -153,8 +212,8 @@ export class EmissionsComponent implements OnInit {
     }
 
     if(selectedTrade.id == 18){
-      console.log('si')
-      this.containerAuto = true;
+
+      // this.containerAuto = true;
     }else{ this.containerAuto = false;}
   }
 
@@ -217,14 +276,14 @@ export class EmissionsComponent implements OnInit {
   }
 
   getTakers(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/clients', null).subscribe((response: any) => {
-      if (response.data.clients) {
-        for (let i = 0; i < response.data.clients.length; i++) {
+    this.http.post(environment.apiUrl + '/api/v1/valrep/takers', null).subscribe((response: any) => {
+      if (response.data.takers) {
+        for (let i = 0; i < response.data.takers.length; i++) {
           this.takersList.push({
-            id: response.data.clients[i].ccliente,
-            value: response.data.clients[i].xcliente,
-            itipo: response.data.clients[i].itipodoc,
-            xdocu: response.data.clients[i].xdoc_identificacion,
+            id: response.data.takers[i].ctomador,
+            value: response.data.takers[i].xtomador,
+            itipo: response.data.takers[i].icedula,
+            xdocu: response.data.takers[i].xcedula,
           });
         }
         this.takersList.sort((a, b) => a.value > b.value ? 1 : -1)
@@ -238,9 +297,27 @@ export class EmissionsComponent implements OnInit {
 
   private _filterTakers(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.takersList
-      .map(takers => takers.value)
-      .filter(takers => takers.toLowerCase().includes(filterValue));
+    const lista = this.takersList.map(taker => taker.value).filter(taker => taker.toLowerCase().includes(filterValue));;
+  
+    if(!lista[0]){
+      this.emissionsFormGroup.get('xtomador')?.setValue(filterValue)
+      if(this.emissionsFormGroup.get('xtomador')?.value){
+        this.validateTaker();
+      }
+    }
+
+    return lista
+  }
+
+  validateTaker(){
+    if(this.emissionsFormGroup.get('xtomador')?.value){
+      if(this.emissionsFormGroup.get('ctomador')?.value){
+        this.emissionsFormGroup.get('xtomador')?.setValue('')
+        this.takersInfo = false;
+      }else{
+        this.takersInfo = true;
+      }
+    }
   }
 
   calcularFechaHasta(event: any) {
@@ -248,6 +325,7 @@ export class EmissionsComponent implements OnInit {
     const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
     const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
     this.emissionsFormGroup.get('fhasta')?.setValue(fechaHastaISO);
+    this.fdesde = new Date(fechaDesde.getFullYear(), fechaDesde.getMonth(), fechaDesde.getDate());
   }
 
   onClientSelection(event: any) {
@@ -257,11 +335,7 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('ccliente')?.setValue(selectedClients.id);
       this.emissionsFormGroup.get('itipodoc')?.setValue(selectedClients.itipo);
       this.emissionsFormGroup.get('xdoc_identificacion')?.setValue(selectedClients.xdocu);
-
-      this.emissionsFormGroup.get('ctomador')?.setValue(selectedClients.id);
-      this.emissionsFormGroup.get('xtomador')?.setValue(selectedClients.value);
-      this.emissionsFormGroup.get('itipodoc_t')?.setValue(selectedClients.itipo);
-      this.emissionsFormGroup.get('xdoc_identificacion_t')?.setValue(selectedClients.xdocu);
+      this.searchTakers()
     }
   }
 
@@ -273,6 +347,148 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('xtomador')?.setValue(selectedTakers.value);
       this.emissionsFormGroup.get('itipodoc_t')?.setValue(selectedTakers.itipo);
       this.emissionsFormGroup.get('xdoc_identificacion_t')?.setValue(selectedTakers.xdocu);
+    }
+  }
+
+  getMethodOfPayment(){
+    this.http.post(environment.apiUrl + '/api/v1/valrep/method-of-payment', null).subscribe((response: any) => {
+      if (response.data.payment) {
+        for (let i = 0; i < response.data.payment.length; i++) {
+          this.methodOfPaymentList.push({
+            id: response.data.payment[i].cmetodologiapago,
+            value: response.data.payment[i].xmetodologiapago,
+          });
+        }
+        const selectedMe = this.methodOfPaymentList.find(method => method.id === 5);
+        if (selectedMe) {
+            this.emissionsFormGroup.get('cmetodologiapago')?.setValue(selectedMe.id);
+            this.emissionsFormGroup.get('xmetodologiapago')?.setValue(selectedMe.value);
+        }
+        this.methodOfPaymentList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredMethodOfPayment = this.methodOfPaymentControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterMethodOfPayment(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterMethodOfPayment(value: any): string[] {
+    const filterValue = value.toLowerCase();
+    return this.methodOfPaymentList
+      .map(payment => payment.value)
+      .filter(payment => payment.toLowerCase().includes(filterValue));
+  }
+
+  onMethodOfPaymentSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedMet = this.methodOfPaymentList.find(met => met.value === selectedValue);
+    if (selectedMet) {
+      this.emissionsFormGroup.get('cmetodologiapago')?.setValue(selectedMet.id);
+      this.receipt()
+    }
+  }
+
+  getState(){
+    let data = {
+      cpais: 58
+    };
+    this.http.post(environment.apiUrl + '/api/v1/valrep/state', data).subscribe((response: any) => {
+      if (response.data.state) {
+        this.stateList = response.data.state.map((state: any) => ({
+          id: state.cestado,
+          value: state.xestado
+        }));
+
+        const selectedState = this.stateList.find(state => state.id === 1);
+        if (selectedState) {
+          this.emissionsFormGroup.get('cestado')?.setValue(selectedState.id);
+          this.emissionsFormGroup.get('xestado')?.setValue(selectedState.value);
+          this.getCity();
+        }
+        this.stateList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredState = this.stateControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterState(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterState(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.stateList
+      .map(state => state.value)
+      .filter(state => state.toLowerCase().includes(filterValue));
+  }
+
+  onStateSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedState = this.stateList.find(state => state.value === selectedValue);
+    if (selectedState) {
+      this.emissionsFormGroup.get('cestado')?.setValue(selectedState.id);
+      this.getCity();
+    }
+  }
+
+  getCity(){
+    let data = {
+      cpais: 58,
+      cestado: this.emissionsFormGroup.get('cestado')?.value
+    };
+    this.http.post(environment.apiUrl + '/api/v1/valrep/city', data).subscribe((response: any) => {
+      if (response.data.city) {
+        this.cityList = response.data.city.map((city: any) => ({
+          id: city.cciudad,
+          value: city.xciudad
+        }));
+        this.filteredCity = this.cityControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterCity(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterCity(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.cityList
+      .map(city => city.value)
+      .filter(city => city.toLowerCase().includes(filterValue));
+  }
+
+  onCitySelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedCity = this.cityList.find(city => city.value === selectedValue);
+    if (selectedCity) {
+      this.emissionsFormGroup.get('cciudad')?.setValue(selectedCity.id);
+    }
+  }
+
+  rif(){
+    const itipodoc_t = this.emissionsFormGroup.get('itipodoc_t')?.value;
+    const xdoc_identificacion_t = this.emissionsFormGroup.get('xdoc_identificacion_t')?.value;
+
+    this.emissionsFormGroup.get('xrif')?.setValue(itipodoc_t + '-' + xdoc_identificacion_t);
+  }
+
+  receipt(){
+    const ramo = this.emissionsFormGroup.get('cramo')?.value;
+    const fdesde = this.emissionsFormGroup.get('fdesde')?.value;
+    const fhasta = this.emissionsFormGroup.get('fhasta')?.value;
+    const mprima = this.emissionsFormGroup.get('mprima')?.value;
+    const cmetodologiapago = this.emissionsFormGroup.get('cmetodologiapago')?.value;
+
+    if(ramo && fdesde && fhasta && mprima && cmetodologiapago){
+      this.containerAuto = true;
+      this.receiptData = {
+        fdesde: this.fdesde,
+        fhasta: fhasta,
+        mprima: mprima,
+        cmetodologiapago: cmetodologiapago,
+      }
+    }else{ 
+      this.containerAuto = false;
     }
   }
 

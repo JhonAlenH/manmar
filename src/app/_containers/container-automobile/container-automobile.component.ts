@@ -1,4 +1,4 @@
-import {Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
+import {Component, Input , OnInit, Inject , SimpleChanges } from '@angular/core';
 import {FormBuilder, Validators, FormGroup, FormControl , FormArray} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {from, Observable} from 'rxjs';
@@ -6,6 +6,7 @@ import {map, startWith} from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DateUtilService } from './../../_services/date-util.service';
 import {
   MatSnackBar,
   MatSnackBarHorizontalPosition,
@@ -20,10 +21,13 @@ import {
 export class ContainerAutomobileComponent implements OnInit {
   public copy: string;
 
+  @Input() receiptData: any;
+
   brandList: any[] = [];
   modelList: any[] = [];
   versionList: any[] = [];
   colorList: any[] = [];
+  receiptList: any[] = [];
 
   brandControl = new FormControl('');
   modelControl = new FormControl('');
@@ -34,6 +38,9 @@ export class ContainerAutomobileComponent implements OnInit {
   filteredModel!: Observable<string[]>;
   filteredVersion!: Observable<string[]>;
   filteredColor!: Observable<string[]>;
+
+  public page = 1;
+  public pageSize = 6;
 
   vehicleFormGroup = this._formBuilder.group({
     xplaca: ['',[Validators.maxLength(7)]],
@@ -48,13 +55,38 @@ export class ContainerAutomobileComponent implements OnInit {
   constructor( private _formBuilder: FormBuilder,
                private http: HttpClient,
                private modalService: NgbModal,
-               private snackBar: MatSnackBar,
-               private route: ActivatedRoute,
-               private router: Router,
+               private dateUtilService: DateUtilService
   ) { }
+  
 
   ngOnInit(): void {
     this.getColor();
+    
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.receiptData) {
+      this.updateReceiptData(changes.receiptData.currentValue);
+    }
+  }
+
+  updateReceiptData(data: any) {
+    let dataCompleta = {
+      fdesde: data.fdesde,
+      fhasta: data.fhasta,
+      mprima: data.mprima,
+      cmetodologiapago: data.cmetodologiapago,
+    }
+    this.http.post(environment.apiUrl + '/api/v1/emission/receipt', dataCompleta).subscribe((response: any) => {
+      if(response.status){
+        this.receiptList = [];
+        this.receiptList = response.data.receipt.map((state: any) => ({
+          fdesde_rec: this.dateUtilService.formatDate(new Date(state.fdesde_rec)),
+          fhasta_rec: this.dateUtilService.formatDate(new Date(state.fhasta_rec)),
+          mprima: state.mprima.toFixed(2),
+        }));
+      }
+    })
   }
 
   changeYears() {
@@ -242,6 +274,20 @@ export class ContainerAutomobileComponent implements OnInit {
       this.vehicleFormGroup.get('xplaca')?.setValue(newValue);
 
     }
+  }
+
+  receipt(){
+    let data = {}
+    data = {
+      fdesde: this.receiptData.fdesde,
+      fhasta: this.receiptData.fhasta,
+      mprima: this.receiptData.mprima,
+      cmetodologiapago: this.receiptData.cmetodologiapago,
+    }
+    console.log(data)
+    this.http.post(environment.apiUrl + '/api/v1/emission/receipt', data).subscribe((response: any) => {
+
+    })
   }
 
 }
