@@ -13,6 +13,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppRoutingModule } from './app.routing';
 import { ComponentsModule } from './components/components.module';
+import { MatButtonModule } from '@angular/material/button';
 
 
 @NgModule({
@@ -25,6 +26,7 @@ import { ComponentsModule } from './components/components.module';
     RouterModule,
     AppRoutingModule,
     MaterialExampleModule,
+    MatButtonModule
   ],
   declarations: [
     AppComponent,
