@@ -95,6 +95,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         mainUrl: '/api/v1/maestros/marcas/get/',
         editUrl: '/api/v1/maestros/marcas/edit/',
         formId: 'edit_marcas',
+        // dsf
         disableUrl: '/api/v1/maestros/marcas/disable/',
         fields: [     
           {
