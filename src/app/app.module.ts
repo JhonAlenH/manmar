@@ -14,6 +14,9 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppRoutingModule } from './app.routing';
 import { ComponentsModule } from './components/components.module';
 import { MatButtonModule } from '@angular/material/button';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import { TableListComponent } from './components/table-list/table-list.component';
+import { ItemFormComponent } from './components/item-form/item-form.component';
 
 
 @NgModule({
@@ -26,12 +29,15 @@ import { MatButtonModule } from '@angular/material/button';
     RouterModule,
     AppRoutingModule,
     MaterialExampleModule,
-    MatButtonModule
+    MatButtonModule,
+    MatPaginatorModule
   ],
   declarations: [
     AppComponent,
     AdminLayoutComponent,
-    AuthLayoutComponent
+    AuthLayoutComponent,
+    TableListComponent,
+    ItemFormComponent
   ],
   providers: [],
   bootstrap: [AppComponent]
