@@ -1,0 +1,42 @@
+.form-hidden {
+    display: none !important;
+  }
+  .btn-toogle-collapse {
+    z-index: 50;
+    height: 15px;
+    /* width: 15px; */
+    padding: 0px 4px;
+    margin: 0;
+  }
+  
+  .sub-item {
+    gap: 10px;
+    margin: 5px 0px;
+    line-height: normal !important;
+  }
+  
+  .m-s-items.sub-item {
+    align-items: center;
+    margin: 0px !important;
+  }
+  .sub-item > .btn > .fa-minus {
+    display: none;
+  }
+  .m-s-items.sub-item > .btn > .fa-minus {
+    display: inline-block;
+  }
+  .sub-item > .btn > .fa-plus {
+    display: inline-block;
+  }
+  .m-s-items.sub-item > .btn > .fa-plus {
+    display: none;
+  }
+  .m-s-items > small {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    font-weight: 700;
+  }
+  

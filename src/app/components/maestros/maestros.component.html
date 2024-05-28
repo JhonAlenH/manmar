@@ -1,0 +1,55 @@
+<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row">
+        <h2 style="color: rgb(252, 252, 252);" class="title">Menú de Maestros</h2>
+        
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid mt--7">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-center">
+          <img src="../../../assets/img/brand/MANMAR - LOGO.png" alt="" class="invert" style="width: 20%;">
+        </div>
+        <div class="card-body">
+
+          <div id="maestrosNavigation" >
+            <div class="row">
+              <div class="col-md-3" *ngFor="let item of menuItems">
+                <button
+                  mat-button
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#collapseItem-' + item.id"
+                  aria-expanded="false" [attr.aria-controls]="'#collapseItem-' + item.id"
+                  [id]="'collapsebutton-' + item.id"
+                  [value]="item.value"
+                  class="m-s-items"
+                  style="z-index: 10; position: relative; background-color: rgb(237, 240, 243);"
+                >
+                  <i [class]=" item.icon +' mr-1'"></i>
+                  {{ item.text.toUpperCase() }}
+                  
+                </button>
+                <div class="collapse" [id]="'collapseItem-' + item.id">
+                  <div style="background-color: #eceef4;" class="card card-body subitems-body w-full">
+                    <a style="color: rgb(6, 6, 6);" [routerLink]="subitem.url" class="d-flex justify-content-start sub-item btn bg-light" *ngFor="let subitem of item.items">
+                      <span style="text-align: start;">
+                        <i [class]=" subitem.icon +' mr-1'"></i>
+                        {{subitem.text}}
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

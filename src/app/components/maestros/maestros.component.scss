@@ -1,0 +1,59 @@
+#mainNavigation a {
+  font-family: 'Cabin', sans-serif;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  text-shadow: #000
+}
+
+.dropdown-menu {
+  background:#fdd21357
+}
+a.dropdown-toggle {
+  color:#000 !important
+}
+a.dropdown-item:hover {
+  color:#c4c410b3 !important
+}
+.nav-item a{
+  color:#000;
+}
+.nav-item a:hover {
+  color:#000
+}
+.nav-item{
+  min-width:12vw;
+}
+#mainNavigation {
+  top:0;
+  left:0;
+  width:100%;
+  z-index:123;
+  padding-bottom:120px;
+}
+#navbarNavDropdown.collapsing .navbar-nav,
+#navbarNavDropdown.show .navbar-nav{
+  background:#037582;
+  padding:12px;
+}
+
+.card .card-header {
+  padding-top: 30px;
+  padding-bottom: 15px;
+}
+.card .card-body {
+  padding-bottom: 30px;
+}
+
+.subitems-body {
+  padding: 15px !important;
+}
+
+.sub-item{ 
+  margin: 10px 0px;
+}
+.mat-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

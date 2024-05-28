@@ -6,3 +6,59 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .example-full-width {
     width: 100%;
 }
+
+.m-s-items {
+    width: 100%;
+    font-size: 12px;
+    height: 70px !important;
+    white-space: pre-wrap !important;
+    overflow: hidden !important;
+    line-height: 18px !important;
+    background: transparent;
+    border: 1px solid #E3E3E3;
+    padding: 7px 7px;
+    margin: 3px 0px;
+    border-radius: 10px;
+    transition: background 0.15s ease-in-out;
+  }
+  @media screen and (max-width: 780px) {
+    .m-s-items {
+      height: 50px;  
+    }
+  }
+  @media screen and (max-width: 425px) {
+    .m-s-items {
+      height: 50px;
+      width: 100%;  
+    }
+
+  }
+.m-s-items:hover {
+  background: #00000024 ;
+}
+.m-s-items.sub-item {
+    align-items: center;
+    margin: 0px !important;
+}
+.m-s-items > small {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    font-weight: 700;
+  }
+
+  body {
+    background-color: #dadcfb !important;
+    overflow-x: hidden;
+  }
+  #main {
+    position: relative;
+    min-height: 85.5vh;
+    padding-bottom: 39px;
+  }
+  .footer-layout {
+    height: 14.5vh;
+  }
+  
