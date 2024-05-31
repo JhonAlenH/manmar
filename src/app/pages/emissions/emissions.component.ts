@@ -54,6 +54,8 @@ export class EmissionsComponent implements OnInit {
   containerAuto: boolean = false;
   containerSalud: boolean = false;
   takersInfo: boolean = false;
+  insuredInfo: boolean = false;
+  WhatsApp: boolean = false;
 
   someParamValue = 'Valor de ejemplo';
   receiptData = {};
@@ -66,6 +68,7 @@ export class EmissionsComponent implements OnInit {
     cmoneda: [''],
     xmoneda:[''],
     ccliente: [''],
+    xcliente: [''],
     fdesde: [''],
     fhasta: [''],
     itipodoc: [''],
@@ -86,11 +89,13 @@ export class EmissionsComponent implements OnInit {
     xzona_postal: [''],
     xdireccion: [''],
     xcorreo: [''],
+    xcorreo_asegurado: [''],
     xpoliza: [''],
     msuma_aseg: [''],
     mprima: ['0,00'],
     cmetodologiapago: [''],
     xmetodologiapago: [''],
+    xtelefono_asegurado: [''],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -270,9 +275,16 @@ export class EmissionsComponent implements OnInit {
 
   private _filterClients(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.clientsList
-      .map(clients => clients.value)
-      .filter(clients => clients.toLowerCase().includes(filterValue));
+    const lista = this.clientsList.map(clients => clients.value).filter(clients => clients.toLowerCase().includes(filterValue));;
+  
+    if(!lista[0]){
+      this.emissionsFormGroup.get('xcliente')?.setValue(filterValue)
+      if(this.emissionsFormGroup.get('xcliente')?.value){
+        this.validateClient();
+      }
+    }
+
+    return lista
   }
 
   getTakers(){
@@ -309,6 +321,17 @@ export class EmissionsComponent implements OnInit {
     return lista
   }
 
+  validateClient(){
+    if(this.emissionsFormGroup.get('xcliente')?.value){
+      if(this.emissionsFormGroup.get('ccliente')?.value){
+        this.emissionsFormGroup.get('xcliente')?.setValue('')
+        this.insuredInfo = false;
+      }else{
+        this.insuredInfo = true;
+      }
+    }
+  }
+
   validateTaker(){
     if(this.emissionsFormGroup.get('xtomador')?.value){
       if(this.emissionsFormGroup.get('ctomador')?.value){
@@ -333,6 +356,7 @@ export class EmissionsComponent implements OnInit {
     const selectedClients = this.clientsList.find(client => client.value === selectedValue);
     if (selectedClients) {
       this.emissionsFormGroup.get('ccliente')?.setValue(selectedClients.id);
+      this.emissionsFormGroup.get('xcliente')?.setValue(selectedClients.value);
       this.emissionsFormGroup.get('itipodoc')?.setValue(selectedClients.itipo);
       this.emissionsFormGroup.get('xdoc_identificacion')?.setValue(selectedClients.xdocu);
       this.searchTakers()
@@ -489,6 +513,18 @@ export class EmissionsComponent implements OnInit {
       }
     }else{ 
       this.containerAuto = false;
+    }
+  }
+
+  activateWhatsApp(){
+    this.WhatsApp = true;
+  }
+
+  sendWhatsAppMessage() {
+    const telefono = this.emissionsFormGroup.get('xtelefono_asegurado')?.value;
+    if (telefono) {
+      const url = `https://wa.me/${telefono}`;
+      window.open(url, '_blank');
     }
   }
 

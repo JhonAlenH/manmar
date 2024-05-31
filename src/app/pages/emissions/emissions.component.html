@@ -115,6 +115,7 @@
                               matInput
                               [formControl]="clientsControl"
                               [matAutocomplete]="clients"
+                              formControlName="xcliente"
                               required>
                               <mat-autocomplete #clients="matAutocomplete" (optionSelected)="onClientSelection($event)">
                                 <mat-option *ngFor="let clients of filteredClients | async" [value]="clients">
@@ -143,7 +144,59 @@
                         <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion" >
                       </mat-form-field>
                     </div>
+                    <div class="col-sm-12" *ngIf="insuredInfo">
+                      <mat-accordion class="example-headers-align" multi>
+                        <mat-expansion-panel>
+                          <mat-expansion-panel-header>
+                            <mat-panel-title>
+                              <p class="text-center">
+                                <strong>Información del Asegurado</strong>
+                              </p>
+                            </mat-panel-title>
+                          </mat-expansion-panel-header>
+                      
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Correo Electrónico</mat-label>
+                                <textarea matInput placeholder="Coloque Correo Electrónico" formControlName="xcorreo_asegurado"></textarea>
+                              </mat-form-field>
+                            </div>
+                          </div>
+
+                          <div class="row">
+                            <div class="col">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput placeholder="Coloque Número Telefónico" formControlName="xtelefono_asegurado" (change)="activateWhatsApp()">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-2" *ngIf="WhatsApp">
+                              <button mat-mini-fab matTooltip="Enviar mensaje por WhatsApp" matTooltipPosition="right" sad mat-fab style="background: #06be3d;" (click)="sendWhatsAppMessage()">
+                                <i class="fi fi-brands-whatsapp" style="font-size: 24px;"></i>
+                              </button>
+                            </div>
+                          </div>
+  
+                          <!-- <div style="display: flex; justify-content: end;">
+                            <div class="col">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput placeholder="Coloque Número Telefónico" formControlName="xtelefono_asegurado" (change)="activateWhatsApp()">
+                              </mat-form-field>
+                            </div>
+                            <div class="col-sm-12 col-md-2" *ngIf="WhatsApp">
+                              <button mat-mini-fab matTooltip="Enviar mensaje por WhatsApp" matTooltipPosition="right" sad mat-fab style="background: #06be3d;" (click)="sendWhatsAppMessage()">
+                                <i class="fi fi-brands-whatsapp" style="font-size: 24px;"></i>
+                              </button>
+                            </div>
+                          </div> -->
+                      
+                        </mat-expansion-panel>
+                      </mat-accordion>
+                    </div>
                   </div>  
+
 
                 </div>
                 <div class="col-md-6">

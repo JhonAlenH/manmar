@@ -20,6 +20,7 @@ import {
 })
 export class ContainerAutomobileComponent implements OnInit {
   public copy: string;
+  currentUser!: any
 
   @Input() receiptData: any;
 
@@ -28,16 +29,19 @@ export class ContainerAutomobileComponent implements OnInit {
   versionList: any[] = [];
   colorList: any[] = [];
   receiptList: any[] = [];
+  executiveList: any[] = [];
 
   brandControl = new FormControl('');
   modelControl = new FormControl('');
   versionControl = new FormControl('');
   colorControl = new FormControl('');
+  executiveControl = new FormControl('');
 
   filteredBrand!: Observable<string[]>;
   filteredModel!: Observable<string[]>;
   filteredVersion!: Observable<string[]>;
   filteredColor!: Observable<string[]>;
+  filteredExecutive!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
@@ -50,6 +54,10 @@ export class ContainerAutomobileComponent implements OnInit {
     fano: ['',[ Validators.maxLength(4)]],
     npasajeros: [{ value: '', disabled: true }],
     ccolor: [{ value: '', disabled: true }],
+    xcobertura: [{ value: '', disabled: false }],
+    cejecutivo: [{ value: '', disabled: false }],
+    xejecutivo: [{ value: '', disabled: false }],
+    pcomision_e: [{ value: '', disabled: false }],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -60,8 +68,10 @@ export class ContainerAutomobileComponent implements OnInit {
   
 
   ngOnInit(): void {
+    const storedSession = localStorage.getItem('user');
+    this.currentUser = JSON.parse(storedSession);
     this.getColor();
-    
+    this.getExecutive();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -276,18 +286,46 @@ export class ContainerAutomobileComponent implements OnInit {
     }
   }
 
-  receipt(){
-    let data = {}
-    data = {
-      fdesde: this.receiptData.fdesde,
-      fhasta: this.receiptData.fhasta,
-      mprima: this.receiptData.mprima,
-      cmetodologiapago: this.receiptData.cmetodologiapago,
-    }
-    console.log(data)
-    this.http.post(environment.apiUrl + '/api/v1/emission/receipt', data).subscribe((response: any) => {
+  getExecutive(){
+    this.http.post(environment.apiUrl + '/api/v1/valrep/executive', null).subscribe((response: any) => {
+      if (response.data.executive) {
+        for (let i = 0; i < response.data.executive.length; i++) {
+          this.executiveList.push({
+            id: response.data.executive[i].cejecutivo,
+            value: response.data.executive[i].xejecutivo,
+            comision: response.data.executive[i].pcomision,
+          });
+        }
+        const selectedMe = this.executiveList.find(executive => executive.id === this.currentUser.data.cejecutivo);
+        if (selectedMe) {
+            this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMe.id);
+            this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMe.value);
+            this.vehicleFormGroup.get('pcomision_e')?.setValue(selectedMe.comision.toFixed(2));
+        }
+        this.executiveList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredExecutive = this.executiveControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterExecutive(value || ''))
+        );
+      }
+    });
+  }
 
-    })
+  private _filterExecutive(value: any): string[] {
+    const filterValue = value.toLowerCase();
+    return this.executiveList
+      .map(executive => executive.value)
+      .filter(executive => executive.toLowerCase().includes(filterValue));
+  }
+
+  onExecutiveSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedMet = this.executiveList.find(executive => executive.value === selectedValue);
+    if (selectedMet) {
+      this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
+      this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
+      this.vehicleFormGroup.get('pcomision_e')?.setValue(selectedMet.comision.toFixed(2));
+    }
   }
 
 }
