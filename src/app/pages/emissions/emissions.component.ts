@@ -510,6 +510,7 @@ export class EmissionsComponent implements OnInit {
         fhasta: fhasta,
         mprima: mprima,
         cmetodologiapago: cmetodologiapago,
+        cramo: ramo
       }
     }else{ 
       this.containerAuto = false;

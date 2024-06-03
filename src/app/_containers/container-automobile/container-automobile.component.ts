@@ -7,11 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DateUtilService } from './../../_services/date-util.service';
-import {
-  MatSnackBar,
-  MatSnackBarHorizontalPosition,
-  MatSnackBarVerticalPosition,
-} from '@angular/material/snack-bar';
+import Swal from 'sweetalert2'
 
 @Component({
   selector: 'app-container-automobile',
@@ -23,6 +19,10 @@ export class ContainerAutomobileComponent implements OnInit {
   currentUser!: any
 
   @Input() receiptData: any;
+  Agents: boolean = false;
+  commissionSum: any;
+  comisionProductor: any;
+  comisionEjecutivo: any;
 
   brandList: any[] = [];
   modelList: any[] = [];
@@ -30,18 +30,24 @@ export class ContainerAutomobileComponent implements OnInit {
   colorList: any[] = [];
   receiptList: any[] = [];
   executiveList: any[] = [];
+  agentsList: any[] = []; 
+  planList: any[] = []; 
 
   brandControl = new FormControl('');
   modelControl = new FormControl('');
   versionControl = new FormControl('');
   colorControl = new FormControl('');
   executiveControl = new FormControl('');
+  agentsControl = new FormControl('');
+  planControl = new FormControl('');
 
   filteredBrand!: Observable<string[]>;
   filteredModel!: Observable<string[]>;
   filteredVersion!: Observable<string[]>;
   filteredColor!: Observable<string[]>;
   filteredExecutive!: Observable<string[]>;
+  filteredAgents!: Observable<string[]>;
+  filteredPlan!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
@@ -58,6 +64,13 @@ export class ContainerAutomobileComponent implements OnInit {
     cejecutivo: [{ value: '', disabled: false }],
     xejecutivo: [{ value: '', disabled: false }],
     pcomision_e: [{ value: '', disabled: false }],
+    cagente: [{ value: '', disabled: false }],
+    xagente: [{ value: '', disabled: false }],
+    pcomision_a: [{ value: '', disabled: false }],
+    cplan: [{ value: '', disabled: false }],
+    cproductor: [{ value: '', disabled: false }],
+    xproductor: [{ value: '', disabled: true }],
+    pcomision_p: [{ value: '', disabled: false }],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -72,6 +85,11 @@ export class ContainerAutomobileComponent implements OnInit {
     this.currentUser = JSON.parse(storedSession);
     this.getColor();
     this.getExecutive();
+    this.getProducers();
+
+    this.vehicleFormGroup.valueChanges.subscribe(() => {
+      this.commissionSumValidator();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -97,6 +115,7 @@ export class ContainerAutomobileComponent implements OnInit {
         }));
       }
     })
+    this.getPlan(data.cramo)
   }
 
   changeYears() {
@@ -286,6 +305,18 @@ export class ContainerAutomobileComponent implements OnInit {
     }
   }
 
+  getProducers(){
+    this.http.post(environment.apiUrl + '/api/v1/emission/producers', null).subscribe((response: any) => {
+      if (response.status) {
+        this.vehicleFormGroup.get('cproductor')?.setValue(response.cproductor);
+        this.vehicleFormGroup.get('xproductor')?.setValue(response.xproductor);
+        this.vehicleFormGroup.get('pcomision_p')?.setValue('100.00');
+        this.comisionProductor = response.pcomision.toFixed(2)
+        this.commissionSumValidator();
+      }
+    });
+  }
+
   getExecutive(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/executive', null).subscribe((response: any) => {
       if (response.data.executive) {
@@ -324,8 +355,108 @@ export class ContainerAutomobileComponent implements OnInit {
     if (selectedMet) {
       this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
       this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
-      this.vehicleFormGroup.get('pcomision_e')?.setValue(selectedMet.comision.toFixed(2));
+      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
+      this.vehicleFormGroup.get('pcomision_p')?.setValue('');
+      this.vehicleFormGroup.get('pcomision_e')?.setValue('60.00');
+      this.vehicleFormGroup.get('pcomision_p')?.setValue('40.00');
+      this.comisionEjecutivo = selectedMet.comision.toFixed(2)
+      this.Agents = true;
+      this.getAgents();
+      this.commissionSumValidator();
     }
   }
 
+  getAgents(){
+    const ejecutive = this.vehicleFormGroup.get('cejecutivo')?.value;
+    this.http.get(environment.apiUrl + `/api/v1/valrep/agents/${ejecutive}`).subscribe((response: any) => {
+      if (response.data.agents) {
+        this.agentsList = [];
+        this.agentsList = response.data.agents.map((item: any) => ({
+          id: item.cagente,
+          value: item.xagente,
+          pcomision_a: item.pcomision
+        }))
+        this.agentsList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredAgents = this.agentsControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterAgents(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterAgents(value: any): string[] {
+    const filterValue = value.toLowerCase();
+    return this.agentsList
+      .map(agents => agents.value)
+      .filter(agents => agents.toLowerCase().includes(filterValue));
+  }
+
+  onAgentsSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedAgents = this.agentsList.find(agents => agents.value === selectedValue);
+    if (selectedAgents) {
+      this.vehicleFormGroup.get('cagente')?.setValue(selectedAgents.id);
+      this.vehicleFormGroup.get('xagente')?.setValue(selectedAgents.value);
+      this.vehicleFormGroup.get('pcomision_p')?.setValue(this.comisionProductor);
+      this.vehicleFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo);
+      this.vehicleFormGroup.get('pcomision_a')?.setValue(selectedAgents.pcomision_a.toFixed(2));
+      this.commissionSumValidator();
+    }
+  }
+
+
+  commissionSumValidator() {
+    const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
+    const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+    const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
+    const sum = pcomision_p + pcomision_e + pcomision_a;
+
+    this.commissionSum = sum;
+    console.log(sum)
+
+    if(this.commissionSum > 100){
+      Swal.fire({
+        title: "Se excedió del 100% de Comisión",
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#334ebd",
+      });
+    }
+  }
+
+  getPlan(cramo: any){
+    let data = {
+      cramo: cramo
+    }
+    this.http.post(environment.apiUrl + `/api/v1/valrep/planes`, data).subscribe((response: any) => {
+      if(response.status){
+        this.planList = [];
+        this.planList = response.data.planes.map((item: any) => ({
+          id: item.cplan,
+          value: item.xdescripcion,
+        }))
+        this.planList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredPlan = this.planControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterPlan(value || ''))
+        );
+      }
+    })
+  }
+
+  private _filterPlan(value: any): string[] {
+    const filterValue = value.toLowerCase();
+    return this.planList
+      .map(plan => plan.value)
+      .filter(plan => plan.toLowerCase().includes(filterValue));
+  }
+
+  onPlanSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedPlan = this.planList.find(plan => plan.value === selectedValue);
+    if (selectedPlan) {
+      this.vehicleFormGroup.get('cplan')?.setValue(selectedPlan.id);
+    }
+  }
 }

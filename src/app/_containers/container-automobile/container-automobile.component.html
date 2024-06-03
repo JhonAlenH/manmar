@@ -106,12 +106,19 @@
         </ng-template>
         <div class="col-sm-8 mx-auto py-5">
           <mat-form-field class="example-full-width">
-            <mat-label>Coberturas</mat-label>
-            <mat-select formControlName="xcobertura">
-              <mat-option value="Rcv">R.C.V</mat-option>
-              <mat-option value="Cobertura Amplia">Cobertura Amplia</mat-option>
-              <mat-option value="Perdida Total">Pérdida Total</mat-option>
-            </mat-select>
+            <mat-label>Planes</mat-label>
+            <input type="text"
+                  placeholder="Seleccione Plan"
+                  aria-label="Seleccione"
+                  matInput
+                  [formControl]="planControl"
+                  [matAutocomplete]="planes"
+                  >
+            <mat-autocomplete #planes="matAutocomplete" (optionSelected)="onPlanSelection($event)">
+              <mat-option *ngFor="let planes of filteredPlan | async" [value]="planes">
+                {{ planes }}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </div>
       </mat-tab>
@@ -143,7 +150,24 @@
           &nbsp;Participaciones
         </ng-template> 
         <form [formGroup]="vehicleFormGroup">
-          <div class="py-4" style="display: flex; text-align: center;">
+          <div style="display: flex; text-align: center;">
+            
+            <div class="col-sm-5 mx-auto py-3">
+              <mat-form-field class="example-full-width">
+                <mat-label>Productor</mat-label>
+                <input matInput formControlName="xproductor">
+              </mat-form-field>
+            </div>
+
+            <div class="col-sm-2 mx-auto py-3">
+              <mat-form-field class="example-full-width">
+                <mat-label>Comisión</mat-label>
+                <input matInput formControlName="pcomision_p" (change)="commissionSumValidator()">
+              </mat-form-field>
+            </div>
+
+        </div>
+          <div style="display: flex; text-align: center;">
             
               <div class="col-sm-5 mx-auto">
                 <mat-form-field class="example-full-width">
@@ -166,11 +190,41 @@
               <div class="col-sm-2 mx-auto">
                 <mat-form-field class="example-full-width">
                   <mat-label>Comisión</mat-label>
-                  <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e">
+                  <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator()">
                 </mat-form-field>
               </div>
 
           </div>
+
+          <div style="display: flex; text-align: center;" *ngIf="Agents">
+            <div class="col-sm-5 mx-auto">
+              <mat-form-field class="example-full-width">
+                <mat-label>Agentes</mat-label>
+                <input type="text"
+                      placeholder="Seleccione Agente"
+                      aria-label="Seleccione"
+                      matInput
+                      [formControl]="agentsControl"
+                      [matAutocomplete]="agents"
+                      required>
+                <mat-autocomplete #agents="matAutocomplete" (optionSelected)="onAgentsSelection($event)">
+                  <mat-option *ngFor="let agents of filteredAgents | async" [value]="agents">
+                    {{ agents }}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </div>
+            <div class="col-sm-2 mx-auto">
+              <mat-form-field class="example-full-width">
+                <mat-label>Comisión</mat-label>
+                <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator()">
+              </mat-form-field>
+            </div>
+
+        </div>
+        <div class="text-center py-3">
+          <p><strong>Total Comisión: </strong>{{commissionSum}}%</p>
+        </div>
         </form>
       </mat-tab>
     </mat-tab-group>

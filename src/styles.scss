@@ -50,4 +50,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     font-weight: 700;
   }
 
+  // body {
+  //   background-color: #dadcfb !important;
+  //   overflow-x: hidden;
+  // }
+  #main {
+    position: relative;
+    min-height: 85.5vh;
+    padding-bottom: 39px;
+  }
+  .footer-layout {
+    height: 14.5vh;
+  }
   

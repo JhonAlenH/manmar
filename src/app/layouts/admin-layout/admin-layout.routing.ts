@@ -11,14 +11,8 @@ import { MaestrosComponent } from 'src/app/components/maestros/maestros.componen
 export const AdminLayoutRoutes: Routes = [
     { path: 'dashboard',      component: DashboardComponent },
     {
-        path: 'maestros',
-        component: MaestrosComponent,
-        children: [
-          {
-            path: '',
-            loadChildren: () => import('src/app/components/maestros/maestros.module').then(m => m.MaestrosModule)
-          }
-        ]
+      path: '',
+      loadChildren: () => import('src/app/components/maestros/maestros.module').then(m => m.MaestrosModule)
     },
     { path: 'emissions',      component: EmissionsComponent },
     { path: 'user-profile',   component: UserProfileComponent },
