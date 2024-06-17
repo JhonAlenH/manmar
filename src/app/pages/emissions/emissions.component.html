@@ -354,13 +354,13 @@
                 <div class="col-md-4 mx-auto">
                   <mat-form-field class="example-full-width">
                     <mat-label>Suma Asegurada</mat-label>
-                    <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="formatWithSeparator($event)">
+                    <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="formatWithSeparator($event)" (change)="SumBs()">
                   </mat-form-field>
                 </div>
                 <div class="col-md-4 mx-auto">
                   <mat-form-field class="example-full-width">
                     <mat-label>Prima</mat-label>
-                    <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatPrima($event)" (change)="receipt()">
+                    <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatPrima($event)" (change)="SumBs()">
                   </mat-form-field>
                 </div>
                 <div class="col-md-4 mx-auto">
@@ -383,6 +383,26 @@
                 </div>
               </div>
 
+              <div class="row">
+                <div class="col-md-4 mx-auto" *ngIf="ActivaSumBs">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Suma Asegurada en Bs.</mat-label>
+                    <input matInput formControlName="msuma_aseg_bs" type="text">
+                  </mat-form-field>
+                </div>
+                <div class="col-md-4 mx-auto" *ngIf="ActivaPriBs">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Prima en Bs.</mat-label>
+                    <input matInput formControlName="mprima_bs" type="text">
+                  </mat-form-field>
+                </div>
+                <div class="col-md-4 mx-auto">
+                  <i class="fi fi-tr-money-transfer-coin-arrow" style="font-size: 20px;"></i>
+                  &nbsp;<strong>Tasa de Cambio:</strong> {{bcv}}
+                </div>
+              </div>
+
+
               <div *ngIf="containerAuto">
                 <app-container-automobile 
                     [receiptData]="receiptData">
@@ -396,8 +416,6 @@
     </div>
   </div>
 
-  <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" >
-    <mat-icon>save</mat-icon>
-  </button>
+
   
   

@@ -23,6 +23,7 @@ export class EmissionsComponent implements OnInit {
   @ViewChild(MatAccordion) accordion: MatAccordion;
   public copy: string;
   currentUser!: any
+  bcv!: any;
 
   cedentsList: any[] = [];
   tradeList: any[] = [];
@@ -56,10 +57,14 @@ export class EmissionsComponent implements OnInit {
   takersInfo: boolean = false;
   insuredInfo: boolean = false;
   WhatsApp: boolean = false;
+  ActivaSumBs: boolean = false;
+  ActivaPriBs: boolean = false;
 
   someParamValue = 'Valor de ejemplo';
   receiptData = {};
-  fdesde: any
+  fdesde: any;
+  msuma_aseg: any;
+  msuma_aseg_bs: any;
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],
@@ -92,7 +97,9 @@ export class EmissionsComponent implements OnInit {
     xcorreo_asegurado: [''],
     xpoliza: [''],
     msuma_aseg: [''],
+    msuma_aseg_bs: [''],
     mprima: ['0,00'],
+    mprima_bs: [''],
     cmetodologiapago: [''],
     xmetodologiapago: [''],
     xtelefono_asegurado: [''],
@@ -109,7 +116,13 @@ export class EmissionsComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
-  
+
+    fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv')
+    .then((response) => response.json())
+    .then(data => {
+      this.bcv = data.monitors.usd.price;
+    });
+
     if(this.currentUser){
       this.getCedents();
       this.getTrades();
@@ -125,6 +138,9 @@ export class EmissionsComponent implements OnInit {
     let value = event.target.value.replace(/\D/g, '');
     value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     event.target.value = value;
+
+    const numericValue = Number(value.replace(/\./g, ''));
+    this.msuma_aseg = numericValue;
   }
 
   formatPrima(event: any) {
@@ -496,23 +512,83 @@ export class EmissionsComponent implements OnInit {
     this.emissionsFormGroup.get('xrif')?.setValue(itipodoc_t + '-' + xdoc_identificacion_t);
   }
 
-  receipt(){
-    const ramo = this.emissionsFormGroup.get('cramo')?.value;
-    const fdesde = this.emissionsFormGroup.get('fdesde')?.value;
-    const fhasta = this.emissionsFormGroup.get('fhasta')?.value;
-    const mprima = this.emissionsFormGroup.get('mprima')?.value;
-    const cmetodologiapago = this.emissionsFormGroup.get('cmetodologiapago')?.value;
+  SumBs() {
+    const mprima = parseFloat(this.emissionsFormGroup.get('mprima')?.value);
+    
+    const msuma_aseg_bs = this.msuma_aseg * this.bcv;
+    const mprima_bs = mprima * this.bcv;
 
-    if(ramo && fdesde && fhasta && mprima && cmetodologiapago){
+    const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(msuma_aseg_bs);
+
+    const formattedPriBs = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(mprima_bs);
+  
+    this.emissionsFormGroup.get('msuma_aseg_bs')?.setValue(formattedMsumaAsegBs);
+    this.emissionsFormGroup.get('mprima_bs')?.setValue(formattedPriBs);
+    
+    if(msuma_aseg_bs != 0){
+      this.ActivaSumBs = true;
+    }
+
+    if(mprima_bs != 0){
+      this.ActivaPriBs = true;
+    }
+
+    if(msuma_aseg_bs != 0 && mprima_bs != 0){
+      this.receipt()
+    }
+  }
+
+  receipt() {
+    const {
+      ccedente, cramo, cmoneda, ccliente, xcliente, fdesde, fhasta, itipodoc, 
+      xdoc_identificacion, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
+      xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
+      xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
+      mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
+    } = this.emissionsFormGroup.value;
+  
+    if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
       this.containerAuto = true;
       this.receiptData = {
-        fdesde: this.fdesde,
+        fdesde: fdesde,
         fhasta: fhasta,
-        mprima: mprima,
         cmetodologiapago: cmetodologiapago,
-        cramo: ramo
+        cramo: cramo,
+        ccedente: ccedente,
+        cmoneda: cmoneda,
+        ccliente: ccliente,
+        xcliente: xcliente,
+        itipodoc: itipodoc,
+        xdoc_identificacion: xdoc_identificacion,
+        ctomador: ctomador,
+        xtomador: xtomador,
+        itipodoc_t: itipodoc_t,
+        xdoc_identificacion_t: xdoc_identificacion_t,
+        xprofesion: xprofesion,
+        xrif: xrif,
+        xdomicilio: xdomicilio,
+        cpais: cpais,
+        cestado: cestado,
+        cciudad: cciudad,
+        xzona_postal: xzona_postal,
+        xdireccion: xdireccion,
+        xcorreo: xcorreo,
+        xcorreo_asegurado: xcorreo_asegurado,
+        xpoliza: xpoliza,
+        msuma_aseg: msuma_aseg,
+        xtelefono_asegurado: xtelefono_asegurado,
+        msuma: msuma_aseg_bs,
+        msumaext: this.msuma_aseg,
+        mprima: mprima_bs,
+        mprimaext: mprima,
       }
-    }else{ 
+    } else {
       this.containerAuto = false;
     }
   }
