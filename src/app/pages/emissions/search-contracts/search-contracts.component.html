@@ -1,1 +1,157 @@
-<p>search-contracts works!</p>
+<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
+    <div class="container-fluid">
+      <div class="header-body">
+        <!-- Card stats -->
+        <div class="row">
+
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="container-fluid mt--7">
+    <!-- Table -->
+    <div class="row">
+      <div class="col">
+        <div class="card shadow hola">
+          <div class="card-body">
+            <form [formGroup]="searchFormGroup" style="position: relative; z-index: 1000;">
+
+                <button class="cta" (click)="emitir()">
+                    <span>Agregar</span>
+                    <svg width="15px" height="10px" viewBox="0 0 13 10">
+                      <path d="M1,5 L11,5"></path>
+                      <polyline points="8 1 12 5 8 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="row py-3">
+                    <div class="col-sm-12">
+                      <mat-accordion class="example-headers-align expansion_notificacion" multi>
+                        <mat-expansion-panel>
+                          <mat-expansion-panel-header style="background-color: #6f86e3;">
+                            <mat-panel-title style="font-weight: 500; color: aliceblue;">
+                                Filtros Adicionales de Búsqueda
+                            </mat-panel-title>
+                          </mat-expansion-panel-header>
+    
+    
+                          <div class="row justify-content-center mt-3">
+                            <div class="col-md-4">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Cedentes</mat-label>
+                                <input type="text"
+                                       placeholder="Seleccione Cedentes"
+                                       aria-label="Seleccione"
+                                       matInput
+                                       [formControl]="cedentsControl"
+                                       [matAutocomplete]="cedents"
+                                       formControlName="xcedente"
+                                       required>
+                                       <mat-autocomplete #cedents="matAutocomplete">
+                                        <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
+                                          {{ cedents }}
+                                        </mat-option>
+                                      </mat-autocomplete>
+                              </mat-form-field>
+                            </div>
+                            <div class="col-md-4">
+                              <mat-form-field class="example-full-width">
+                                <mat-label>Ramo</mat-label>
+                                <input type="text"
+                                       placeholder="Seleccione Ramo"
+                                       aria-label="Seleccione"
+                                       matInput
+                                       [formControl]="tradeControl"
+                                       [matAutocomplete]="trade"
+                                       required>
+                                       <mat-autocomplete #trade="matAutocomplete" (optionSelected)="onTradeSelection($event)">
+                                        <mat-option *ngFor="let trade of filteredTrade | async" [value]="trade">
+                                          {{ trade }}
+                                        </mat-option>
+                                      </mat-autocomplete>
+                              </mat-form-field>
+                            </div>
+                          </div>
+                      
+                        </mat-expansion-panel>
+                      </mat-accordion>
+                    </div>
+                  </div>
+
+            </form>
+
+            <div class="table-responsive py-3">
+                <form>
+                    <mat-form-field class="w-100">
+                      <mat-label>Buscar</mat-label>
+                      <input matInput (keyup)="applyFilter($event)" placeholder="Ingresa datos" #input>
+                    </mat-form-field>
+                          
+                    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
+                      <!-- Columna Crámo -->
+                      <ng-container matColumnDef="xpoliza">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Póliza </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.xpoliza }} </td>
+                        </ng-container>
+                        
+                        <ng-container matColumnDef="xcedente">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Cedente </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.xcedente }} </td>
+                        </ng-container>
+              
+                        <ng-container matColumnDef="xramo">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Ramo </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.xramo }} </td>
+                        </ng-container>
+              
+                        <ng-container matColumnDef="xasegurado">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Asegurado </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.xasegurado }} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="fdesde">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Desde </th>
+                            <td mat-cell *matCellDef="let element"> {{ element.fdesde }} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="fhasta">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Hasta </th>
+                            <td mat-cell *matCellDef="let element"> {{ element.fhasta }} </td>
+                        </ng-container>
+                        
+                        <!-- Columna Acciones -->
+                        <ng-container matColumnDef="star">
+                          <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+                          <td mat-cell *matCellDef="let element">
+                            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" type="button">
+                              <mat-icon>more_vert</mat-icon>
+                            </button>
+                            <mat-menu #menu="matMenu">
+                              <a style="text-decoration: none;" [routerLink]="'notifications/'+element.cnotificacion" mat-menu-item>
+                                <mat-icon>edit</mat-icon>
+                                <span style="color: black;">Editar Contrato</span>
+                              </a>
+                            </mat-menu>
+                          </td>
+                        </ng-container>
+                        
+                          
+                      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                          
+                      <!-- Fila que se muestra cuando no hay datos coincidentes. -->
+                      <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="12">No hay datos que coincidan con el filtro</td>
+                      </tr>
+                    </table>
+                          
+                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Seleccionar página de Contratos"></mat-paginator>
+              
+                  </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

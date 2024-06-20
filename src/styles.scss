@@ -99,3 +99,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     right: 22px;
 
   }
+
+  .mat-expansion-panel-header-description, .mat-expansion-indicator::after{
+    color: rgb(255 255 255 / 54%);
+}
+
+.table-responsive {
+  overflow: auto;
+  padding-bottom: 10px;
+}
