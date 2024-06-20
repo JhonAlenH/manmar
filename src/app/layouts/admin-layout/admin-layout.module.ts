@@ -12,6 +12,7 @@ import { MapsComponent } from '../../pages/maps/maps.component';
 import { UserProfileComponent } from '../../pages/user-profile/user-profile.component';
 import { TablesComponent } from '../../pages/tables/tables.component';
 import { EmissionsComponent } from '../../pages/emissions/emissions.component';
+import { SearchContractsComponent } from '../../pages/emissions/search-contracts/search-contracts.component';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
@@ -36,6 +37,7 @@ import { ContainerAutomobileComponent } from '../../_containers/container-automo
     IconsComponent,
     MapsComponent,
     EmissionsComponent,
+    SearchContractsComponent,
     ContainerAutomobileComponent
   ]
 })

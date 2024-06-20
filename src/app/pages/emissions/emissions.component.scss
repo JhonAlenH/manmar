@@ -53,7 +53,11 @@
   .black-hr {
     border: 0;
     border-top: 1px solid black;
-    width: 40%; /* Ajusta según sea necesario */
+  }
+
+  .black-hr2 {
+    border: 0;
+    border-top: 1px solid black;
   }
 
   .example-action-buttons {
@@ -67,4 +71,8 @@
   
   .example-headers-align .mat-mdc-form-field + .mat-mdc-form-field {
     margin-left: 8px;
+  }
+
+  .negrita-oscura {
+    font-weight: 500; /* Puedes ajustar el valor de opacidad para cambiar el nivel de oscuridad */
   }

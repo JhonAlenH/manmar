@@ -6,6 +6,7 @@ import { MapsComponent } from '../../pages/maps/maps.component';
 import { UserProfileComponent } from '../../pages/user-profile/user-profile.component';
 import { TablesComponent } from '../../pages/tables/tables.component';
 import { EmissionsComponent } from '../../pages/emissions/emissions.component';
+import { SearchContractsComponent } from '../../pages/emissions/search-contracts/search-contracts.component';
 import { MaestrosComponent } from 'src/app/components/maestros/maestros.component';
 
 export const AdminLayoutRoutes: Routes = [
@@ -14,6 +15,7 @@ export const AdminLayoutRoutes: Routes = [
       path: '',
       loadChildren: () => import('src/app/components/maestros/maestros.module').then(m => m.MaestrosModule)
     },
+    { path: 'search-contract',      component: SearchContractsComponent },
     { path: 'emissions',      component: EmissionsComponent },
     { path: 'user-profile',   component: UserProfileComponent },
     { path: 'tables',         component: TablesComponent },

@@ -167,17 +167,20 @@
                 </mat-form-field>
               </div>
 
-              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_p">
                 </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_p_bs}}</h5>
+                </div>
               </div>
             </div>
           
             <!-- Segundo grupo -->
             <div style="display: flex; text-align: center;">
-              <div class="col-sm-9 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-9 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
                 <mat-form-field class="example-full-width">
                   <mat-label>Ejecutivos</mat-label>
                   <input type="text"
@@ -195,17 +198,20 @@
                   </mat-autocomplete>
                 </mat-form-field>
               </div>
-              <div class="col-sm-2 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
                 <mat-form-field class="example-full-width">
                   <mat-label>Comisión</mat-label>
                   <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
                 </mat-form-field>
               </div>
-              <div class="col-sm-2 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_e">
                 </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_e_bs}}</h5>
+                </div>
               </div>
             </div>
           
@@ -250,11 +256,14 @@
                   <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
                 </mat-form-field>
               </div>
-              <div class="col-sm-2 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_a">
                 </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_a_bs}}</h5>
+                </div>
               </div>
               <!-- <div class="col-sm-6 mx-auto">
                 <div style="display: flex; flex-direction: column; align-items: center;">
@@ -271,7 +280,8 @@
           
           
         <div class="text-center py-3">
-          <p><strong>Total Comisión: </strong>{{commissionSum}}%</p>
+          <p><strong>Total Monto a Distribuir: </strong>{{MontoADistribuir}}</p>
+          <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
         </div>
         </form>
       </mat-tab>

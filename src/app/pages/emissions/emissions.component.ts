@@ -65,6 +65,7 @@ export class EmissionsComponent implements OnInit {
   fdesde: any;
   msuma_aseg: any;
   msuma_aseg_bs: any;
+  comisionRamo: any;
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],
@@ -236,6 +237,20 @@ export class EmissionsComponent implements OnInit {
 
       // this.containerAuto = true;
     }else{ this.containerAuto = false;}
+
+    this.getTariffs();
+  }
+
+  getTariffs(){
+    let data = {
+      ccedente: this.emissionsFormGroup.get('ccedente')?.value,
+      cramo: this.emissionsFormGroup.get('cramo')?.value
+    }
+    this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
+      if(response.status){
+        this.comisionRamo = response.pcomision;
+      }
+    })
   }
 
   getCoins(){
@@ -552,6 +567,9 @@ export class EmissionsComponent implements OnInit {
       xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
       mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
     } = this.emissionsFormGroup.value;
+
+    const mprimaNumeric = Number(mprima);
+    const montoDistribucion = mprimaNumeric * this.comisionRamo / 100;
   
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
       this.containerAuto = true;
@@ -587,6 +605,9 @@ export class EmissionsComponent implements OnInit {
         msumaext: this.msuma_aseg,
         mprima: mprima_bs,
         mprimaext: mprima,
+        pcomision: this.comisionRamo,
+        bcv: this.bcv,
+        mdistribucion: montoDistribucion
       }
     } else {
       this.containerAuto = false;
