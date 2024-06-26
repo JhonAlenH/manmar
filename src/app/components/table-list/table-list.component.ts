@@ -40,6 +40,7 @@ export class TableListComponent implements OnInit {
   infoUrl = ''
   createUrl = ''
   sub = new Subscription()
+  snackbar:any 
   
   constructor(
     private router: Router,
@@ -51,13 +52,16 @@ export class TableListComponent implements OnInit {
   ) {}
 
   openSnackBarLoading() {
-    this._snackBar.open('Cargando datos...', '');
+    this.snackbar = this._snackBar.open('Cargando datos...', '', {
+      duration: 1000
+    });
   }
   closeSnackBar() {
     this._snackBar.dismiss();
+    this.snackbar.dismiss()
   }
   ngOnInit() {
-    this.openSnackBarLoading()
+    // this.openSnackBarLoading()
     this.route.url.subscribe( v => {
       
       let url = this.router.url
@@ -134,7 +138,6 @@ export class TableListComponent implements OnInit {
       this.dataSource.data = dataRecived
       this.closeSnackBar()
     })
-      
   }
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;

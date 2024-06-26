@@ -39,4 +39,8 @@
     -webkit-box-orient: vertical;
     font-weight: 700;
   }
+
+  .form-group > label {
+    font-weight: 700;
+  }
   

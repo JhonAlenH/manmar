@@ -16,6 +16,9 @@ import { EmissionsComponent } from '../../pages/emissions/emissions.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
 // import { ToastrModule } from 'ngx-toastr';
+import { PresupuestoComponent } from '../../pages/presupuesto/presupuesto.component';
+import { PresupuestoMantComponent } from 'src/app/pages/presupuesto/presupuesto-mant/presupuesto-mant.component';
+import { PresupuestoCreateComponent } from 'src/app/pages/presupuesto/presupuesto-create/presupuesto-create.component';
 
 @NgModule({
   imports: [
@@ -27,7 +30,6 @@ import { ContainerAutomobileComponent } from '../../_containers/container-automo
     NgbModule,
     ClipboardModule,
     ReactiveFormsModule,
-
   ],
   declarations: [
     DashboardComponent,
@@ -36,7 +38,10 @@ import { ContainerAutomobileComponent } from '../../_containers/container-automo
     IconsComponent,
     MapsComponent,
     EmissionsComponent,
-    ContainerAutomobileComponent
+    ContainerAutomobileComponent,
+    PresupuestoComponent,
+    PresupuestoMantComponent,
+    PresupuestoCreateComponent
   ]
 })
 

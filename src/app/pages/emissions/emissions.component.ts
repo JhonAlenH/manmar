@@ -32,6 +32,7 @@ export class EmissionsComponent implements OnInit {
   methodOfPaymentList: any[] = [];
   stateList: any[] = [];
   cityList: any[] = [];
+  planList: any[] = [];
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -41,6 +42,8 @@ export class EmissionsComponent implements OnInit {
   methodOfPaymentControl = new FormControl('');
   stateControl = new FormControl('');
   cityControl = new FormControl('');
+  planControl = new FormControl('');
+
 
   filteredCedents!: Observable<string[]>;
   filteredTrade!: Observable<string[]>;
@@ -50,6 +53,7 @@ export class EmissionsComponent implements OnInit {
   filteredMethodOfPayment!: Observable<string[]>;
   filteredState!: Observable<string[]>;
   filteredCity!: Observable<string[]>;
+  filteredPlan!: Observable<string[]>;
 
   containerAuto: boolean = false;
   containerSalud: boolean = false;
@@ -203,7 +207,12 @@ export class EmissionsComponent implements OnInit {
       .map(trade => trade.value)
       .filter(trade => trade.toLowerCase().includes(filterValue));
   }
-
+  private _filterPlan(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.planList
+      .map(plan => plan.value)
+      .filter(plan => plan.toLowerCase().includes(filterValue));
+  }
   onTradeSelection(event: any) {
     const selectedValue = event.option.value;
     const selectedTrade = this.tradeList.find(trade => trade.value === selectedValue);
@@ -211,10 +220,27 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('cramo')?.setValue(selectedTrade.id);
     }
 
-    if(selectedTrade.id == 18){
+    //if(selectedTrade.id == 15){
 
       // this.containerAuto = true;
-    }else{ this.containerAuto = false;}
+    //}else{ this.containerAuto = false;}
+    this.planList = []
+    this.http.get(environment.apiUrl + '/api/v1/maestros/planes-ramo/get/'+ selectedTrade.id).subscribe((response: any) => {
+      if (response.data.result) {
+        for (let i = 0; i < response.data.result.length; i++) {
+          this.planList.push({
+            id: response.data.result[i].cplan,
+            value: response.data.result[i].xdescripcion,
+          });
+        }
+        this.planList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredPlan = this.planControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterPlan(value || ''))
+        );
+      }
+    });
+
   }
 
   getCoins(){

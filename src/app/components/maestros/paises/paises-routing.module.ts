@@ -33,6 +33,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             type: 'text',
             key: 'xpais',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 
@@ -51,6 +59,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             type: 'text',
             key: 'xpais',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 

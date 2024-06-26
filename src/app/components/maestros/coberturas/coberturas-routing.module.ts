@@ -4,16 +4,16 @@ import { RouterModule, Routes } from '@angular/router';
 import { TableListComponent } from './../../table-list/table-list.component';
 import { ItemFormComponent } from './../../item-form/item-form.component';
 
-  export const MetodologiapagoRoutes: Routes = [
+  export const CoberturasRoutes: Routes = [
     { 
-      path: 'metodologiapago',      component: TableListComponent, data: {
-        title: 'Metodologia de Pago',    
-        url: '/api/v1/maestros/metodologiapago/search',
-        tableId: 'metodologiapago',
+      path: 'coberturas',      component: TableListComponent, data: {
+        title: 'Coberturas',
+        url: '/api/v1/maestros/coberturas/search',
+        tableId: 'coberturas',
         tableInfo: [
-          { headerName: 'Codigo', key: 'cmetodologiapago', primary_key: true },
-          { headerName: 'Descripción', key: 'xmetodologiapago' },
-          { headerName: 'País', key: 'xpais' }
+          { headerName: 'Codigo', key: 'ccobertura', primary_key: true },
+          { headerName: 'Descripcion', key: 'xcobertura' },
+          { headerName: 'Ramo', key: 'xramo' },
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -22,25 +22,25 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       }
     },
     { 
-      path: 'metodologiapago/create',   component: ItemFormComponent, data: {
-        title: 'Crear Metodologia de Pago',
+      path: 'coberturas/create',   component: ItemFormComponent, data: {
+        title: 'Crear Nueva Cobertura',
         mode: 'create',
-        mainUrl: '/api/v1/maestros/metodologiapago/get/',
-        createUrl: '/api/v1/maestros/metodologiapago/create',
-        formId: 'create_metodologiapago',
-        fields: [ 
+        mainUrl: '/api/v1/maestros/coberturas/get/',
+        createUrl: '/api/v1/maestros/coberturas/create',
+        formId: 'create_coberturas',
+        fields: [      
           {
-            fieldName: 'Descripción', class: 'col-md-8',
             type: 'text',
-            key: 'xmetodologiapago',
+            fieldName: 'Cobertura', class: 'col-md-6',
+            key: 'xcobertura',
             bdType: 'text'
-          },        
+          },
           {
             type: 'simple-select',
-            fieldName: 'Paises',
+            fieldName: 'Ramos',
             class: 'col-md-4',
-            url: '/api/v1/maestros/paises/searchMaestros',
-            key: 'cpais',
+            url: '/api/v1/maestros/ramos/searchMaestros',
+            key: 'cramo',
             bdType: 'number'
           },
           {
@@ -55,26 +55,27 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       } 
     },
     { 
-      path: 'metodologiapago/info/:id',   component: ItemFormComponent, data: {
-        title: 'Información de Metodologia de Pago',
+      path: 'coberturas/info/:id',   component: ItemFormComponent, data: {
+        title: 'Información de Coberturas',
         mode: 'info',
-        mainUrl: '/api/v1/maestros/metodologiapago/get/',
-        editUrl: '/api/v1/maestros/metodologiapago/edit/',
-        formId: 'edit_metodologiapago',
-        disableUrl: '/api/v1/maestros/metodologiapago/disable/',
+        mainUrl: '/api/v1/maestros/coberturas/get/',
+        editUrl: '/api/v1/maestros/coberturas/edit/',
+        formId: 'edit_coberturas',
+        disableUrl: '/api/v1/maestros/coberturas/disable/',
         fields: [     
+
           {
-            fieldName: 'Descripción', class: 'col-md-8',
             type: 'text',
-            key: 'xmetodologiapago',
+            fieldName: 'Cobertura', class: 'col-md-6 text-bold-child',
+            key: 'xcobertura',
             bdType: 'text'
-          },        
+          },
           {
             type: 'simple-select',
-            fieldName: 'Paises',
+            fieldName: 'Ramos',
             class: 'col-md-4',
-            url: '/api/v1/maestros/paises/searchMaestros',
-            key: 'cpais',
+            url: '/api/v1/maestros/ramos/searchMaestros',
+            key: 'cramo',
             bdType: 'number'
           },
           {
@@ -91,3 +92,4 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
     
   ];
   
+

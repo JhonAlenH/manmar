@@ -77,6 +77,21 @@ const routes: Routes =[
         loadChildren: () => 
             import('../../components/maestros/marcas/marcas.module').then(x=>x.MarcasModule)
       },
+      {
+        path: '',
+        loadChildren: () => 
+            import('../../components/maestros/planes/planes.module').then(x=>x.PlanesModule)
+      },
+      {
+        path: '',
+        loadChildren: () => 
+            import('../../components/maestros/coberturas/coberturas.module').then(x=>x.CoberturasModule)
+      },
+      {
+        path: '',
+        loadChildren: () => 
+            import('../../components/maestros/aranceles/aranceles.module').then(x=>x.ArancelesModule)
+      }
     ]
   }
 ];

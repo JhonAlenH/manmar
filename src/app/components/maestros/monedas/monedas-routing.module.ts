@@ -31,7 +31,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         fields: [      
           {
             type: 'text',
-            fieldName: 'Descripción de Moneda', class: 'col-md-8',
+            fieldName: 'Descripción de Moneda', class: 'col-md-6',
             key: 'xmoneda',
             bdType: 'text'
           },
@@ -40,6 +40,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: 'Abreviatura', class: 'col-md-4',
             key: 'xabreviatura',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 
@@ -48,14 +56,15 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       path: 'monedas/info/:id',   component: ItemFormComponent, data: {
         title: 'Información de Monedas',
         mode: 'info',
+
         mainUrl: '/api/v1/maestros/monedas/get/',
-        createUrl: '/api/v1/maestros/monedas/edit',
+        editUrl: '/api/v1/maestros/monedas/edit/',
         formId: 'edit_monedas',
         disableUrl: '/api/v1/maestros/monedas/disable/',
         fields: [     
           {
             type: 'text',
-            fieldName: 'Descripción de Moneda', class: 'col-md-8',
+            fieldName: 'Descripción de Moneda', class: 'col-md-6',
             key: 'xmoneda',
             bdType: 'text'
           },
@@ -64,6 +73,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: 'Abreviatura', class: 'col-md-4',
             key: 'xabreviatura',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 

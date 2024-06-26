@@ -12,7 +12,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         tableId: 'ejecutivos',
         tableInfo: [
           { headerName: 'Ejecutivo', key: 'cejecutivo', primary_key: true },
-          { headerName: 'Nombre Ejecutivo', key: 'xejecutivo', primary_key: true },
+          { headerName: 'Nombre ', key: 'xejecutivo', primary_key: true },
           { headerName: 'Cédula', key: 'xrif' },          
         ],
         extraInfo: [
@@ -83,6 +83,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: '% de Comisión', class: 'col-md-2',
             key: 'pcomision',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }      
         ]
       } 
@@ -152,6 +160,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: '% de Comisión', class: 'col-md-2',
             key: 'pcomision',
             bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           } 
         ]
       } 

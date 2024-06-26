@@ -10,12 +10,12 @@
 <div class="container-fluid mt--7">
   <div class="row">
     <div class="col-md-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between">
+      <div class="card shadow hola">
+        <div class="card-header d-flex justify-content-between" style="z-index: 1000;">
           <h5 class="title">{{ title }}</h5>
           <button *ngIf="mode == 'info'" class="btn btn-primary m-0" (click)="mode ='edit'; disabledInputs = false">Editar</button>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="z-index: 1000;">
           <form id="{{ formId }}">
             <div class="row" *ngIf="fields">
               <div [class]="'form-group ' + field.class" *ngFor="let field of fields">

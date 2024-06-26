@@ -18,9 +18,9 @@
             <form [formGroup]="emissionsFormGroup" style="position: relative; z-index: 1000;">
               <div class="container row">
                
-                  <hr class="black-hr">
-                  <h1 class="mt-3" style="font-family: system-ui;">Datos Técnicos</h1>
-                  <hr class="black-hr">
+                  <hr class="black-hr w-100">
+                  <h1 class="mt-0" style="font-family: system-ui;"><b>Datos Técnicos</b></h1>
+                  <hr class="black-hr w-100">
                 
               </div>
                 
@@ -298,7 +298,7 @@
               </div>
 
               <div class="row justify-content-center py-3">
-                <div class="col-md-4 mx-auto">
+                <!--<div class="col-md-4 mx-auto">
                   <mat-form-field class="example-full-width">
                     <mat-label>Suma Asegurada</mat-label>
                     <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="formatWithSeparator($event)">
@@ -308,6 +308,24 @@
                   <mat-form-field class="example-full-width">
                     <mat-label>Prima</mat-label>
                     <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatPrima($event)" (change)="receipt()">
+                  </mat-form-field>
+                </div>-->
+                <div class="col-md-4 mx-auto">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Plan</mat-label>
+                    <input type="text"
+                          placeholder="Seleccione el Plan"
+                          aria-label="Seleccione"
+                          matInput
+                          [formControl]="planControl"
+                          [matAutocomplete]="plan"
+                          formControlName="cplan"
+                          required>
+                    <mat-autocomplete #plan="matAutocomplete" (optionSelected)="onMethodOfPaymentSelection($event)">
+                      <mat-option *ngFor="let planes of filteredPlan | async" [value]="planes">
+                        {{ planes }}
+                      </mat-option>
+                    </mat-autocomplete>
                   </mat-form-field>
                 </div>
                 <div class="col-md-4 mx-auto">

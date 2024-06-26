@@ -1,0 +1,74 @@
+<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
+    <div class="container-fluid">
+        <div class="header-body">
+        <div class="row">
+            
+        </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid mt--7">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card shadow hola">
+
+            <div [id]="id" class="card-header d-flex align-items-center justify-content-between" style="z-index: 1000;">
+                <h1 class="card-title"> Presupuestos</h1>
+                
+            </div>
+            <!-- <app-filter (changeData)="changeData($event)" [filtersData]="filtersData"></app-filter> -->
+            <div class="card-body" style="z-index: 1000;">
+                <div class="table-responsive">
+                    <form>
+                        <mat-form-field>
+                            <mat-label>Filter</mat-label>
+                            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mia" #input>
+                        </mat-form-field>
+                        
+                        <div class="mat-elevation-z8">
+                            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                        
+                            <!-- ID Column -->
+                            <ng-container matColumnDef="cpresupuesto">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Presupuesto</th>
+                                <td mat-cell *matCellDef="let row"> {{row.cpresupuesto}} </td>
+                            </ng-container>
+                        
+                            <!-- Progress Column -->
+                            <ng-container matColumnDef="xramo">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ramo</th>
+                                <td mat-cell *matCellDef="let row"> {{row.xramo}} </td>
+                            </ng-container>
+                        
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="qano">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                                <td mat-cell *matCellDef="let row"> {{row.qano}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="info">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header> Info </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <a [routerLink]="'./'+row.cpresupuesto">info</a>    
+                                </td>
+                            </ng-container>
+                        
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                        
+                            <!-- Row shown when there is no matching data. -->
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                            </tr>
+                            </table>
+                        
+                            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+  
+  

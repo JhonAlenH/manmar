@@ -7,6 +7,8 @@ import { UserProfileComponent } from '../../pages/user-profile/user-profile.comp
 import { TablesComponent } from '../../pages/tables/tables.component';
 import { EmissionsComponent } from '../../pages/emissions/emissions.component';
 import { MaestrosComponent } from 'src/app/components/maestros/maestros.component';
+import { PresupuestoComponent } from 'src/app/pages/presupuesto/presupuesto.component';
+import { PresupuestoMantComponent } from 'src/app/pages/presupuesto/presupuesto-mant/presupuesto-mant.component';
 
 export const AdminLayoutRoutes: Routes = [
     { path: 'dashboard',      component: DashboardComponent },
@@ -15,6 +17,8 @@ export const AdminLayoutRoutes: Routes = [
       loadChildren: () => import('src/app/components/maestros/maestros.module').then(m => m.MaestrosModule)
     },
     { path: 'emissions',      component: EmissionsComponent },
+    { path: 'presupuestos',   component: PresupuestoComponent },
+    { path: 'presupuestos/:id',   component: PresupuestoMantComponent },
     { path: 'user-profile',   component: UserProfileComponent },
     { path: 'tables',         component: TablesComponent },
     { path: 'icons',          component: IconsComponent },

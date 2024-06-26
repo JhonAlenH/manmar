@@ -13,8 +13,8 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         tableInfo: [
           { headerName: 'Codigo', key: 'cbanco', primary_key: true },
           { headerName: 'Nombre del Banco', key: 'xbanco' },
-          { headerName: 'Nacional o Extranjetro', key: 'itipo' },
-          { headerName: 'País', key: 'cpais' },
+          { headerName: 'Nacional o Extranjetro', key: 'xtipo' },
+          { headerName: 'País', key: 'xpais' },
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -43,10 +43,20 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'País', class: 'col-md-2',
+            type: 'simple-select',
+            fieldName: 'Paises',
+            class: 'col-md-4',
+            url: '/api/v1/maestros/paises/searchMaestros',
             key: 'cpais',
-            bdType: 'text'
+            bdType: 'number'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 
@@ -63,7 +73,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
 
           {
             type: 'text',
-            fieldName: 'Nombre del Banco', class: 'col-md-8',
+            fieldName: 'Nombre del Banco', class: 'col-md-5',
             key: 'xbanco',
             bdType: 'text'
           },
@@ -74,10 +84,20 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'País', class: 'col-md-2',
+            type: 'simple-select',
+            fieldName: 'Paises',
+            class: 'col-md-3',
+            url: '/api/v1/maestros/paises/searchMaestros',
             key: 'cpais',
-            bdType: 'text'
+            bdType: 'number'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Estatus del Registro',
+            class: 'col-md-2',
+            values: [{text: 'Activo', value: '1'}, {text: 'Inactivo', value: '0'}],
+            key: 'bactivo',
+            bdType: 'number'
           }
         ]
       } 

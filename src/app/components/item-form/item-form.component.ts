@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 // import { ItemFormService } from './item-form.service';
-// import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatSnackBar} from '@angular/material/snack-bar';
 // import { AuthService } from '../../auth/auth.service';
 import { formatDate } from '@angular/common';
 import { environment } from './../../../environments/environment';
@@ -38,23 +38,23 @@ export class ItemFormComponent implements OnInit {
     private route: ActivatedRoute,
     private http: HttpClient,
     // public ItemFormService: ItemFormService,
-    // private _snackBar: MatSnackBar,
+    private _snackBar: MatSnackBar,
     // public AuthService: AuthService
   ) {}
 
-//   openSnackBar(message: string) {
-//     this._snackBar.open(message, 'Cerrar', {duration: 2000});
-//   }
-//   openSnackBarLoading() {
-//     this._snackBar.open('Cargando datos...', '');
-//   }
-//   closeSnackBar() {
-//     this._snackBar.dismiss();
-//   }
+  openSnackBar(message: string) {
+    this._snackBar.open(message, 'Cerrar', {duration: 2000});
+  }
+  openSnackBarLoading() {
+    this._snackBar.open('Cargando datos...', '');
+  }
+  closeSnackBar() {
+    this._snackBar.dismiss();
+  }
 
   async ngOnInit() {
     
-    // this.openSnackBarLoading()
+    this.openSnackBarLoading()
     // this.ccompania = localStorage.getItem("ccompania");
     this.ccompania = 1;
     this.sub = this.route.data.subscribe(v => {
@@ -91,11 +91,11 @@ export class ItemFormComponent implements OnInit {
         this.itemData = data['data'].result
         console.log('data', this.itemData);
         await this.getFieldsData()
-        // this.closeSnackBar()
+        
       })
     } else {
       await this.getFieldsData()
-    //   this.closeSnackBar()
+      this.closeSnackBar()
     }
   }
   async ngAfterViewInit(){
@@ -161,7 +161,7 @@ export class ItemFormComponent implements OnInit {
             }
         }).subscribe((data) => {
           console.log(data)
-        //   this.openSnackBar(data['message'])
+          this.openSnackBar(data['message'])
           this.loading = false
         })
       } else if(this.mode == 'edit') {
@@ -171,7 +171,7 @@ export class ItemFormComponent implements OnInit {
             }
         }).subscribe((data) => {
           console.log(data)
-        //   this.openSnackBar(data['message'])
+          this.openSnackBar(data['message'])
           this.loading = false
         })
       }
@@ -210,6 +210,10 @@ export class ItemFormComponent implements OnInit {
             field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
           } else {
             field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+            const optionSelected = field.options.find(option => option.value == this.itemData[field.key])
+            console.log('esta es la seleccionada',this.itemData[field.key])
+            field.defaultValue = this.itemData[field.key]
+            optionSelected.selected = true
           }
           
         }
@@ -245,6 +249,7 @@ export class ItemFormComponent implements OnInit {
       
     }
     console.log('reviso',this.fields)
+    this.closeSnackBar()
   }
   // change item (adde or available) to multipleSelect field
   changeItemTo(event: any, field: any, value: any) {

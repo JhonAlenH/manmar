@@ -37,7 +37,8 @@ import { ItemFormComponent } from './components/item-form/item-form.component';
     AdminLayoutComponent,
     AuthLayoutComponent,
     TableListComponent,
-    ItemFormComponent
+    ItemFormComponent,
+    
   ],
   providers: [],
   bootstrap: [AppComponent]
