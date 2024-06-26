@@ -1,5 +1,5 @@
 <div class="row justify-content-center">
-    <mat-tab-group>
+    <mat-tab-group mat-align-tabs="center">
       <mat-tab> 
         <ng-template mat-tab-label>
             <mat-icon>directions_car</mat-icon>
@@ -104,7 +104,23 @@
             <mat-icon>checklist</mat-icon>
                Coberturas
         </ng-template>
-        <!-- Contenido de la pestaña "Second" -->
+        <div class="col-sm-8 mx-auto py-5">
+          <mat-form-field class="example-full-width">
+            <mat-label>Planes</mat-label>
+            <input type="text"
+                  placeholder="Seleccione Plan"
+                  aria-label="Seleccione"
+                  matInput
+                  [formControl]="planControl"
+                  [matAutocomplete]="planes"
+                  >
+            <mat-autocomplete #planes="matAutocomplete" (optionSelected)="onPlanSelection($event)">
+              <mat-option *ngFor="let planes of filteredPlan | async" [value]="planes">
+                {{ planes }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
       </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>
@@ -130,10 +146,148 @@
       </mat-tab>
       <mat-tab> 
         <ng-template mat-tab-label>
-            <mat-icon>paid</mat-icon>
-            Comisiones
+          <i class="fi fi-sr-users" style="font-size: 20px;"></i>
+          &nbsp;Participaciones
         </ng-template> 
-        <!-- Contenido de la pestaña "Third" -->
+        <form [formGroup]="vehicleFormGroup">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <!-- Primer grupo -->
+            <div style="display: flex; text-align: center;">
+              <div class="col-sm-9 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Productor</mat-label>
+                  <input matInput formControlName="xproductor">
+                </mat-form-field>
+              </div>
+          
+              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput formControlName="pcomision_p" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+
+              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_p">
+                </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_p_bs}}</h5>
+                </div>
+              </div>
+            </div>
+          
+            <!-- Segundo grupo -->
+            <div style="display: flex; text-align: center;">
+              <div class="col-sm-9 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Ejecutivos</mat-label>
+                  <input type="text"
+                        placeholder="Seleccione Ejecutivos"
+                        aria-label="Seleccione"
+                        matInput
+                        [formControl]="executiveControl"
+                        [matAutocomplete]="executive"
+                        formControlName="xejecutivo"
+                        required>
+                  <mat-autocomplete #executive="matAutocomplete" (optionSelected)="onExecutiveSelection($event)">
+                    <mat-option *ngFor="let executive of filteredExecutive | async" [value]="executive">
+                      {{ executive }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_e">
+                </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_e_bs}}</h5>
+                </div>
+              </div>
+            </div>
+          
+            <!-- Tercer grupo -->
+            <div style="display: flex; text-align: center;" *ngIf="Agents">
+              <!-- <div class="col-sm-9 mx-auto"> 
+                <mat-form-field class="example-full-width">
+                  <mat-label>Agentes</mat-label>
+                  <mat-select [formControl]="agentsControl" multiple (selectionChange)="onSelectionChange($event)">
+                    <mat-select-trigger>
+                      {{ agentsControl.value?.[0]?.value || '' }}
+                      <span *ngIf="(agentsControl.value?.length || 0) > 1" class="example-additional-selection">
+                        (+{{ (agentsControl.value?.length || 0) - 1 }} {{ (agentsControl.value?.length || 0) === 2 ? 'other' : 'others' }})
+                      </span>
+                    </mat-select-trigger>
+                    <mat-option *ngFor="let agent of agentsList" [value]="agent">
+                      {{ agent.value }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div> -->
+              <div class="col-sm-9 mx-auto">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Agentes</mat-label>
+                  <input type="text"
+                        placeholder="Seleccione Agente"
+                        aria-label="Seleccione"
+                        matInput
+                        [formControl]="agentsControl"
+                        [matAutocomplete]="agents"
+                        required>
+                  <mat-autocomplete #agents="matAutocomplete" (optionSelected)="onAgentsSelection($event)">
+                    <mat-option *ngFor="let agents of filteredAgents | async" [value]="agents">
+                      {{ agents }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </div>
+              <div class="col-sm-2 mx-auto">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+              <div class="col-sm-3 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_a">
+                </mat-form-field>
+                <div class="texto-pequeno">
+                  <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_a_bs}}</h5>
+                </div>
+              </div>
+              <!-- <div class="col-sm-6 mx-auto">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <div *ngFor="let comision of comisionesDivididas; let i = index" class="mx-auto">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>Comisión para {{ comision.valor }}</mat-label>
+                      <input matInput type="text" placeholder="Coloque Comision para Agente" [value]="comision.comision" [(ngModel)]="comision.comision" (input)="onCommissionChange(comisionesDivididas[i].comision, i)" (change)="commisionSumValidatorAgents()">
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div> -->
+            </div>
+          </div>
+          
+          
+        <div class="text-center py-3">
+          <p><strong>Total Monto a Distribuir: </strong>{{MontoADistribuir}}</p>
+          <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
+        </div>
+        </form>
       </mat-tab>
     </mat-tab-group>
+
+    <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" (click)="onSubmit()">
+      <mat-icon>save</mat-icon>
+    </button>
 </div>

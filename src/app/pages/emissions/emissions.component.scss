@@ -20,46 +20,12 @@
 
   .black-hr {
     border: 0;
-    border-top: 1px solid rgb(7, 7, 7);
-    width: 40%; /* Ajusta según sea necesario */
+    border-top: 1px solid black;
   }
 
-  .btn-flotante {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 99;
-  }
-  
-  .btn-flotante button {
-    font-size: 16px;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #ffffff;
-    border-radius: 5px;
-    letter-spacing: 2px;
-    background-color: #d6af00;
-    padding: 18px 30px;
-    transition: all 300ms ease 0ms;
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-  }
-  
-  .btn-flotante button:hover {
-    background-color: #d6af00;
-    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-    transform: translateY(-7px);
-  }
-  
-  @media only screen and (max-width: 600px) {
-    .btn-flotante button {
-      font-size: 14px;
-      padding: 12px 20px;
-    }
-  }
-
-  .btn-flotante-3 { /* Ajusta este valor para el tercer botón */
-    right: 22px;
-
+  .black-hr2 {
+    border: 0;
+    border-top: 1px solid black;
   }
 
   .example-action-buttons {
@@ -73,4 +39,8 @@
   
   .example-headers-align .mat-mdc-form-field + .mat-mdc-form-field {
     margin-left: 8px;
+  }
+
+  .negrita-oscura {
+    font-weight: 500; /* Puedes ajustar el valor de opacidad para cambiar el nivel de oscuridad */
   }
