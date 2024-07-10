@@ -9763,7 +9763,7 @@ button.bg-darker:focus
     margin: -6rem !important;
 }
 
-.mt--7,
+.,
 .my--7
 {
     margin-top: -6rem !important;
@@ -18238,7 +18238,10 @@ textarea[resize='horizontal']
 
 .header
 {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
 }
 
 .icon
