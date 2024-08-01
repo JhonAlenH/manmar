@@ -40,3 +40,39 @@
     right: 22px;
 
   }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .group {
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px; /* Ajusta el tamaño máximo según tus necesidades */
+    margin-bottom: 20px; /* Espacio entre grupos */
+  }
+  
+  .field {
+    flex: 1;
+    padding: 0 10px; /* Espaciado horizontal entre los campos */
+  }
+  
+  .field.mat-form-field {
+    width: 100%; /* Asegura que el campo ocupe todo el espacio del contenedor */
+  }
+  
+  .small-text h5 {
+    margin: -13px 0px -10px;
+  }
+  
+  .icon-trash {
+    font-size: 20px;
+    cursor: pointer;
+    align-self: center; /* Centra el icono verticalmente */
+    margin-left: 10px; /* Espaciado a la izquierda del icono */
+  }
+  

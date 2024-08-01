@@ -150,24 +150,24 @@
           &nbsp;Participaciones
         </ng-template> 
         <form [formGroup]="vehicleFormGroup">
-          <div style="display: flex; flex-direction: column; align-items: center;">
+          <!-- <div style="display: flex; flex-direction: column; align-items: center;"> -->
             <!-- Primer grupo -->
-            <div style="display: flex; text-align: center;">
-              <div class="col-sm-9 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+            <!-- <div style="display: flex; text-align: center;">
+              <div class="col-sm-9 mx-auto py-3"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Productor</mat-label>
                   <input matInput formControlName="xproductor">
                 </mat-form-field>
               </div>
           
-              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-2 mx-auto py-3"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Comisión</mat-label>
                   <input matInput formControlName="pcomision_p" (change)="commissionSumValidator2()">
                 </mat-form-field>
               </div>
 
-              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto py-3"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_p">
@@ -176,11 +176,43 @@
                   <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_p_bs}}</h5>
                 </div>
               </div>
-            </div>
+
+              <i class="fi fi-rs-trash" style="font-size: 20px;"></i>
+            </div> -->
+
+            <!-- <div class="container">
+              <div class="group">
+                <div class="field">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Productor</mat-label>
+                    <input matInput formControlName="xproductor">
+                  </mat-form-field>
+                </div>
+            
+                <div class="field">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Comisión</mat-label>
+                    <input matInput formControlName="pcomision_p" (change)="commissionSumValidator2()">
+                  </mat-form-field>
+                </div>
+            
+                <div class="field">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Monto Prima por Comisión</mat-label>
+                    <input matInput formControlName="mcomision_p">
+                  </mat-form-field>
+                  <div class="small-text">
+                    <h5>Monto en Bs: {{mcomision_p_bs}}</h5>
+                  </div>
+                </div>
+            
+                <i class="fi fi-rs-trash icon-trash"></i>
+              </div>
+            </div> -->
           
             <!-- Segundo grupo -->
-            <div style="display: flex; text-align: center;">
-              <div class="col-sm-9 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+            <!-- <div style="display: flex; text-align: center;">
+              <div class="col-sm-9 mx-auto py-3"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Ejecutivos</mat-label>
                   <input type="text"
@@ -198,13 +230,13 @@
                   </mat-autocomplete>
                 </mat-form-field>
               </div>
-              <div class="col-sm-2 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-2 mx-auto py-3">
                 <mat-form-field class="example-full-width">
                   <mat-label>Comisión</mat-label>
                   <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
                 </mat-form-field>
               </div>
-              <div class="col-sm-3 mx-auto py-3"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto py-3">
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_e">
@@ -214,9 +246,9 @@
                 </div>
               </div>
             </div>
-          
+           -->
             <!-- Tercer grupo -->
-            <div style="display: flex; text-align: center;" *ngIf="Agents">
+            <!-- <div style="display: flex; text-align: center;" *ngIf="Agents"> -->
               <!-- <div class="col-sm-9 mx-auto"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Agentes</mat-label>
@@ -233,7 +265,7 @@
                   </mat-select>
                 </mat-form-field>
               </div> -->
-              <div class="col-sm-9 mx-auto">
+              <!-- <div class="col-sm-9 mx-auto">
                 <mat-form-field class="example-full-width">
                   <mat-label>Agentes</mat-label>
                   <input type="text"
@@ -256,7 +288,7 @@
                   <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
                 </mat-form-field>
               </div>
-              <div class="col-sm-3 mx-auto"> <!-- Ajusta el tamaño del contenedor -->
+              <div class="col-sm-3 mx-auto"> 
                 <mat-form-field class="example-full-width">
                   <mat-label>Monto Prima por Comisión</mat-label>
                   <input matInput formControlName="mcomision_a">
@@ -264,7 +296,7 @@
                 <div class="texto-pequeno">
                   <h5 style="margin: -13px 0px -10px;">Monto en Bs: {{mcomision_a_bs}}</h5>
                 </div>
-              </div>
+              </div> -->
               <!-- <div class="col-sm-6 mx-auto">
                 <div style="display: flex; flex-direction: column; align-items: center;">
                   <div *ngFor="let comision of comisionesDivididas; let i = index" class="mx-auto">
@@ -275,14 +307,129 @@
                   </div>
                 </div>
               </div> -->
+            <!-- </div> -->
+          <!-- </div> -->
+
+          <div class="container">
+            <!-- Primer grupo -->
+            <div class="group" style="margin-top: 25px;">
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Productor</mat-label>
+                  <input matInput formControlName="xproductor">
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput formControlName="pcomision_p" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_p">
+                </mat-form-field>
+                <div class="small-text">
+                  <h5>Monto en Bs: {{mcomision_p_bs}}</h5>
+                </div>
+              </div>
+            </div> 
+          
+            <!-- Segundo grupo -->
+            <div class="group">
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Ejecutivos</mat-label>
+                  <input type="text"
+                        placeholder="Seleccione Ejecutivos"
+                        aria-label="Seleccione"
+                        matInput
+                        [formControl]="executiveControl"
+                        [matAutocomplete]="executive"
+                        formControlName="xejecutivo"
+                        required>
+                  <mat-autocomplete #executive="matAutocomplete" (optionSelected)="onExecutiveSelection($event)">
+                    <mat-option *ngFor="let executive of filteredExecutive | async" [value]="executive">
+                      {{ executive }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_e">
+                </mat-form-field>
+                <div class="small-text">
+                  <h5>Monto en Bs: {{mcomision_e_bs}}</h5>
+                </div>
+              </div>
+
+              <i class="fi fi-rs-trash icon-trash" 
+                 *ngIf="activaEliminarEjecutivo"
+                 (click)="removeRecord('ejecutivo')"></i>
             </div>
+          
+            <!-- Tercer grupo -->
+            <div class="group" *ngIf="Agents">
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Agentes</mat-label>
+                  <input type="text"
+                        placeholder="Seleccione Agente"
+                        aria-label="Seleccione"
+                        matInput
+                        [formControl]="agentsControl"
+                        [matAutocomplete]="agents"
+                        formControlName="xagente"
+                        required>
+                  <mat-autocomplete #agents="matAutocomplete" (optionSelected)="onAgentsSelection($event)">
+                    <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent">
+                      {{ agent }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Comisión</mat-label>
+                  <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
+                </mat-form-field>
+              </div>
+          
+              <div class="field">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Monto Prima por Comisión</mat-label>
+                  <input matInput formControlName="mcomision_a">
+                </mat-form-field>
+                <div class="small-text">
+                  <h5>Monto en Bs: {{mcomision_a_bs}}</h5>
+                </div>
+              </div>
+              <i class="fi fi-rs-trash icon-trash" 
+                 *ngIf="activaEliminarAgente"
+                 (click)="removeRecord('agente')"></i>
+            </div>
+           
           </div>
           
           
-        <div class="text-center py-3">
-          <p><strong>Total Monto a Distribuir: </strong>{{MontoADistribuir}}</p>
-          <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
-        </div>
+          <div class="text-center py-3">
+            <p><strong>Total Monto a Distribuir: </strong>{{MontoADistribuir}}</p>
+            <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
+          </div>
         </form>
       </mat-tab>
     </mat-tab-group>

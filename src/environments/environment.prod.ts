@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl : "https://api.manmar.com",
+  apiUrl : "http://apicorretaje.manmar.com.ve",
 };

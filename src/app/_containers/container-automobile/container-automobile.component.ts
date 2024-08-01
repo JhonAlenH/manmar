@@ -20,6 +20,8 @@ export class ContainerAutomobileComponent implements OnInit {
 
   @Input() receiptData: any;
   Agents: boolean = false;
+  activaEliminarEjecutivo: boolean = false;
+  activaEliminarAgente: boolean = false;
   commissionSum: any;
   comisionProductor: any;
   comisionEjecutivo: any;
@@ -350,6 +352,7 @@ export class ContainerAutomobileComponent implements OnInit {
   getExecutive(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/executive', null).subscribe((response: any) => {
       if (response.data.executive) {
+        this.executiveList = [];
         for (let i = 0; i < response.data.executive.length; i++) {
           this.executiveList.push({
             id: response.data.executive[i].cejecutivo,
@@ -365,6 +368,7 @@ export class ContainerAutomobileComponent implements OnInit {
             this.vehicleFormGroup.get('pcomision_p')?.setValue('');
             this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
             this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+
             this.comisionEjecutivo = selectedMe.comision
 
             const mprima = this.receiptData.mdistribucion;
@@ -426,6 +430,7 @@ export class ContainerAutomobileComponent implements OnInit {
       this.vehicleFormGroup.get('pcomision_p')?.setValue('');
       this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
       this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+
       this.comisionEjecutivo = selectedMet.comision
 
       const mprima = this.receiptData.mdistribucion;
@@ -458,6 +463,7 @@ export class ContainerAutomobileComponent implements OnInit {
       }).format(comisionE);
 
       this.Agents = true;
+      this.activaEliminarEjecutivo = true;
       this.getAgents();
       this.commissionSumValidator();
       // if(this.comisionesDivididas.length > 0){
@@ -548,7 +554,7 @@ export class ContainerAutomobileComponent implements OnInit {
         maximumFractionDigits: 2
       }).format(comisionA);
 
-
+      this.activaEliminarAgente = true;
       this.commissionSumValidator();
     }
   }
@@ -702,18 +708,101 @@ export class ContainerAutomobileComponent implements OnInit {
     }
   }
 
-  convertStringToNumber(str) {
+  convertStringToNumber(str: any): number {
+    if (str == null) {
+      return 0;
+    }
+    
+    // Asegurarse de que el valor sea una cadena
+    const stringValue = String(str);
+    
     // Elimina los separadores de miles
-    let numberWithoutThousandsSeparator = str.replace(/\./g, '');
+    let numberWithoutThousandsSeparator = stringValue.replace(/\./g, '');
+    
     // Reemplaza la coma decimal con un punto decimal
     let numberWithDotDecimal = numberWithoutThousandsSeparator.replace(/,/g, '.');
+    
     // Convierte el string resultante a número
     let result = parseFloat(numberWithDotDecimal);
-    return result;
+    
+    // Si parseFloat devuelve NaN, devuelve 0 como valor predeterminado
+    return isNaN(result) ? 0 : result;
+  }
+
+  removeRecord(type: string) {
+    if (type === 'ejecutivo') {
+      this.activaEliminarAgente = false;
+      this.activaEliminarEjecutivo = false;
+      this.Agents = false;
+      this.vehicleFormGroup.get('cejecutivo')?.setValue('');
+      this.vehicleFormGroup.get('xejecutivo')?.setValue('');
+      this.getExecutive();
+      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
+      this.vehicleFormGroup.get('pcomision_p')?.setValue('100');
+      this.vehicleFormGroup.get('mcomision_p')?.setValue(this.receiptData.mdistribucion.toFixed(2));
+      this.vehicleFormGroup.get('mcomision_e')?.setValue('');
+      this.vehicleFormGroup.get('cagente')?.setValue('');
+      this.vehicleFormGroup.get('xagente')?.setValue('');
+      
+      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
+
+      const comision = this.receiptData.mdistribucion * this.receiptData.bcv;
+    
+      // Formatear con separadores de miles y decimales
+      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(comision);
+
+      this.mcomision_e_bs = ''
+
+    } else if (type === 'agente') {
+      this.vehicleFormGroup.get('cagente')?.setValue('');
+      this.vehicleFormGroup.get('xagente')?.setValue('');
+      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
+      this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
+      this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+
+      this.getAgents();
+
+      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
+      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+
+      const primaCalculada_p = this.receiptData.mdistribucion * pcomision_p / 100;
+      const primaCalculada_e = this.receiptData.mdistribucion * pcomision_e / 100;
+
+      this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2));
+      this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2));
+      this.vehicleFormGroup.get('mcomision_a')?.setValue('');
+
+      const comision = primaCalculada_p * this.receiptData.bcv;
+      const comisionE = primaCalculada_e * this.receiptData.bcv;
+
+      // Formatear con separadores de miles y decimales
+      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(comision);
+
+      // Formatear con separadores de miles y decimales
+      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(comisionE);
+
+      this.mcomision_a_bs = '';
+    }
   }
 
   onSubmit(){
-    
+    console.log(this.receiptData.msuma)
+    console.log(this.receiptData.mprima)
+    console.log(this.vehicleFormGroup.get('pcomision_p')?.value)
+    console.log(this.mcomision_p_bs)
+    console.log(this.vehicleFormGroup.get('mcomision_p')?.value)
+    console.log(this.vehicleFormGroup.get('pcomision_p')?.value)
+    console.log(this.vehicleFormGroup.get('pcomision_e')?.value)
+    console.log(this.vehicleFormGroup.get('pcomision_a')?.value)
     let data = {
       ccedente: this.receiptData.ccedente,
       icedula_asegurado: this.receiptData.itipodoc,
