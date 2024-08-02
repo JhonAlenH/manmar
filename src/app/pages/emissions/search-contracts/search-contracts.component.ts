@@ -25,7 +25,7 @@ import {
 export class SearchContractsComponent implements OnInit {
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'fdesde', 'fhasta', 'star'];
+  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'fdesde', 'fhasta'];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -151,6 +151,12 @@ export class SearchContractsComponent implements OnInit {
 
   emitir(){
     this.router.navigate(['emissions']);
+  }
+
+  sendRecord(row: any) {
+    console.log(row)
+    this.router.navigate(['detail-contract'], { state: row });
+
   }
 
 }
