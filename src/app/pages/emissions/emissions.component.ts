@@ -8,16 +8,28 @@ import { environment } from 'src/environments/environment';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
-import {
-  MatSnackBar,
-  MatSnackBarHorizontalPosition,
-  MatSnackBarVerticalPosition,
-} from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { DateUtilService } from '../../_services/date-util.service'
+;
+export const MY_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'DD/MM/YYYY',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-emissions',
   templateUrl: './emissions.component.html',
-  styleUrls: ['./emissions.component.scss']
+  styleUrls: ['./emissions.component.scss'],
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
+  ],
 })
 export class EmissionsComponent implements OnInit {
   @ViewChild(MatAccordion) accordion: MatAccordion;
@@ -33,6 +45,7 @@ export class EmissionsComponent implements OnInit {
   methodOfPaymentList: any[] = [];
   stateList: any[] = [];
   cityList: any[] = [];
+  insuranceList: any[] = [];
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -42,6 +55,7 @@ export class EmissionsComponent implements OnInit {
   methodOfPaymentControl = new FormControl('');
   stateControl = new FormControl('');
   cityControl = new FormControl('');
+  insuranceControl = new FormControl('');
 
   filteredCedents!: Observable<string[]>;
   filteredTrade!: Observable<string[]>;
@@ -51,6 +65,7 @@ export class EmissionsComponent implements OnInit {
   filteredMethodOfPayment!: Observable<string[]>;
   filteredState!: Observable<string[]>;
   filteredCity!: Observable<string[]>;
+  filteredInsurance!: Observable<string[]>;
 
   containerAuto: boolean = false;
   containerSalud: boolean = false;
@@ -75,6 +90,9 @@ export class EmissionsComponent implements OnInit {
     xmoneda:[''],
     ccliente: [''],
     xcliente: [''],
+    casegurado: [''],
+    xasegurado: [''],
+    xcedula: [''],
     fdesde: [''],
     fhasta: [''],
     itipodoc: [''],
@@ -108,30 +126,36 @@ export class EmissionsComponent implements OnInit {
 
   constructor( private _formBuilder: FormBuilder,
                 private http: HttpClient,
+                private dateUtilService: DateUtilService,
                 private modalService: NgbModal,
                 private snackBar: MatSnackBar,
                 private route: ActivatedRoute,
                 private router: Router,
-                ) {}
+                private dateAdapter: DateAdapter<Date>,
+                ) {dateAdapter.setLocale('es');}
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
 
-    fetch('https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv')
+    fetch('https://ve.dolarapi.com/v1/dolares')
     .then((response) => response.json())
     .then(data => {
-      this.bcv = data.monitors.usd.price;
+      const banco = data.map((item: any) => {
+        if(item.fuente == 'oficial'){
+          this.bcv = item.promedio
+        }
+      })
     });
 
     if(this.currentUser){
       this.getCedents();
       this.getTrades();
       this.getCoins();
-      this.getClients();
       this.getTakers();
       this.getMethodOfPayment()
       this.getState();
+      this.getInsurance();
     }
   }
 
@@ -183,7 +207,7 @@ export class EmissionsComponent implements OnInit {
 
   searchTakers(){
     let data = {
-      xcedula: this.emissionsFormGroup.get('xdoc_identificacion')?.value
+      xcedula: this.emissionsFormGroup.get('xcedula')?.value
     }
     console.log(data)
     this.http.get(environment.apiUrl + `/api/v1/valrep/takers/${data.xcedula}`).subscribe((response: any) => {
@@ -283,39 +307,50 @@ export class EmissionsComponent implements OnInit {
       .filter(coins => coins.toLowerCase().includes(filterValue));
   }
 
-  
-  getClients(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/clients', null).subscribe((response: any) => {
-      if (response.data.clients) {
-        for (let i = 0; i < response.data.clients.length; i++) {
-          this.clientsList.push({
-            id: response.data.clients[i].ccliente,
-            value: response.data.clients[i].xcliente,
-            itipo: response.data.clients[i].itipodoc,
-            xdocu: response.data.clients[i].xdoc_identificacion,
+  getInsurance(){
+    this.http.post(environment.apiUrl + '/api/v1/valrep/insurance', null).subscribe((response: any) => {
+      if (response.data.insurance) {
+        for (let i = 0; i < response.data.insurance.length; i++) {
+          this.insuranceList.push({
+            id: response.data.insurance[i].casegurado,
+            value: response.data.insurance[i].xnombre,
+            itipo: response.data.insurance[i].itipodoc,
+            xdocu: response.data.insurance[i].xcedula
           });
         }
-        this.clientsList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredClients = this.clientsControl.valueChanges.pipe(
+        this.insuranceList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredInsurance = this.insuranceControl.valueChanges.pipe(
           startWith(''),
-          map(value => this._filterClients(value || ''))
+          map(value => this._filterInsurance(value || ''))
         );
       }
     });
   }
 
-  private _filterClients(value: string): string[] {
+  private _filterInsurance(value: string): string[] {
     const filterValue = value.toLowerCase();
-    const lista = this.clientsList.map(clients => clients.value).filter(clients => clients.toLowerCase().includes(filterValue));;
+    const lista = this.insuranceList.map(insurance => insurance.value).filter(insurance => insurance.toLowerCase().includes(filterValue));;
   
     if(!lista[0]){
-      this.emissionsFormGroup.get('xcliente')?.setValue(filterValue)
-      if(this.emissionsFormGroup.get('xcliente')?.value){
-        this.validateClient();
+      this.emissionsFormGroup.get('xasegurado')?.setValue(filterValue)
+      if(this.emissionsFormGroup.get('xasegurado')?.value){
+        this.validateInsurance();
       }
     }
 
     return lista
+  }
+
+  onInsuranceSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedinsurance = this.insuranceList.find(insurance => insurance.value === selectedValue);
+    if (selectedinsurance) {
+      this.emissionsFormGroup.get('casegurado')?.setValue(selectedinsurance.id);
+      this.emissionsFormGroup.get('xasegurado')?.setValue(selectedinsurance.value);
+      this.emissionsFormGroup.get('itipodoc')?.setValue(selectedinsurance.itipo);
+      this.emissionsFormGroup.get('xcedula')?.setValue(selectedinsurance.xdocu);
+      this.searchTakers()
+    }
   }
 
   getTakers(){
@@ -352,10 +387,10 @@ export class EmissionsComponent implements OnInit {
     return lista
   }
 
-  validateClient(){
-    if(this.emissionsFormGroup.get('xcliente')?.value){
-      if(this.emissionsFormGroup.get('ccliente')?.value){
-        this.emissionsFormGroup.get('xcliente')?.setValue('')
+  validateInsurance(){
+    if(this.emissionsFormGroup.get('xasegurado')?.value){
+      if(this.emissionsFormGroup.get('casegurado')?.value){
+        this.emissionsFormGroup.get('xasegurado')?.setValue('')
         this.insuredInfo = false;
       }else{
         this.insuredInfo = true;
@@ -376,22 +411,10 @@ export class EmissionsComponent implements OnInit {
 
   calcularFechaHasta(event: any) {
     const fechaDesde = new Date(event.value);
-    const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
+    const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate());
     const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
     this.emissionsFormGroup.get('fhasta')?.setValue(fechaHastaISO);
     this.fdesde = new Date(fechaDesde.getFullYear(), fechaDesde.getMonth(), fechaDesde.getDate());
-  }
-
-  onClientSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedClients = this.clientsList.find(client => client.value === selectedValue);
-    if (selectedClients) {
-      this.emissionsFormGroup.get('ccliente')?.setValue(selectedClients.id);
-      this.emissionsFormGroup.get('xcliente')?.setValue(selectedClients.value);
-      this.emissionsFormGroup.get('itipodoc')?.setValue(selectedClients.itipo);
-      this.emissionsFormGroup.get('xdoc_identificacion')?.setValue(selectedClients.xdocu);
-      this.searchTakers()
-    }
   }
 
   onTakersSelection(event: any) {
@@ -561,8 +584,8 @@ export class EmissionsComponent implements OnInit {
 
   receipt() {
     const {
-      ccedente, cramo, cmoneda, ccliente, xcliente, fdesde, fhasta, itipodoc, 
-      xdoc_identificacion, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
+      ccedente, cramo, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
+      xcedula, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
       xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
       xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
       mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
@@ -580,10 +603,10 @@ export class EmissionsComponent implements OnInit {
         cramo: cramo,
         ccedente: ccedente,
         cmoneda: cmoneda,
-        ccliente: ccliente,
-        xcliente: xcliente,
+        casegurado: casegurado,
+        xasegurado: xasegurado,
         itipodoc: itipodoc,
-        xdoc_identificacion: xdoc_identificacion,
+        xcedula: xcedula,
         ctomador: ctomador,
         xtomador: xtomador,
         itipodoc_t: itipodoc_t,

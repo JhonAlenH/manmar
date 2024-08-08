@@ -142,3 +142,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   border-radius: 3px; /* Ajusta este valor según la cantidad de redondez que desees */
   max-width: 100%;
 }
+
+.mat-input-element:disabled, .mat-form-field-type-mat-native-select.mat-form-field-disabled .mat-form-field-infix::after{
+  color: rgb(0 0 0 / 78%);
+}

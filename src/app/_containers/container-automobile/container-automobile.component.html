@@ -104,23 +104,7 @@
             <mat-icon>checklist</mat-icon>
                Coberturas
         </ng-template>
-        <div class="col-sm-8 mx-auto py-5">
-          <mat-form-field class="example-full-width">
-            <mat-label>Planes</mat-label>
-            <input type="text"
-                  placeholder="Seleccione Plan"
-                  aria-label="Seleccione"
-                  matInput
-                  [formControl]="planControl"
-                  [matAutocomplete]="planes"
-                  >
-            <mat-autocomplete #planes="matAutocomplete" (optionSelected)="onPlanSelection($event)">
-              <mat-option *ngFor="let planes of filteredPlan | async" [value]="planes">
-                {{ planes }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-        </div>
+
       </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>

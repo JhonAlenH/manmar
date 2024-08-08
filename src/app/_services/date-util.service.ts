@@ -24,4 +24,10 @@ export class DateUtilService {
     // Retorna la fecha formateada
     return `${formattedDay}/${formattedMonth}/${year}`;
   }
+
+  adjustDate(dateString: string): string {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
+    return date.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
+  }
 }

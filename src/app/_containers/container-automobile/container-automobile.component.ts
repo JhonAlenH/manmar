@@ -77,7 +77,6 @@ export class ContainerAutomobileComponent implements OnInit {
     xagente: [{ value: '', disabled: false }],
     pcomision_a: [{ value: '', disabled: false }],
     mcomision_a: [{ value: '', disabled: true }],
-    cplan: [{ value: '', disabled: false }],
     cproductor: [{ value: '', disabled: false }],
     xproductor: [{ value: '', disabled: true }],
     pcomision_p: [{ value: '', disabled: false }],
@@ -126,7 +125,6 @@ export class ContainerAutomobileComponent implements OnInit {
         }));
       }
     })
-    this.getPlan(data.cramo)
   }
 
   changeYears() {
@@ -673,41 +671,6 @@ export class ContainerAutomobileComponent implements OnInit {
   //   }
   // }
 
-  getPlan(cramo: any){
-    let data = {
-      cramo: cramo
-    }
-    this.http.post(environment.apiUrl + `/api/v1/valrep/planes`, data).subscribe((response: any) => {
-      if(response.status){
-        this.planList = [];
-        this.planList = response.data.planes.map((item: any) => ({
-          id: item.cplan,
-          value: item.xdescripcion,
-        }))
-        this.planList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredPlan = this.planControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterPlan(value || ''))
-        );
-      }
-    })
-  }
-
-  private _filterPlan(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.planList
-      .map(plan => plan.value)
-      .filter(plan => plan.toLowerCase().includes(filterValue));
-  }
-
-  onPlanSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedPlan = this.planList.find(plan => plan.value === selectedValue);
-    if (selectedPlan) {
-      this.vehicleFormGroup.get('cplan')?.setValue(selectedPlan.id);
-    }
-  }
-
   convertStringToNumber(str: any): number {
     if (str == null) {
       return 0;
@@ -795,19 +758,22 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   onSubmit(){
-    console.log(this.receiptData.msuma)
-    console.log(this.receiptData.mprima)
-    console.log(this.vehicleFormGroup.get('pcomision_p')?.value)
-    console.log(this.mcomision_p_bs)
-    console.log(this.vehicleFormGroup.get('mcomision_p')?.value)
-    console.log(this.vehicleFormGroup.get('pcomision_p')?.value)
-    console.log(this.vehicleFormGroup.get('pcomision_e')?.value)
-    console.log(this.vehicleFormGroup.get('pcomision_a')?.value)
+
+    const formatDateToString = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+  
+    const fdesdeString = formatDateToString(new Date(this.receiptData.fdesde));
+    const fhastaString = this.receiptData.fhasta;
+
     let data = {
       ccedente: this.receiptData.ccedente,
       icedula_asegurado: this.receiptData.itipodoc,
-      xcedula_asegurado: this.receiptData.xdoc_identificacion.trim(),
-      xnombre_asegurado: this.receiptData.xcliente,
+      xcedula_asegurado: this.receiptData.xcedula.trim(),
+      xnombre_asegurado: this.receiptData.xasegurado,
       xcorreo_asegurado: this.receiptData.xcorreo_asegurado,
       xtelefono_asegurado: this.receiptData.xtelefono_asegurado,
       icedula_tomador: this.receiptData.itipodoc_t,
@@ -825,17 +791,18 @@ export class ContainerAutomobileComponent implements OnInit {
       cmoneda: this.receiptData.cmoneda,
       cramo: this.receiptData.cramo,
       xpoliza: this.receiptData.xpoliza,
-      fdesde_pol: this.receiptData.fdesde,
-      fhasta_pol: this.receiptData.fhasta,
+      fdesde_pol: fdesdeString,
+      fhasta_pol: fhastaString,
       femision: new Date(),
       cmetodologiapago: this.receiptData.cmetodologiapago,
+      ptasa_cambio: this.receiptData.bcv,
       msuma: this.convertStringToNumber(this.receiptData.msuma),
       msumaext: this.receiptData.msumaext,
       mprima: this.convertStringToNumber(this.receiptData.mprima),
       mprimaext: parseFloat(this.receiptData.mprimaext),
       pcomision: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_p')?.value),
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
-      mcomisionext: this.convertStringToNumber(this.vehicleFormGroup.get('mcomision_p')?.value),
+      mcomisionext: parseFloat(this.vehicleFormGroup.get('mcomision_p')?.value),
       cproductor: this.vehicleFormGroup.get('cproductor')?.value,
       pcomision_p: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_p')?.value),
       cejecutivo: this.vehicleFormGroup.get('cejecutivo')?.value,
@@ -844,6 +811,8 @@ export class ContainerAutomobileComponent implements OnInit {
       pcomision_a: this.vehicleFormGroup.get('pcomision_a')?.value,
       cusuario: this.currentUser.data.cusuario
     }
+
+    console.log(data)
         // Validación de campos obligatorios
         const camposObligatorios = {
           ccedente: 'Cédente',

@@ -1,21 +1,16 @@
-import {Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
-import {FormBuilder, Validators, FormGroup, FormControl , FormArray} from '@angular/forms';
+import { Component, ViewChild, OnInit } from '@angular/core';
+import { FormBuilder, FormControl} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import {from, Observable} from 'rxjs';
-import {map, startWith} from 'rxjs/operators';
+import { Observable} from 'rxjs';
+import { map, startWith} from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
-import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
-import {
-  MatSnackBar,
-  MatSnackBarHorizontalPosition,
-  MatSnackBarVerticalPosition,
-} from '@angular/material/snack-bar';
+import { MatPaginator} from '@angular/material/paginator';
+import { MatSort} from '@angular/material/sort';
+import { MatTableDataSource} from '@angular/material/table';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { DateUtilService } from './../../../_services/date-util.service';
 
 @Component({
   selector: 'app-search-contracts',
@@ -25,7 +20,7 @@ import {
 export class SearchContractsComponent implements OnInit {
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'fdesde', 'fhasta'];
+  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -47,6 +42,7 @@ export class SearchContractsComponent implements OnInit {
 
   constructor( private _formBuilder: FormBuilder,
               private http: HttpClient,
+              private dateUtilService: DateUtilService,
               private modalService: NgbModal,
               private snackBar: MatSnackBar,
               private route: ActivatedRoute,
@@ -143,10 +139,22 @@ export class SearchContractsComponent implements OnInit {
     }
 
     this.http.post(environment.apiUrl + '/api/v1/emission/search', data).subscribe((response: any) => {
-      if (response.data.contracts) {
-        this.dataSource.data = response.data.contracts;
+      if (response.data.contracts) {console.log(response.data.contracts)
+        const correctedContracts = response.data.contracts.map((contract: any) => {
+          contract.fdesde_pol = this.dateUtilService.adjustDate(contract.fdesde);
+          contract.fhasta_pol = this.dateUtilService.adjustDate(contract.fhasta);
+          return contract;
+        });
+        
+        this.dataSource.data = correctedContracts;
       }
     })
+  }
+
+  adjustDate(dateString: string): string {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
+    return date.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
   }
 
   emitir(){

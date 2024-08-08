@@ -1,0 +1,73 @@
+.custom-input-container {
+    position: relative;
+    margin: 20px 0;
+  }
+  
+  .custom-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 5px;
+    box-sizing: border-box;
+    background-color: transparent; /* Fondo transparente */
+    color: #000; /* Color del texto */
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .custom-input:focus {
+    border-bottom: 2px solid #3f51b5; /* Color de borde al hacer focus */
+  }
+
+  .btn-flotante {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 99;
+  }
+  
+  .btn-flotante button {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #ffffff;
+    border-radius: 5px;
+    letter-spacing: 2px;
+    background-color: #d6af00;
+    padding: 18px 30px;
+    transition: all 300ms ease 0ms;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-flotante button:hover {
+    background-color: #d6af00;
+    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-7px);
+  }
+  
+  @media only screen and (max-width: 600px) {
+    .btn-flotante button {
+      font-size: 14px;
+      padding: 12px 20px;
+    }
+  }
+
+  .btn-flotante-3 { /* Ajusta este valor para el tercer botón */
+    right: 22px;
+    bottom: 22px;
+  }
+
+  .btn-flotante-2 { /* Ajusta este valor para el tercer botón */
+    right: 22px;
+    bottom: 85px;
+  }
+
+  .btn-flotante-1 { /* Ajusta este valor para el tercer botón */
+    right: 22px;
+    bottom: 22px;
+  }
+
+  .black-hr {
+    border: 0;
+    border-top: 1px solid black;
+  }
