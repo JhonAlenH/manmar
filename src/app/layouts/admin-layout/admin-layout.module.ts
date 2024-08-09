@@ -17,6 +17,7 @@ import { DetailContractsComponent } from '../../pages/emissions/detail-contracts
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
+import { ContainerGenericComponent } from '../../_containers/container-generic/container-generic.component';
 // import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
@@ -40,7 +41,8 @@ import { ContainerAutomobileComponent } from '../../_containers/container-automo
     EmissionsComponent,
     SearchContractsComponent,
     ContainerAutomobileComponent,
-    DetailContractsComponent
+    DetailContractsComponent,
+    ContainerGenericComponent
   ]
 })
 

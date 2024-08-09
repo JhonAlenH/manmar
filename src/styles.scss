@@ -146,3 +146,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-input-element:disabled, .mat-form-field-type-mat-native-select.mat-form-field-disabled .mat-form-field-infix::after{
   color: rgb(0 0 0 / 78%);
 }
+
+.mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
+  background-color: #5e72e4;
+}
+
+.mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
+  background-color: rgb(51 78 189);
+}

@@ -1,0 +1,78 @@
+
+.flex {
+    display: flex;
+  }
+
+  .btn-flotante {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 99;
+  }
+  
+  .btn-flotante button {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #ffffff;
+    border-radius: 5px;
+    letter-spacing: 2px;
+    background-color: #d6af00;
+    padding: 18px 30px;
+    transition: all 300ms ease 0ms;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-flotante button:hover {
+    background-color: #d6af00;
+    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-7px);
+  }
+  
+  @media only screen and (max-width: 600px) {
+    .btn-flotante button {
+      font-size: 14px;
+      padding: 12px 20px;
+    }
+  }
+
+  .btn-flotante-3 { /* Ajusta este valor para el tercer botón */
+    right: 22px;
+
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .group {
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px; /* Ajusta el tamaño máximo según tus necesidades */
+    margin-bottom: 20px; /* Espacio entre grupos */
+  }
+  
+  .field {
+    flex: 1;
+    padding: 0 10px; /* Espaciado horizontal entre los campos */
+  }
+  
+  .field.mat-form-field {
+    width: 100%; /* Asegura que el campo ocupe todo el espacio del contenedor */
+  }
+  
+  .small-text h5 {
+    margin: -13px 0px -10px;
+  }
+  
+  .icon-trash {
+    font-size: 20px;
+    cursor: pointer;
+    align-self: center; /* Centra el icono verticalmente */
+    margin-left: 10px; /* Espaciado a la izquierda del icono */
+  }
+  

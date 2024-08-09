@@ -2,139 +2,23 @@
     <mat-tab-group mat-align-tabs="center">
       <mat-tab> 
         <ng-template mat-tab-label>
-            <mat-icon>directions_car</mat-icon>
-             Vehiculo
-          </ng-template>
-        <form [formGroup]="vehicleFormGroup">
-            <div class="col-md-5 py-2 mx-auto">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Año</mat-label>
-                  <input matInput placeholder="Inserte el Año del Vehiculo" formControlName="fano" (change)="changeYears()">
-                </mat-form-field>
-            </div>
-            <div class="flex">
-                <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Marca</mat-label>
-                      <input type="text"
-                             placeholder="Seleccione Marca"
-                             aria-label="Seleccione"
-                             matInput
-                             [formControl]="brandControl"
-                             [matAutocomplete]="brand"
-                             >
-                             <mat-autocomplete #brand="matAutocomplete" (optionSelected)="onBrandSelection($event)">
-                              <mat-option *ngFor="let brand of filteredBrand | async" [value]="brand">
-                                {{ brand }}
-                              </mat-option>
-                            </mat-autocomplete>
-                    </mat-form-field>
-                </div>
-                <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Modelo</mat-label>
-                      <input type="text"
-                            placeholder="Seleccione Modelo"
-                            aria-label="Seleccione"
-                            matInput
-                            [formControl]="modelControl"
-                            [matAutocomplete]="model"
-                            >
-                            <mat-autocomplete #model="matAutocomplete" (optionSelected)="onModelSelection($event)">
-                              <mat-option *ngFor="let model of filteredModel | async" [value]="model">
-                                {{ model }}
-                              </mat-option>
-                            </mat-autocomplete>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Version</mat-label>
-                      <input type="text"
-                            placeholder="Seleccione Version"
-                            aria-label="Seleccione"
-                            matInput
-                            [formControl]="versionControl"
-                            [matAutocomplete]="version"
-                           >
-                            <mat-autocomplete #version="matAutocomplete" (optionSelected)="onVersionSelection($event)">
-                              <mat-option *ngFor="let version of filteredVersion | async" [value]="version">
-                                {{ version }}
-                              </mat-option>
-                            </mat-autocomplete>
-                    </mat-form-field>
-                  </div>
-            </div>
-            <div class="flex">
-                <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Pasajeros</mat-label>
-                      <input matInput formControlName="npasajeros" >
-                    </mat-form-field>
-                </div>
-                <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                        <mat-label>Color</mat-label>
-                        <input type="text"
-                              placeholder="Seleccione Color"
-                              aria-label="Seleccione"
-                              matInput
-                              [formControl]="colorControl"
-                              [matAutocomplete]="color"
-                              >
-                              <mat-autocomplete #color="matAutocomplete" (optionSelected)="onColorSelection($event)">
-                                <mat-option *ngFor="let color of filteredColor | async" [value]="color">
-                                  {{ color }}
-                                </mat-option>
-                              </mat-autocomplete>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-4">
-                    <mat-form-field class="example-full-width">
-                      <mat-label>Placa</mat-label>
-                      <input matInput placeholder="Placa" formControlName="xplaca" [maxlength]="7" (input)="valueplate($event)">
-                    </mat-form-field>
-                  </div>
-            </div>
-        </form> 
-
-      </mat-tab>
-      <mat-tab> 
-        <ng-template mat-tab-label>
             <mat-icon>checklist</mat-icon>
                Coberturas
         </ng-template>
-        <form [formGroup]="vehicleFormGroup">
-          <div class="d-flex justify-content-center py-3">
-            <div class="col-sm-6">
-              <mat-form-field class="example-full-width">
-                <mat-label>Coberturas</mat-label>
-                <input type="text"
-                      placeholder="Seleccione Coberturas"
-                      aria-label="Seleccione"
-                      matInput
-                      [formControl]="coverageControl"
-                      [matAutocomplete]="coverage"
-                      >
-                      <mat-autocomplete #coverage="matAutocomplete" (optionSelected)="onCoverageSelection($event)">
-                        <mat-option *ngFor="let coverage of filteredCoverage | async" [value]="coverage">
-                          {{ coverage }}
-                        </mat-option>
-                      </mat-autocomplete>
-              </mat-form-field>
+        <form [formGroup]="genericFormGroup">
+            <div class="d-flex justify-content-center py-3">
+              <div class="col-sm-8">
+                <mat-form-field style="display: block">
+                  <mat-label>Coberturas</mat-label>
+                  <mat-select formControlName="xcobertura">
+                    <mat-option value="Cobertura Amplia">Cobertura Amplia</mat-option>
+                    <mat-option value="Perdida Total">Perdida Total</mat-option>
+                    <mat-option value="RCV">R.C.V</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
             </div>
-            <div class="col-sm-6 text-center">
-              <section class="d-inline ">
-                <h5>¿Incluye Grúa?</h5>
-                <span class="damage-option">
-                  <span>No</span>
-                  <mat-slide-toggle formControlName="igrua"></mat-slide-toggle>
-                  <span>Si</span>
-              </span>
-              </section>
-            </div>
-          </div>
-        </form>
+          </form>
       </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>
@@ -163,7 +47,7 @@
           <i class="fi fi-sr-users" style="font-size: 20px;"></i>
           &nbsp;Participaciones
         </ng-template> 
-        <form [formGroup]="vehicleFormGroup">
+        <form [formGroup]="genericFormGroup">
           <!-- <div style="display: flex; flex-direction: column; align-items: center;"> -->
             <!-- Primer grupo -->
             <!-- <div style="display: flex; text-align: center;">
@@ -445,16 +329,6 @@
             <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
           </div>
         </form>
-      </mat-tab>
-      <mat-tab>  
-        <ng-template mat-tab-label>
-            <mat-icon>receiptlong</mat-icon>
-            Documentos
-        </ng-template>
-
-
-
-        aqui mano por favor tqm
       </mat-tab>
     </mat-tab-group>
 

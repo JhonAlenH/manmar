@@ -10,11 +10,11 @@ import { DateUtilService } from './../../_services/date-util.service';
 import Swal from 'sweetalert2'
 
 @Component({
-  selector: 'app-container-automobile',
-  templateUrl: './container-automobile.component.html',
-  styleUrls: ['./container-automobile.component.scss']
+  selector: 'app-container-generic',
+  templateUrl: './container-generic.component.html',
+  styleUrls: ['./container-generic.component.scss']
 })
-export class ContainerAutomobileComponent implements OnInit {
+export class ContainerGenericComponent implements OnInit {
   public copy: string;
   currentUser!: any
 
@@ -39,7 +39,7 @@ export class ContainerAutomobileComponent implements OnInit {
   receiptList: any[] = [];
   executiveList: any[] = [];
   agentsList: any[] = []; 
-  coverageList: any[] = []; 
+  planList: any[] = []; 
 
   brandControl = new FormControl('');
   modelControl = new FormControl('');
@@ -47,7 +47,7 @@ export class ContainerAutomobileComponent implements OnInit {
   colorControl = new FormControl('');
   executiveControl = new FormControl('');
   agentsControl = new FormControl('');
-  coverageControl = new FormControl('');
+  planControl = new FormControl('');
 
   filteredBrand!: Observable<string[]>;
   filteredModel!: Observable<string[]>;
@@ -55,21 +55,13 @@ export class ContainerAutomobileComponent implements OnInit {
   filteredColor!: Observable<string[]>;
   filteredExecutive!: Observable<string[]>;
   filteredAgents!: Observable<string[]>;
-  filteredCoverage!: Observable<string[]>;
+  filteredPlan!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
 
-  vehicleFormGroup = this._formBuilder.group({
-    xplaca: ['',[Validators.maxLength(7)]],
-    xmarca: [{ value: '', disabled: true}],
-    xmodelo: [{ value: '', disabled: true}],
-    xversion: [{ value: '', disabled: true}],
-    fano: ['',[ Validators.maxLength(4)]],
-    npasajeros: [{ value: '', disabled: true }],
-    ccolor: [{ value: '', disabled: true }],
-    ccobertura: [{ value: '', disabled: false }],
-    igrua: [false],
+  genericFormGroup = this._formBuilder.group({
+    xcobertura: [{ value: '', disabled: false }],
     cejecutivo: [{ value: '', disabled: false }],
     xejecutivo: [{ value: '', disabled: false }],
     pcomision_e: [{ value: '', disabled: false }],
@@ -95,11 +87,9 @@ export class ContainerAutomobileComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
-    this.getColor();
     this.getExecutive();
     this.getProducers();
-    this.getCoverage();
-    this.vehicleFormGroup.valueChanges.subscribe(() => {
+    this.genericFormGroup.valueChanges.subscribe(() => {
       this.commissionSumValidator();
     });
   }
@@ -129,243 +119,24 @@ export class ContainerAutomobileComponent implements OnInit {
     })
   }
 
-  changeYears() {
-    this.getBrand();
-  }
-
-  getBrand(){
-    let data = {
-      qano: this.vehicleFormGroup.get('fano')?.value
-    };
-    this.http.post(environment.apiUrl + '/api/v1/valrep/brand', data).subscribe((response: any) => {
-      if (response.data.brand) {
-        this.brandList = [];
-        for (let i = 0; i < response.data.brand.length; i++) {
-          this.brandList.push({
-            id: i,
-            value: response.data.brand[i].xmarca,
-          });
-        }
-        this.brandList.sort((a, b) => a.value > b.value ? 1 : -1);
-
-        if(!this.brandList[0]){
-          window.alert(`No existe una Marca para el año ${data.qano}`)
-          this.vehicleFormGroup.get('fano')?.setValue('')
-        }
-
-        this.filteredBrand = this.brandControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterBrand(value || ''))
-        );
-
-        const brandSelected = this.brandList.find(brand => brand.value === this.vehicleFormGroup.get('xmarca')?.value);
-        if (!brandSelected) {
-          this.brandControl.setValue('')
-          this.vehicleFormGroup.get('xmarca')?.setValue('')
-        }
-        this.getModel();
-      }
-    });
-  }
-
-  private _filterBrand(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.brandList
-      .map(brand => brand.value)
-      .filter(brand => brand.toLowerCase().includes(filterValue));
-  }
-
-  onBrandSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedBrand = this.brandList.find(brand => brand.value === selectedValue);
-    if (selectedBrand) {
-      this.vehicleFormGroup.get('xmarca')?.setValue(selectedBrand.value);
-      this.getModel();
-    }
-  }
-
-  getModel(){
-    let data = {
-      qano: this.vehicleFormGroup.get('fano')?.value,
-      xmarca: this.vehicleFormGroup.get('xmarca')?.value,
-    };
-    this.http.post(environment.apiUrl + '/api/v1/valrep/model', data).subscribe((response: any) => {
-      if (response.data.model) {
-        this.modelList = [];
-        for (let i = 0; i < response.data.model.length; i++) {
-          this.modelList.push({
-            id: i,
-            value: response.data.model[i].xmodelo,
-          });
-        }
-        this.modelList.sort((a, b) => a.value > b.value ? 1 : -1);
-
-        this.filteredModel = this.modelControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterModel(value || ''))
-        );
-
-        this.getVersion()
-      }
-    });
-  }
-
-  private _filterModel(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.modelList
-      .map(model => model.value)
-      .filter(model => model.toLowerCase().includes(filterValue));
-  }
-
-  onModelSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedModel = this.modelList.find(model => model.value === selectedValue);
-    if (selectedModel) {
-      this.vehicleFormGroup.get('xmodelo')?.setValue(selectedModel.value);
-      this.getVersion();
-    }
-  }
-
-  getVersion(){
-    let data = {
-      qano: this.vehicleFormGroup.get('fano')?.value,
-      xmarca: this.vehicleFormGroup.get('xmarca')?.value,
-      xmodelo: this.vehicleFormGroup.get('xmodelo')?.value,
-    };
-    this.http.post(environment.apiUrl + '/api/v1/valrep/version', data).subscribe((response: any) => {
-      if (response.data.version) {
-        this.versionList = [];
-        for (let i = 0; i < response.data.version.length; i++) {
-          this.versionList.push({
-            id: i,
-            value: response.data.version[i].xversion,
-            id_inma: response.data.version[i].id,
-            npasajero: response.data.version[i].npasajero,
-          });
-        }
-        this.versionList.sort((a, b) => a.value > b.value ? 1 : -1);
-
-        this.filteredVersion = this.versionControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterVersion(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterVersion(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.versionList
-      .map(version => version.value)
-      .filter(version => version.toLowerCase().includes(filterValue));
-  }
-
-  onVersionSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedVersion = this.versionList.find(version => version.value === selectedValue);
-    if (selectedVersion) {
-      this.vehicleFormGroup.get('xversion')?.setValue(selectedVersion.value);
-      this.vehicleFormGroup.get('npasajeros')?.setValue(selectedVersion.npasajero);
-    }
-  }
-
-  getColor(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/color', null).subscribe((response: any) => {
-      if (response.data.color) {
-        for (let i = 0; i < response.data.color.length; i++) {
-          this.colorList.push({
-            id: response.data.color[i].ccolor,
-            value: response.data.color[i].xcolor,
-          });
-        }
-        this.colorList.sort((a, b) => a.value > b.value ? 1 : -1);
-        this.filteredColor = this.colorControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterColor(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterColor(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.colorList
-      .map(color => color.value)
-      .filter(color => color.toLowerCase().includes(filterValue));
-  }
-
-  onColorSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedColor = this.colorList.find(color => color.value === selectedValue);
-    if (selectedColor) {
-      this.vehicleFormGroup.get('ccolor')?.setValue(selectedColor.id);
-    }
-  }
-
-  getCoverage(){
-    this.http.post(environment.apiUrl + `/api/v1/valrep/coverage/${this.receiptData.cramo}`, null).subscribe((response: any) => {
-      if (response.data.coverage) {
-        this.coverageList = [];
-        this.coverageList = response.data.coverage.map((item: any) => ({
-          id: item.ccobertura,
-          value: item.xcobertura, 
-        }))
-        this.coverageList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredCoverage = this.coverageControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCoverage(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCoverage(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.coverageList
-      .map(coverage => coverage.value)
-      .filter(coverage => coverage.toLowerCase().includes(filterValue));
-  }
-
-  onCoverageSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selected = this.coverageList.find(coverage => coverage.value === selectedValue);
-    if (selected) {
-      this.vehicleFormGroup.get('ccobertura')?.setValue(selected.id);
-    }
-  }
-
-  valueplate(value: any){
-    var ExpRegSoloLetras="^[A-Za-z0-9\s]+$";
-    if(value.data.match(ExpRegSoloLetras)==null){
- 
-
-      const formulario = this.vehicleFormGroup.get('xplaca')?.value  || ''
-      const newValue = formulario.replace(new RegExp(`[^A-Za-z0-9\\s]`, 'g'), '');
-    
-      // Actualiza el valor en el formulario
-      this.vehicleFormGroup.get('xplaca')?.setValue(newValue);
-
-    }
-  }
-
   getProducers(){
     this.http.post(environment.apiUrl + '/api/v1/emission/producers', null).subscribe((response: any) => {
       if (response.status) {
         this.MontoADistribuir = this.receiptData.mdistribucion.toFixed(2);
-        this.vehicleFormGroup.get('cproductor')?.setValue(response.cproductor);
-        this.vehicleFormGroup.get('xproductor')?.setValue(response.xproductor);
+        this.genericFormGroup.get('cproductor')?.setValue(response.cproductor);
+        this.genericFormGroup.get('xproductor')?.setValue(response.xproductor);
         if(this.currentUser.data.cejecutivo){
-          this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+          this.genericFormGroup.get('pcomision_p')?.setValue('40');
         }else{
-          this.vehicleFormGroup.get('pcomision_p')?.setValue('100');
+          this.genericFormGroup.get('pcomision_p')?.setValue('100');
         }
         const mprima = this.receiptData.mdistribucion;
-        const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
+        const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
     
         const primaCalculada_p = mprima * pcomision_p / 100;
     
         if(pcomision_p != 0){
-          this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
+          this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
         }
         const comision = primaCalculada_p * this.receiptData.bcv;
     
@@ -394,28 +165,28 @@ export class ContainerAutomobileComponent implements OnInit {
         }
         const selectedMe = this.executiveList.find(executive => executive.id === this.currentUser.data.cejecutivo);
         if (selectedMe) {
-            this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMe.id);
-            this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMe.value);
-            this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-            this.vehicleFormGroup.get('pcomision_p')?.setValue('');
-            this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-            this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+            this.genericFormGroup.get('cejecutivo')?.setValue(selectedMe.id);
+            this.genericFormGroup.get('xejecutivo')?.setValue(selectedMe.value);
+            this.genericFormGroup.get('pcomision_e')?.setValue('');
+            this.genericFormGroup.get('pcomision_p')?.setValue('');
+            this.genericFormGroup.get('pcomision_e')?.setValue('60');
+            this.genericFormGroup.get('pcomision_p')?.setValue('40');
 
             this.comisionEjecutivo = selectedMe.comision
 
             const mprima = this.receiptData.mdistribucion;
-            const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-            const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+            const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+            const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
 
             const primaCalculada_p = mprima * pcomision_p / 100;
             const primaCalculada_e = mprima * pcomision_e / 100;
 
             if(pcomision_p != 0){
-              this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
+              this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
             }
 
             if(pcomision_p != 0){
-              this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
+              this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
             }
             const comision = primaCalculada_p * this.receiptData.bcv;
             const comisionE = primaCalculada_e * this.receiptData.bcv;
@@ -456,28 +227,28 @@ export class ContainerAutomobileComponent implements OnInit {
     const selectedValue = event.option.value;
     const selectedMet = this.executiveList.find(executive => executive.value === selectedValue);
     if (selectedMet) {
-      this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
-      this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+      this.genericFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
+      this.genericFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
+      this.genericFormGroup.get('pcomision_e')?.setValue('');
+      this.genericFormGroup.get('pcomision_p')?.setValue('');
+      this.genericFormGroup.get('pcomision_e')?.setValue('60');
+      this.genericFormGroup.get('pcomision_p')?.setValue('40');
 
       this.comisionEjecutivo = selectedMet.comision
 
       const mprima = this.receiptData.mdistribucion;
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
 
       const primaCalculada_p = mprima * pcomision_p / 100;
       const primaCalculada_e = mprima * pcomision_e / 100;
 
       if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
+        this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
       }
 
       if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
+        this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
       }
       const comision = primaCalculada_p * this.receiptData.bcv;
       const comisionE = primaCalculada_e * this.receiptData.bcv;
@@ -508,7 +279,7 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   getAgents(){
-    const ejecutive = this.vehicleFormGroup.get('cejecutivo')?.value;
+    const ejecutive = this.genericFormGroup.get('cejecutivo')?.value;
     this.http.get(environment.apiUrl + `/api/v1/valrep/agents/${ejecutive}`).subscribe((response: any) => {
       if (response.data.agents) {
         this.agentsList = [];
@@ -537,31 +308,31 @@ export class ContainerAutomobileComponent implements OnInit {
     const selectedValue = event.option.value;
     const selectedAgents = this.agentsList.find(agents => agents.value === selectedValue);
     if (selectedAgents) {
-      this.vehicleFormGroup.get('cagente')?.setValue(selectedAgents.id);
-      this.vehicleFormGroup.get('xagente')?.setValue(selectedAgents.value);
-      this.vehicleFormGroup.get('pcomision_p')?.setValue(this.comisionProductor);
-      this.vehicleFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo);
-      this.vehicleFormGroup.get('pcomision_a')?.setValue(selectedAgents.pcomision_a);
+      this.genericFormGroup.get('cagente')?.setValue(selectedAgents.id);
+      this.genericFormGroup.get('xagente')?.setValue(selectedAgents.value);
+      this.genericFormGroup.get('pcomision_p')?.setValue(this.comisionProductor);
+      this.genericFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo);
+      this.genericFormGroup.get('pcomision_a')?.setValue(selectedAgents.pcomision_a);
 
       const mprima = this.receiptData.mdistribucion;
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-      const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
+      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
+      const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
 
       const primaCalculada_p = mprima * pcomision_p / 100;
       const primaCalculada_e = mprima * pcomision_e / 100;
       const primaCalculada_a = mprima * pcomision_a / 100;
 
       if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
+        this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
       }
 
       if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
+        this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
       }
 
       if(pcomision_a != 0){
-        this.vehicleFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
+        this.genericFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
       }
 
       const comision = primaCalculada_p * this.receiptData.bcv;
@@ -599,8 +370,8 @@ export class ContainerAutomobileComponent implements OnInit {
   //     comision: item.pcomision_a / this.selectedAgents.length
   //   }));
 
-  //   this.vehicleFormGroup.get('pcomision_p')?.setValue(this.comisionProductor)
-  //   this.vehicleFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo)
+  //   this.genericFormGroup.get('pcomision_p')?.setValue(this.comisionProductor)
+  //   this.genericFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo)
   //   this.commisionSumValidatorAgents();
 
   //   this.cdr.detectChanges();
@@ -612,9 +383,9 @@ export class ContainerAutomobileComponent implements OnInit {
   // }
 
   commissionSumValidator() {
-    const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
+    const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
+    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
     const sum = pcomision_p + pcomision_e + pcomision_a;
 
     this.commissionSum = sum;
@@ -630,9 +401,9 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   commissionSumValidator2() {
-    const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
+    const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
+    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
     const sum = pcomision_p + pcomision_e + pcomision_a;
 
     this.commissionSum = sum;
@@ -651,14 +422,14 @@ export class ContainerAutomobileComponent implements OnInit {
 
   calculatePremiums(){
     const mprima = this.receiptData.mdistribucion;
-    const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
+    const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
+    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
 
     const primaCalculada_p = mprima * pcomision_p / 100;
 
     if(pcomision_p != 0){
-      this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
+      this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
     }
     
     if(pcomision_e != 0){
@@ -673,22 +444,22 @@ export class ContainerAutomobileComponent implements OnInit {
   getCalculosComisionEjecutivo(mprima: any, pcomision_e: any){
     const primaCalculada_e = mprima * pcomision_e / 100;
     if(pcomision_e != 0){
-      this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      console.log(this.vehicleFormGroup.get('mcomision_e')?.value)
+      this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
+      console.log(this.genericFormGroup.get('mcomision_e')?.value)
     }
   }
 
   getCalculosComisionAgentes(mprima: any, pcomision_a: any){
     const primaCalculada_a = mprima * pcomision_a / 100;
     if(pcomision_a != 0){
-      this.vehicleFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
+      this.genericFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
     }
   }
 
 
   // commisionSumValidatorAgents(){
-  //   const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-  //   const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+  //   const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+  //   const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
   //   const sumaComisionesIndividuales = this.comisionesDivididas.reduce((total, comision) => total + comision.comision, 0);
   //   // Sumar las comisiones del productor y del ejecutivo
   //   const sumaComisionesTotales = sumaComisionesIndividuales + pcomision_p + pcomision_e;
@@ -731,17 +502,17 @@ export class ContainerAutomobileComponent implements OnInit {
       this.activaEliminarAgente = false;
       this.activaEliminarEjecutivo = false;
       this.Agents = false;
-      this.vehicleFormGroup.get('cejecutivo')?.setValue('');
-      this.vehicleFormGroup.get('xejecutivo')?.setValue('');
+      this.genericFormGroup.get('cejecutivo')?.setValue('');
+      this.genericFormGroup.get('xejecutivo')?.setValue('');
       this.getExecutive();
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('100');
-      this.vehicleFormGroup.get('mcomision_p')?.setValue(this.receiptData.mdistribucion.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('cagente')?.setValue('');
-      this.vehicleFormGroup.get('xagente')?.setValue('');
+      this.genericFormGroup.get('pcomision_e')?.setValue('');
+      this.genericFormGroup.get('pcomision_p')?.setValue('100');
+      this.genericFormGroup.get('mcomision_p')?.setValue(this.receiptData.mdistribucion.toFixed(2));
+      this.genericFormGroup.get('mcomision_e')?.setValue('');
+      this.genericFormGroup.get('cagente')?.setValue('');
+      this.genericFormGroup.get('xagente')?.setValue('');
       
-      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
+      this.genericFormGroup.get('pcomision_a')?.setValue('');
 
       const comision = this.receiptData.mdistribucion * this.receiptData.bcv;
     
@@ -754,23 +525,23 @@ export class ContainerAutomobileComponent implements OnInit {
       this.mcomision_e_bs = ''
 
     } else if (type === 'agente') {
-      this.vehicleFormGroup.get('cagente')?.setValue('');
-      this.vehicleFormGroup.get('xagente')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
+      this.genericFormGroup.get('cagente')?.setValue('');
+      this.genericFormGroup.get('xagente')?.setValue('');
+      this.genericFormGroup.get('pcomision_a')?.setValue('');
+      this.genericFormGroup.get('pcomision_e')?.setValue('60');
+      this.genericFormGroup.get('pcomision_p')?.setValue('40');
 
       this.getAgents();
 
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
+      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
+      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
 
       const primaCalculada_p = this.receiptData.mdistribucion * pcomision_p / 100;
       const primaCalculada_e = this.receiptData.mdistribucion * pcomision_e / 100;
 
-      this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_a')?.setValue('');
+      this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2));
+      this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2));
+      this.genericFormGroup.get('mcomision_a')?.setValue('');
 
       const comision = primaCalculada_p * this.receiptData.bcv;
       const comisionE = primaCalculada_e * this.receiptData.bcv;
@@ -828,23 +599,21 @@ export class ContainerAutomobileComponent implements OnInit {
       fdesde_pol: fdesdeString,
       fhasta_pol: fhastaString,
       femision: new Date(),
-      ccobertura: this.vehicleFormGroup.get('ccobertura')?.value,
-      igrua: this.vehicleFormGroup.get('igrua')?.value,
       cmetodologiapago: this.receiptData.cmetodologiapago,
       ptasa_cambio: this.receiptData.bcv,
       msuma: this.convertStringToNumber(this.receiptData.msuma),
       msumaext: this.receiptData.msumaext,
       mprima: this.convertStringToNumber(this.receiptData.mprima),
       mprimaext: parseFloat(this.receiptData.mprimaext),
-      pcomision: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_p')?.value),
+      pcomision: this.convertStringToNumber(this.genericFormGroup.get('pcomision_p')?.value),
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
-      mcomisionext: parseFloat(this.vehicleFormGroup.get('mcomision_p')?.value),
-      cproductor: this.vehicleFormGroup.get('cproductor')?.value,
-      pcomision_p: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_p')?.value),
-      cejecutivo: this.vehicleFormGroup.get('cejecutivo')?.value,
-      pcomision_e: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_e')?.value),
-      cagente: this.vehicleFormGroup.get('cagente')?.value,
-      pcomision_a: this.vehicleFormGroup.get('pcomision_a')?.value,
+      mcomisionext: parseFloat(this.genericFormGroup.get('mcomision_p')?.value),
+      cproductor: this.genericFormGroup.get('cproductor')?.value,
+      pcomision_p: this.convertStringToNumber(this.genericFormGroup.get('pcomision_p')?.value),
+      cejecutivo: this.genericFormGroup.get('cejecutivo')?.value,
+      pcomision_e: this.convertStringToNumber(this.genericFormGroup.get('pcomision_e')?.value),
+      cagente: this.genericFormGroup.get('cagente')?.value,
+      pcomision_a: this.genericFormGroup.get('pcomision_a')?.value,
       cusuario: this.currentUser.data.cusuario
     }
 
@@ -913,4 +682,5 @@ export class ContainerAutomobileComponent implements OnInit {
       });
     })
   }
+
 }

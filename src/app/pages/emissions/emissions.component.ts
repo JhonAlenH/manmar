@@ -69,11 +69,13 @@ export class EmissionsComponent implements OnInit {
 
   containerAuto: boolean = false;
   containerSalud: boolean = false;
+  containerGeneric: boolean = false;
   takersInfo: boolean = false;
   insuredInfo: boolean = false;
   WhatsApp: boolean = false;
   ActivaSumBs: boolean = false;
   ActivaPriBs: boolean = false;
+
 
   someParamValue = 'Valor de ejemplo';
   receiptData = {};
@@ -583,6 +585,8 @@ export class EmissionsComponent implements OnInit {
   }
 
   receipt() {
+    this.containerAuto = false;
+    this.containerGeneric = false;
     const {
       ccedente, cramo, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
       xcedula, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
@@ -595,45 +599,87 @@ export class EmissionsComponent implements OnInit {
     const montoDistribucion = mprimaNumeric * this.comisionRamo / 100;
   
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
-      this.containerAuto = true;
-      this.receiptData = {
-        fdesde: fdesde,
-        fhasta: fhasta,
-        cmetodologiapago: cmetodologiapago,
-        cramo: cramo,
-        ccedente: ccedente,
-        cmoneda: cmoneda,
-        casegurado: casegurado,
-        xasegurado: xasegurado,
-        itipodoc: itipodoc,
-        xcedula: xcedula,
-        ctomador: ctomador,
-        xtomador: xtomador,
-        itipodoc_t: itipodoc_t,
-        xdoc_identificacion_t: xdoc_identificacion_t,
-        xprofesion: xprofesion,
-        xrif: xrif,
-        xdomicilio: xdomicilio,
-        cpais: cpais,
-        cestado: cestado,
-        cciudad: cciudad,
-        xzona_postal: xzona_postal,
-        xdireccion: xdireccion,
-        xcorreo: xcorreo,
-        xcorreo_asegurado: xcorreo_asegurado,
-        xpoliza: xpoliza,
-        msuma_aseg: msuma_aseg,
-        xtelefono_asegurado: xtelefono_asegurado,
-        msuma: msuma_aseg_bs,
-        msumaext: this.msuma_aseg,
-        mprima: mprima_bs,
-        mprimaext: mprima,
-        pcomision: this.comisionRamo,
-        bcv: this.bcv,
-        mdistribucion: montoDistribucion
+      if(Number(cramo) === 20){
+        this.containerAuto = true;
+        this.receiptData = {
+          fdesde: fdesde,
+          fhasta: fhasta,
+          cmetodologiapago: cmetodologiapago,
+          cramo: cramo,
+          ccedente: ccedente,
+          cmoneda: cmoneda,
+          casegurado: casegurado,
+          xasegurado: xasegurado,
+          itipodoc: itipodoc,
+          xcedula: xcedula,
+          ctomador: ctomador,
+          xtomador: xtomador,
+          itipodoc_t: itipodoc_t,
+          xdoc_identificacion_t: xdoc_identificacion_t,
+          xprofesion: xprofesion,
+          xrif: xrif,
+          xdomicilio: xdomicilio,
+          cpais: cpais,
+          cestado: cestado,
+          cciudad: cciudad,
+          xzona_postal: xzona_postal,
+          xdireccion: xdireccion,
+          xcorreo: xcorreo,
+          xcorreo_asegurado: xcorreo_asegurado,
+          xpoliza: xpoliza,
+          msuma_aseg: msuma_aseg,
+          xtelefono_asegurado: xtelefono_asegurado,
+          msuma: msuma_aseg_bs,
+          msumaext: this.msuma_aseg,
+          mprima: mprima_bs,
+          mprimaext: mprima,
+          pcomision: this.comisionRamo,
+          bcv: this.bcv,
+          mdistribucion: montoDistribucion
+        }
+      }else{
+        this.containerGeneric = true;
+        this.receiptData = {
+          fdesde: fdesde,
+          fhasta: fhasta,
+          cmetodologiapago: cmetodologiapago,
+          cramo: cramo,
+          ccedente: ccedente,
+          cmoneda: cmoneda,
+          casegurado: casegurado,
+          xasegurado: xasegurado,
+          itipodoc: itipodoc,
+          xcedula: xcedula,
+          ctomador: ctomador,
+          xtomador: xtomador,
+          itipodoc_t: itipodoc_t,
+          xdoc_identificacion_t: xdoc_identificacion_t,
+          xprofesion: xprofesion,
+          xrif: xrif,
+          xdomicilio: xdomicilio,
+          cpais: cpais,
+          cestado: cestado,
+          cciudad: cciudad,
+          xzona_postal: xzona_postal,
+          xdireccion: xdireccion,
+          xcorreo: xcorreo,
+          xcorreo_asegurado: xcorreo_asegurado,
+          xpoliza: xpoliza,
+          msuma_aseg: msuma_aseg,
+          xtelefono_asegurado: xtelefono_asegurado,
+          msuma: msuma_aseg_bs,
+          msumaext: this.msuma_aseg,
+          mprima: mprima_bs,
+          mprimaext: mprima,
+          pcomision: this.comisionRamo,
+          bcv: this.bcv,
+          mdistribucion: montoDistribucion
+        }
       }
+
     } else {
       this.containerAuto = false;
+      this.containerGeneric = false;
     }
   }
 
