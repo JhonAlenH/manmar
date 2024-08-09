@@ -10,6 +10,7 @@ import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/materia
 import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DateUtilService } from '../../_services/date-util.service'
+import Swal from 'sweetalert2'
 ;
 export const MY_FORMATS = {
   parse: {
@@ -259,11 +260,6 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('cramo')?.setValue(selectedTrade.id);
     }
 
-    if(selectedTrade.id == 18){
-
-      // this.containerAuto = true;
-    }else{ this.containerAuto = false;}
-
     this.getTariffs();
   }
 
@@ -275,6 +271,41 @@ export class EmissionsComponent implements OnInit {
     this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
       if(response.status){
         this.comisionRamo = response.pcomision;
+        
+        if(!this.comisionRamo){
+          Swal.fire({
+            icon: "error",
+            title: "Ha ocurrido un Error",
+            text: "Estimado usuario, no exite arancel por el ramo y por la cedente, por ende no se puede calcular las comisiones.",
+            confirmButtonText: "<strong>Aceptar</strong>",
+            confirmButtonColor: "#5e72e4",
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+              }
+          });
+        }
+      }
+    },(err) => {
+
+    })
+  }
+
+  searchPolicy(){
+    const poliza = this.emissionsFormGroup.get('xpoliza')?.value
+    this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, null).subscribe((response: any) => {
+      if(response.status){
+        Swal.fire({
+          icon: "error",
+          title: "Ha ocurrido un Error",
+          text: response.message,
+          confirmButtonText: "<strong>Aceptar</strong>",
+          confirmButtonColor: "#5e72e4",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+            }
+        });
       }
     })
   }

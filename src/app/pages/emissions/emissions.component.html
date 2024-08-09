@@ -343,7 +343,7 @@
               <div class="col-md-6 mx-auto py-3">
                 <mat-form-field class="example-full-width">
                   <mat-label>Póliza</mat-label>
-                  <input matInput placeholder="Coloque el número de Póliza" formControlName="xpoliza">
+                  <input matInput placeholder="Coloque el número de Póliza" formControlName="xpoliza" (change)="searchPolicy()">
                 </mat-form-field>
               </div>
 

@@ -7,18 +7,25 @@
         </ng-template>
         <form [formGroup]="genericFormGroup">
             <div class="d-flex justify-content-center py-3">
-              <div class="col-sm-8">
-                <mat-form-field style="display: block">
-                  <mat-label>Coberturas</mat-label>
-                  <mat-select formControlName="xcobertura">
-                    <mat-option value="Cobertura Amplia">Cobertura Amplia</mat-option>
-                    <mat-option value="Perdida Total">Perdida Total</mat-option>
-                    <mat-option value="RCV">R.C.V</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+                <div class="col-sm-8">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Coberturas</mat-label>
+                    <input type="text"
+                          placeholder="Seleccione Coberturas"
+                          aria-label="Seleccione"
+                          matInput
+                          [formControl]="coverageControl"
+                          [matAutocomplete]="coverage"
+                          >
+                          <mat-autocomplete #coverage="matAutocomplete" (optionSelected)="onCoverageSelection($event)">
+                            <mat-option *ngFor="let coverage of filteredCoverage | async" [value]="coverage">
+                              {{ coverage }}
+                            </mat-option>
+                          </mat-autocomplete>
+                  </mat-form-field>
+                </div>
             </div>
-          </form>
+        </form>
       </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>

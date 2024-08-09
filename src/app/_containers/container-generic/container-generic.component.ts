@@ -32,36 +32,25 @@ export class ContainerGenericComponent implements OnInit {
   selectedAgents: any[] = [];
   comisionesDivididas: any[] = [];
 
-  brandList: any[] = [];
-  modelList: any[] = [];
-  versionList: any[] = [];
-  colorList: any[] = [];
+
   receiptList: any[] = [];
   executiveList: any[] = [];
   agentsList: any[] = []; 
-  planList: any[] = []; 
+  coverageList: any[] = []; 
 
-  brandControl = new FormControl('');
-  modelControl = new FormControl('');
-  versionControl = new FormControl('');
-  colorControl = new FormControl('');
   executiveControl = new FormControl('');
   agentsControl = new FormControl('');
-  planControl = new FormControl('');
+  coverageControl = new FormControl('');
 
-  filteredBrand!: Observable<string[]>;
-  filteredModel!: Observable<string[]>;
-  filteredVersion!: Observable<string[]>;
-  filteredColor!: Observable<string[]>;
   filteredExecutive!: Observable<string[]>;
   filteredAgents!: Observable<string[]>;
-  filteredPlan!: Observable<string[]>;
+  filteredCoverage!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
 
   genericFormGroup = this._formBuilder.group({
-    xcobertura: [{ value: '', disabled: false }],
+    ccobertura: [{ value: '', disabled: false }],
     cejecutivo: [{ value: '', disabled: false }],
     xejecutivo: [{ value: '', disabled: false }],
     pcomision_e: [{ value: '', disabled: false }],
@@ -89,6 +78,7 @@ export class ContainerGenericComponent implements OnInit {
     this.currentUser = JSON.parse(storedSession);
     this.getExecutive();
     this.getProducers();
+    this.getCoverage();
     this.genericFormGroup.valueChanges.subscribe(() => {
       this.commissionSumValidator();
     });
@@ -131,11 +121,12 @@ export class ContainerGenericComponent implements OnInit {
           this.genericFormGroup.get('pcomision_p')?.setValue('100');
         }
         const mprima = this.receiptData.mdistribucion;
+
         const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
     
         const primaCalculada_p = mprima * pcomision_p / 100;
     
-        if(pcomision_p != 0){
+        if(pcomision_p != 0){ 
           this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
         }
         const comision = primaCalculada_p * this.receiptData.bcv;
@@ -382,6 +373,40 @@ export class ContainerGenericComponent implements OnInit {
   //   console.log(comision)
   // }
 
+  
+  getCoverage(){
+    this.http.post(environment.apiUrl + `/api/v1/valrep/coverage/${this.receiptData.cramo}`, null).subscribe((response: any) => {
+      if (response.data.coverage) {
+        this.coverageList = [];
+        this.coverageList = response.data.coverage.map((item: any) => ({
+          id: item.ccobertura,
+          value: item.xcobertura, 
+        }))
+        this.coverageList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredCoverage = this.coverageControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterCoverage(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterCoverage(value: any): string[] {
+    const filterValue = value.toLowerCase();
+    return this.coverageList
+      .map(coverage => coverage.value)
+      .filter(coverage => coverage.toLowerCase().includes(filterValue));
+  }
+
+  onCoverageSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selected = this.coverageList.find(coverage => coverage.value === selectedValue);
+    if (selected) {
+      this.genericFormGroup.get('ccobertura')?.setValue(selected.id);
+    }
+  }
+
+
   commissionSumValidator() {
     const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
     const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
@@ -596,6 +621,7 @@ export class ContainerGenericComponent implements OnInit {
       cmoneda: this.receiptData.cmoneda,
       cramo: this.receiptData.cramo,
       xpoliza: this.receiptData.xpoliza,
+      ccobertura: this.genericFormGroup.get('ccobertura')?.value,
       fdesde_pol: fdesdeString,
       fhasta_pol: fhastaString,
       femision: new Date(),
@@ -642,7 +668,7 @@ export class ContainerGenericComponent implements OnInit {
               text: `\n${nombresCamposFaltantes}`,
               icon: "warning",
               confirmButtonText: "<strong>Aceptar</strong>",
-              confirmButtonColor: "#334ebd",
+              confirmButtonColor: "#5e72e4",
           });
           return;
       }
@@ -652,7 +678,7 @@ export class ContainerGenericComponent implements OnInit {
         title: "Se excedió del 100% de Comisión",
         icon: "warning",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#334ebd",
+        confirmButtonColor: "#5e72e4",
       });
       return
     }
@@ -674,7 +700,7 @@ export class ContainerGenericComponent implements OnInit {
         title: "Ha ocurrido un Error",
         text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#fdd213d1",
+        confirmButtonColor: "#5e72e4",
       }).then((result) => {
           if (result.isConfirmed) {
               location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar

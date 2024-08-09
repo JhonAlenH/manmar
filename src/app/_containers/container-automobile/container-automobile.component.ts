@@ -624,7 +624,7 @@ export class ContainerAutomobileComponent implements OnInit {
         title: "Se excedió del 100% de Comisión",
         icon: "warning",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#334ebd",
+        confirmButtonColor: "#5e72e4",
       });
     }
   }
@@ -642,7 +642,7 @@ export class ContainerAutomobileComponent implements OnInit {
         title: "Se excedió del 100% de Comisión",
         icon: "warning",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#334ebd",
+        confirmButtonColor: "#5e72e4",
       });
     }else{
       this.calculatePremiums();
@@ -700,7 +700,7 @@ export class ContainerAutomobileComponent implements OnInit {
   //       title: "Se excedió del 100% de Comisión",
   //       icon: "warning",
   //       confirmButtonText: "<strong>Aceptar</strong>",
-  //       confirmButtonColor: "#334ebd",
+  //       confirmButtonColor: "#5e72e4",
   //     });
   //   }
   // }
@@ -873,7 +873,7 @@ export class ContainerAutomobileComponent implements OnInit {
               text: `\n${nombresCamposFaltantes}`,
               icon: "warning",
               confirmButtonText: "<strong>Aceptar</strong>",
-              confirmButtonColor: "#334ebd",
+              confirmButtonColor: "#5e72e4",
           });
           return;
       }
@@ -883,7 +883,7 @@ export class ContainerAutomobileComponent implements OnInit {
         title: "Se excedió del 100% de Comisión",
         icon: "warning",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#334ebd",
+        confirmButtonColor: "#5e72e4",
       });
       return
     }
@@ -905,7 +905,7 @@ export class ContainerAutomobileComponent implements OnInit {
         title: "Ha ocurrido un Error",
         text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
         confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#fdd213d1",
+        confirmButtonColor: "#5e72e4",
       }).then((result) => {
           if (result.isConfirmed) {
               location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
