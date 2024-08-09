@@ -39,7 +39,8 @@ export class ContainerAutomobileComponent implements OnInit {
   receiptList: any[] = [];
   executiveList: any[] = [];
   agentsList: any[] = []; 
-  coverageList: any[] = []; 
+  coverageList: any[] = [];
+  documentosList: any = []
 
   brandControl = new FormControl('');
   modelControl = new FormControl('');
@@ -59,6 +60,8 @@ export class ContainerAutomobileComponent implements OnInit {
 
   public page = 1;
   public pageSize = 6;
+  public pageNotas = 1;
+  public pageNotasSize = 5;
 
   vehicleFormGroup = this._formBuilder.group({
     xplaca: ['',[Validators.maxLength(7)]],
@@ -791,6 +794,30 @@ export class ContainerAutomobileComponent implements OnInit {
     }
   }
 
+  addFile(id:any): void {
+    const newImgInput = <HTMLInputElement> document.getElementById(id)
+    newImgInput.click()
+  }
+
+  addNote(event: any){
+    
+    const form = new FormData()
+    form.append( "file", event.target.files[0], event.target.files[0].name)
+    form.append( "fileName", event.target.files[0].name)
+    const response = this.http.post(environment.apiUrl + '/api/upload/document/emission', form)
+    response.subscribe( data => {
+      this.documentosList.push({xnombrenota: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
+      const newImgInput = <HTMLInputElement> document.getElementById('newFile')
+      newImgInput.value = null
+
+      console.log(this.documentosList);
+    });
+  }
+  
+  removeNote(index:any){
+    this.documentosList.splice(index, 1)
+  }
+
   onSubmit(){
 
     const formatDateToString = (date: Date): string => {
@@ -845,7 +872,8 @@ export class ContainerAutomobileComponent implements OnInit {
       pcomision_e: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_e')?.value),
       cagente: this.vehicleFormGroup.get('cagente')?.value,
       pcomision_a: this.vehicleFormGroup.get('pcomision_a')?.value,
-      cusuario: this.currentUser.data.cusuario
+      cusuario: this.currentUser.data.cusuario,
+      documentos: this.documentosList
     }
 
     console.log(data)
