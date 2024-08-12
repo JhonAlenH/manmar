@@ -14,6 +14,7 @@ import { TablesComponent } from '../../pages/tables/tables.component';
 import { EmissionsComponent } from '../../pages/emissions/emissions.component';
 import { SearchContractsComponent } from '../../pages/emissions/search-contracts/search-contracts.component';
 import { DetailContractsComponent } from '../../pages/emissions/detail-contracts/detail-contracts.component';
+import { AdministratorComponent } from '../../pages/administrator/administrator.component';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
@@ -42,7 +43,8 @@ import { ContainerGenericComponent } from '../../_containers/container-generic/c
     SearchContractsComponent,
     ContainerAutomobileComponent,
     DetailContractsComponent,
-    ContainerGenericComponent
+    ContainerGenericComponent,
+    AdministratorComponent
   ]
 })
 

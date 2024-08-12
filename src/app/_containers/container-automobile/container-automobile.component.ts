@@ -863,7 +863,7 @@ export class ContainerAutomobileComponent implements OnInit {
       msumaext: this.receiptData.msumaext,
       mprima: this.convertStringToNumber(this.receiptData.mprima),
       mprimaext: parseFloat(this.receiptData.mprimaext),
-      pcomision: this.convertStringToNumber(this.vehicleFormGroup.get('pcomision_p')?.value),
+      pcomision: this.receiptData.pcomision,
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
       mcomisionext: parseFloat(this.vehicleFormGroup.get('mcomision_p')?.value),
       cproductor: this.vehicleFormGroup.get('cproductor')?.value,

@@ -452,13 +452,13 @@
             Documentos
         </ng-template>
 
-        <button type="button" style="padding: 10px 14px; position: absolute; top: 10px; right: 10px;" class="btn btn-primary m-0" (click)="addFile('newFile')">
-          <i class="fa-solid fa-plus"></i>
-        </button>
-        <form >
-          
+        <div class="container">
+          <button type="button" style="padding: 10px 14px; position: absolute; top: 10px; right: 10px;" class="btn btn-primary m-0" (click)="addFile('newFile')">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+            
           <div style="margin-top: 3.5rem;" *ngIf="documentosList.length > 0">
-
+  
             <div *ngFor="let nota of documentosList | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
               <form class="col-md-5 d-flex align-items-center">  
                 <input [disabled]="nota.type == 'create' ? false : true" class="input-mat" type="text"
@@ -504,7 +504,9 @@
               <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
             </form>
           </div>
-        </form>
+        </div>
+
+
       </mat-tab>
     </mat-tab-group>
 

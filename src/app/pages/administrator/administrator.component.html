@@ -1,0 +1,191 @@
+<!-- Header -->
+<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
+    <div class="container-fluid">
+      <div class="header-body">
+        <!-- Card stats -->
+        <div class="row">
+          <!-- Aquí podrías agregar tarjetas de estadísticas si lo necesitas -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Container principal -->
+  <div class="container-fluid">
+    <!-- Row principal -->
+    <div class="row">
+      <div class="col">
+        <!-- Card principal -->
+        <div class="card shadow hola">
+          <div class="card-body">
+            <!-- Formulario de filtros -->
+            <form [formGroup]="administrativeForm" style="position: relative; z-index: 1000;">
+              <div class="row py-3">
+                <div class="col-sm-12">
+                  <mat-accordion class="example-headers-align expansion_notificacion" multi>
+                    <mat-expansion-panel>
+                      <mat-expansion-panel-header style="background-color: #6f86e3;">
+                        <mat-panel-title style="font-weight: 500; color: aliceblue;">
+                          Filtros Adicionales de Búsqueda
+                        </mat-panel-title>
+                      </mat-expansion-panel-header>
+  
+                      <div class="row justify-content-center mt-3">
+                        <div class="col-md-4">
+                          <mat-form-field class="example-full-width">
+                            <mat-label>Cedentes</mat-label>
+                            <input type="text"
+                                   placeholder="Seleccione Cedentes"
+                                   aria-label="Seleccione"
+                                   matInput
+                                   [formControl]="cedentsControl"
+                                   [matAutocomplete]="cedents"
+                                   formControlName="xcedente"
+                                   required>
+                            <mat-autocomplete #cedents="matAutocomplete">
+                              <mat-option *ngFor="let cedent of filteredCedents | async" [value]="cedent">
+                                {{ cedent }}
+                              </mat-option>
+                            </mat-autocomplete>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-md-4">
+                          <mat-form-field class="example-full-width">
+                            <mat-label>Ramo</mat-label>
+                            <input type="text"
+                                   placeholder="Seleccione Ramo"
+                                   aria-label="Seleccione"
+                                   matInput
+                                   [formControl]="tradeControl"
+                                   [matAutocomplete]="trade"
+                                   required>
+                            <mat-autocomplete #trade="matAutocomplete" (optionSelected)="onTradeSelection($event)">
+                              <mat-option *ngFor="let trade of filteredTrade | async" [value]="trade">
+                                {{ trade }}
+                              </mat-option>
+                            </mat-autocomplete>
+                          </mat-form-field>
+                        </div>
+                      </div>
+                    </mat-expansion-panel>
+                  </mat-accordion>
+                </div>
+              </div>
+            </form>
+            <div class="table-responsive py-3" style="position: relative; z-index: 1000;">
+                <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort multiTemplateDataRows>
+              
+                  <!-- Column Definitions -->
+                  <ng-container [matColumnDef]="column" *ngFor="let column of columnsToDisplay; let i = index">
+                    <th mat-header-cell *matHeaderCellDef> {{ columnsName[i] }} </th>
+                    <td mat-cell *matCellDef="let element"> {{ element[column] }} </td>
+                  </ng-container>
+                  
+                  <ng-container matColumnDef="expand">
+                    <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+                    <td mat-cell *matCellDef="let element">
+                      <button mat-button (click)="toggleRow(element)">
+                        <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+                        <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+              
+                  <ng-container matColumnDef="expandedDetail">
+                    <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
+                      <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                        <div class="expanded-element-detail">
+                          <h3 class="text-center"><strong>Recibos</strong></h3>
+                          <table class="details-table">
+                            <tr>
+                              <th style="text-align: center;" *ngFor="let column of columnsNameDetail">{{ column }}</th>
+                              <th style="text-align: center;">Acciones</th>
+                            </tr>
+                            <tr *ngFor="let detail of expandedDetailData">
+                              <td style="text-align: center;">{{ detail.nrecibo }}</td>
+                              <td style="text-align: center;">{{ detail.fdesde_rec }}</td>
+                              <td style="text-align: center;">{{ detail.fhasta_rec }}</td>
+                              <td style="text-align: center;">{{ detail.mprimaext }}</td>
+                              <td style="text-align: center;">
+                                <button class="button" style="--clr: #00ad54;" *ngIf="!detail.fcobro" (click)="onCobrar(detail)">
+                                    <span class="button-decor"></span>
+                                    <div class="button-content">
+                                        <div class="button__icon">
+                                            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" width="24">
+                                                <circle opacity="0.5" cx="25" cy="25" r="23" fill="url(#icon-payments-cat_svg__paint0_linear_1141_21101)"></circle>
+                                                <mask id="icon-payments-cat_svg__a" fill="#fff">
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M34.42 15.93c.382-1.145-.706-2.234-1.851-1.852l-18.568 6.189c-1.186.395-1.362 2-.29 2.644l5.12 3.072a1.464 1.464 0 001.733-.167l5.394-4.854a1.464 1.464 0 011.958 2.177l-5.154 4.638a1.464 1.464 0 00-.276 1.841l3.101 5.17c.644 1.072 2.25.896 2.645-.29L34.42 15.93z">
+                                                    </path>
+                                                </mask>
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M34.42 15.93c.382-1.145-.706-2.234-1.851-1.852l-18.568 6.189c-1.186.395-1.362 2-.29 2.644l5.12 3.072a1.464 1.464 0 001.733-.167l5.394-4.854a1.464 1.464 0 011.958 2.177l-5.154 4.638a1.464 1.464 0 00-.276 1.841l3.101 5.17c.644 1.072 2.25.896 2.645-.29L34.42 15.93z" fill="#fff"></path>
+                                                <path d="M25.958 20.962l-1.47-1.632 1.47 1.632zm2.067.109l-1.632 1.469 1.632-1.469zm-.109 2.068l-1.469-1.633 1.47 1.633zm-5.154 4.638l-1.469-1.632 1.469 1.632zm-.276 1.841l-1.883 1.13 1.883-1.13zM34.42 15.93l-2.084-.695 2.084.695zm-19.725 6.42l18.568-6.189-1.39-4.167-18.567 6.19 1.389 4.166zm5.265 1.75l-5.12-3.072-2.26 3.766 5.12 3.072 2.26-3.766zm2.072 3.348l5.394-4.854-2.938-3.264-5.394 4.854 2.938 3.264zm5.394-4.854a.732.732 0 01-1.034-.054l3.265-2.938a3.66 3.66 0 00-5.17-.272l2.939 3.265zm-1.034-.054a.732.732 0 01.054-1.034l2.938 3.265a3.66 3.66 0 00.273-5.169l-3.265 2.938zm.054-1.034l-5.154 4.639 2.938 3.264 5.154-4.638-2.938-3.265zm1.023 12.152l-3.101-5.17-3.766 2.26 3.101 5.17 3.766-2.26zm4.867-18.423l-6.189 18.568 4.167 1.389 6.19-18.568-4.168-1.389zm-8.633 20.682c1.61 2.682 5.622 2.241 6.611-.725l-4.167-1.39a.732.732 0 011.322-.144l-3.766 2.26zm-6.003-8.05a3.66 3.66 0 004.332-.419l-2.938-3.264a.732.732 0 01.866-.084l-2.26 3.766zm3.592-1.722a3.66 3.66 0 00-.69 4.603l3.766-2.26c.18.301.122.687-.138.921l-2.938-3.264zm11.97-9.984a.732.732 0 01-.925-.926l4.166 1.389c.954-2.861-1.768-5.583-4.63-4.63l1.39 4.167zm-19.956 2.022c-2.967.99-3.407 5.003-.726 6.611l2.26-3.766a.732.732 0 01-.145 1.322l-1.39-4.167z" fill="#fff" mask="url(#icon-payments-cat_svg__a)"></path>
+                                                <defs>
+                                                    <linearGradient id="icon-payments-cat_svg__paint0_linear_1141_21101" x1="25" y1="2" x2="25" y2="48" gradientUnits="userSpaceOnUse">
+                                                        <stop stop-color="#fff" stop-opacity="0.71"></stop>
+                                                        <stop offset="1" stop-color="#fff" stop-opacity="0"></stop>
+                                                    </linearGradient>
+                                                </defs>
+                                            </svg>
+                                        </div>
+                                        <span class="button__text">Cobrar</span>
+                                    </div>
+                                </button>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>
+                    </td>
+                  </ng-container>
+              
+                  <!-- Table Rows -->
+                  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+                  <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+                      class="example-element-row" [class.example-expanded-row]="expandedElement === element"
+                      (click)="toggleRow(element)">
+                  </tr>
+                  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+                </table>
+
+                <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+              </div>
+          </div> 
+        </div> 
+      </div> 
+    </div> 
+  </div> 
+  
+  <ng-template #bottomSheetReceipt>
+    <form [formGroup]="administrativeForm">
+        <h3 class="text-center">
+            <strong>Detalles del cobro</strong>
+        </h3>
+        
+        <div class="row">
+            <div class="col-sm-6">
+                <mat-form-field class="example-full-width">
+                    <mat-label>Banco</mat-label>
+                    <input type="text"
+                          placeholder="Seleccione Banco"
+                          aria-label="Seleccione"
+                          matInput
+                          [formControl]="bankControl"
+                          [matAutocomplete]="bank"
+                          formControlName="xbanco"
+                          required>
+                    <mat-autocomplete #bank="matAutocomplete" (optionSelected)="onBankSelection($event)">
+                      <mat-option *ngFor="let bank of filteredBank | async" [value]="bank">
+                        {{ bank }}
+                      </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+            <div class="col-sm-6">
+                <mat-form-field class="example-full-width">
+                  <mat-label>Referencia</mat-label>
+                  <input matInput placeholder="Ingrese Referencia" formControlName="xreferencia" type="text">
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+  </ng-template>
