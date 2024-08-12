@@ -295,17 +295,20 @@ export class EmissionsComponent implements OnInit {
     const poliza = this.emissionsFormGroup.get('xpoliza')?.value
     this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, null).subscribe((response: any) => {
       if(response.status){
-        Swal.fire({
-          icon: "error",
-          title: "Ha ocurrido un Error",
-          text: response.message,
-          confirmButtonText: "<strong>Aceptar</strong>",
-          confirmButtonColor: "#5e72e4",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
-            }
-        });
+        if(response.xpoliza){
+          Swal.fire({
+            icon: "error",
+            title: "Ha ocurrido un Error",
+            text: response.message,
+            confirmButtonText: "<strong>Aceptar</strong>",
+            confirmButtonColor: "#5e72e4",
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+              }
+          });
+        }
+
       }
     })
   }
