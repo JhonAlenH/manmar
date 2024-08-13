@@ -1,5 +1,5 @@
 import { Component, ViewChild, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -13,6 +13,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DateUtilService } from './../../_services/date-util.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import Swal from 'sweetalert2'
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-administrator',
@@ -30,6 +32,8 @@ export class AdministratorComponent implements OnInit {
 
   @ViewChild('bottomSheetReceipt') bottomSheetReceipt: TemplateRef<any>;
 
+  @ViewChild('Distribution') Distribution!: TemplateRef<any>;
+
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   columnsToDisplay: string[] = [ 'xpoliza', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
   columnsName: string[] = ['Póliza', 'Ramo', 'Asegurado', 'Fecha Desde', 'Fecha Hasta'];
@@ -39,7 +43,8 @@ export class AdministratorComponent implements OnInit {
 
 
   expandedElement: any | null = null;
-  
+  comisionManmar: any;
+  parametros: any;
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -57,11 +62,19 @@ export class AdministratorComponent implements OnInit {
   filteredTrade!: Observable<string[]>;
   filteredBank!: Observable<string[]>;
 
+  dialogRef: MatDialogRef<any>;
+
+  camposNecesarios: { [key: string]: string } = { // Mapa de nombres de campo
+    cbanco: 'Banco',
+    mmonto: 'Monto de Ingreso',
+  };
+
   administrativeForm = this._formBuilder.group({
     ccedente: [''],
     cramo: [''],
-    cbanco: [''],
+    cbanco: ['', Validators.required],
     xreferencia: [''],
+    mmonto: ['', Validators.required]
   });
 
   constructor(
@@ -69,7 +82,7 @@ export class AdministratorComponent implements OnInit {
     private http: HttpClient,
     private dateUtilService: DateUtilService,
     private bottomSheet: MatBottomSheet,
-    private modalService: NgbModal,
+    readonly dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private router: Router,
@@ -95,6 +108,37 @@ export class AdministratorComponent implements OnInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  formatPrima(event: any) {
+    let value = event.target.value.replace(/\D/g, '');
+    value = (value / 100).toFixed(2);
+    event.target.value = value;
+    this.administrativeForm.get('mmonto')?.setValue(event.target.value)
+  }
+
+  onNextStepReceipt() {
+    if (this.administrativeForm.valid) {
+      this.onSubmit();
+    } else {
+      let camposFaltantes = '';
+      camposFaltantes += '<br>- '; // Iniciar con un salto de línea y guión
+      Object.keys(this.administrativeForm.controls).forEach(key => {
+          const control = this.administrativeForm.get(key);
+          if (control && control.invalid) { // Agregar verificación de nulidad
+              camposFaltantes += this.camposNecesarios[key] + '<br>-'; // Usar el mapa de nombres de campo y agregar un salto de línea
+          }
+      });
+      camposFaltantes = camposFaltantes.slice(0, -4); // Eliminar el espacio extra al final
+      
+      Swal.fire({
+          title: "Por favor, complete los siguientes campos para registrar el cobro: <br>",
+          html: `${camposFaltantes}`, // Usar html en lugar de text
+          icon: "warning",
+          confirmButtonText: "<strong>Aceptar</strong>",
+          confirmButtonColor: "#5e72e4",
+      });
+    }
   }
 
   getCedents() {
@@ -173,7 +217,7 @@ export class AdministratorComponent implements OnInit {
       .filter(bank => bank.toLowerCase().includes(filterValue));
   }
 
-  onbankSelection(event: any) {
+  onBankSelection(event: any) {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
     this.administrativeForm.get('cbanco')?.setValue(selectedbank.id);
   }
@@ -213,14 +257,109 @@ export class AdministratorComponent implements OnInit {
   }
 
   onCobrar(detail: any) {
+    this.parametros = detail;
+    this.comisionManmar = detail.mcomisionext;
     this.bottomSheet.open(this.bottomSheetReceipt);
-    // let data = {
-    //   id_poliza: detail.id_poliza
-    // }
-    // this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
-    //   if (response.receipt) {
-    //     this.expandedDetailData = response.receipt;
-    //   }
-    // });
+  }
+
+  activateModal(): void {
+    this.bottomSheet.dismiss()
+    this.dialogRef = this.dialog.open(this.Distribution, {
+      width: '90%', // Ancho del diálogo
+      height: '90%', // Alto del diálogo
+      maxWidth: '1200px'
+    });
+  }
+
+  onSubmit(){
+    Swal.fire({
+      icon: "question",
+      title: "¿Deseas realizar la Distribución?",
+      showCancelButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#5e72e4",
+      cancelButtonText: "Cancelar",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: false,
+      preConfirm: async () => {
+        // Cerramos el modal original para proceder con la lógica
+        Swal.close();
+    
+        // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+        Swal.fire({
+          title: 'Espere por favor...',
+          text: 'Procesando su solicitud',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+    
+        try {
+          let data = {
+            id_poliza: this.parametros.id_poliza,
+            nrecibo: this.parametros.nrecibo,
+            fcobro: new Date(),
+            cbanco: this.administrativeForm.get('cbanco')?.value,
+            xreferencia: this.administrativeForm.get('xreferencia')?.value,
+            cmoneda_cobro: 1,
+            mingreso: this.administrativeForm.get('mmonto')?.value,
+          };
+
+          this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
+            if (response.status_receipt) {
+              Swal.close();
+              this.activateModal();
+            }
+          },(err)=>{
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `No se pudo actualizar el cobro`,
+            });
+          });
+        } catch (error) {
+          // Mostrar un mensaje de error si algo falla
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Request failed: ${error.message}`,
+          });
+        }
+      },
+    }).then((result) => {
+      if (result.dismiss === Swal.DismissReason.cancel) {
+        // Si se presionó "Cancelar", realizar la consulta a la API
+        let data = {
+          id_poliza: this.parametros.id_poliza,
+          nrecibo: this.parametros.nrecibo,
+          fcobro: new Date(),
+          cbanco: this.administrativeForm.get('cbanco')?.value,
+          xreferencia: this.administrativeForm.get('xreferencia')?.value,
+          cmoneda_cobro: 1,
+          mingreso: this.administrativeForm.get('mmonto')?.value,
+        };
+        this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
+          if (response.status_receipt) {
+            Swal.fire({
+              icon: "success",
+              title: `Se ha registrado el cobro exitosamente`,
+              showConfirmButton: false,
+              timer: 4000
+            }).then((result) => {
+              location.reload()
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al registrar el cobro',
+            });
+          }
+        });
+      }
+    });
+    
+
+
   }
 }
