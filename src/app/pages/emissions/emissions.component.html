@@ -33,7 +33,7 @@
                            [matAutocomplete]="cedents"
                            formControlName="xcedente"
                            required>
-                           <mat-autocomplete #cedents="matAutocomplete">
+                           <mat-autocomplete #cedents="matAutocomplete" (optionSelected)="onCedentsSelection($event)">
                             <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
                               {{ cedents }}
                             </mat-option>

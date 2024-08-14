@@ -208,6 +208,15 @@ export class EmissionsComponent implements OnInit {
       .filter(cedent => cedent.toLowerCase().includes(filterValue));
   }
 
+  onCedentsSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selected= this.cedentsList.find(cedent => cedent.value === selectedValue);
+    if (selected) {
+      this.emissionsFormGroup.get('ccedente')?.setValue(selected.id);
+      this.emissionsFormGroup.get('xcedente')?.setValue(selected.value);
+    }
+  }
+
   searchTakers(){
     let data = {
       xcedula: this.emissionsFormGroup.get('xcedula')?.value

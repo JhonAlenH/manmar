@@ -53,6 +53,8 @@ export class AdministratorComponent implements OnInit {
   cedentsList: any[] = [];
   tradeList: any[] = [];
   bankList: any[] = [];
+  receiptDueList: any[] = [];
+  uniqueCedentes: any[] = [];
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -73,7 +75,7 @@ export class AdministratorComponent implements OnInit {
     ccedente: [''],
     cramo: [''],
     cbanco: ['', Validators.required],
-    xreferencia: [''],
+    xreferencia: ['', [Validators.maxLength(6)]],
     mmonto: ['', Validators.required]
   });
 
@@ -97,6 +99,7 @@ export class AdministratorComponent implements OnInit {
       this.getTrades();
       this.getBank();
       this.searchContracts();
+      this.searchDueReceipt();
     }
   }
 
@@ -196,7 +199,7 @@ export class AdministratorComponent implements OnInit {
   }
 
   getBank() {
-    this.http.post(environment.apiUrl + '/api/v1/valrep/bank', null).subscribe((response: any) => {
+    this.http.post(environment.apiUrl + '/api/v1/valrep/bank-manmar', null).subscribe((response: any) => {
       if (response.data.bank) {
         this.bankList = response.data.bank.map((banco: any) => ({
           id: banco.cbanco,
@@ -238,6 +241,30 @@ export class AdministratorComponent implements OnInit {
         this.dataSource.data = correctedContracts;
       }
     });
+  }
+
+  searchDueReceipt() {
+    this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
+      this.receiptDueList = response.receipt;
+
+      // Asignar la propiedad 'selected' y 'montoTipo' a cada recibo
+      this.receiptDueList.forEach(item => {
+        item.selected = false;
+        item.montoTipo = item.xcedente === 'LA MUNDIAL DE SEGUROS, C. A.' ? 'neto' : 'bruto';
+      });
+
+      // Obtener una lista única de cedentes (xcedente)
+      this.uniqueCedentes = [...new Set(this.receiptDueList.map((item: any) => item.xcedente))];
+    });
+  }
+
+  getReceiptsByCedente(cedente: string) {
+    return this.receiptDueList.filter((item: any) => item.xcedente === cedente);
+  }
+
+  toggleAllCedents(event: any, cedente: string) {
+    const isChecked = event.target.checked;
+    this.getReceiptsByCedente(cedente).forEach(item => item.selected = isChecked);
   }
 
   toggleRow(element: any) {
