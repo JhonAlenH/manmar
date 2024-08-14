@@ -255,6 +255,8 @@ export class AdministratorComponent implements OnInit {
 
       // Obtener una lista única de cedentes (xcedente)
       this.uniqueCedentes = [...new Set(this.receiptDueList.map((item: any) => item.xcedente))];
+
+      console.log(this.uniqueCedentes)
     });
   }
 

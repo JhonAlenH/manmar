@@ -155,6 +155,8 @@
                                 <th>Fecha Hasta</th>
                                 <th>Tipo de Monto</th>
                                 <th>Monto</th>
+                                <th>Impuesto</th>
+                                <th>Monto Neto</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -172,7 +174,9 @@
                                     <option value="neto">Monto Neto</option>
                                   </select>
                                 </td>
-                                <td>{{ item.mprimaext | currency }}</td>
+                                <td>{{ item.mcomisionext | currency }}</td>
+                                <td *ngIf="item.montoTipo == 'bruto'">5%</td>
+                                <td *ngIf="item.montoTipo == 'bruto'">epale</td>
 
                               </tr>
                             </tbody>
