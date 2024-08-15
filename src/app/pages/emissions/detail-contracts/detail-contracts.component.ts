@@ -37,6 +37,9 @@ export class DetailContractsComponent implements OnInit {
   public pageNotas = 1;
   public pageNotasSize = 5;
 
+  public pageReceipt = 1;
+  public pageReceiptSize = 5;
+  paginatedList: any[] = [];
   currentUser!: any
   ramo!: any;
   asegurado!: any;
@@ -115,6 +118,7 @@ export class DetailContractsComponent implements OnInit {
       this.values();
       this.getCedents();
       this.getCoins();
+      this.receiptPoliza()
     } 
   }
 
@@ -240,6 +244,36 @@ export class DetailContractsComponent implements OnInit {
         }));
       }
     })
+  }
+
+  receiptPoliza() {
+    this.http.post(environment.apiUrl + `/api/v1/emission/search-receipt/${this.id}`, null).subscribe((response: any) => {
+      if(response.status){
+        this.receiptList = [];
+        this.receiptList = response.receipt.map((item: any) => ({
+          nrecibo: item.nrecibo,
+          fdesde_rec: this.dateUtilService.formatDate(new Date(item.fdesde_rec)),
+          fhasta_rec: this.dateUtilService.formatDate(new Date(item.fhasta_rec)),
+          fcobrorec: item.fcobrorec,
+          iestadorec: item.iestadorec,
+          iestadorec_t: item.iestadorec === 'P' ? 'Pendiente' : item.iestadorec === 'C' ? 'Cobrado' : '',
+          color: item.iestadorec === 'P' ? 'red' : item.iestadorec === 'C' ? 'green' : 'black',
+          mprima: item.mprimaext.toFixed(2),
+        }));
+
+        this.updatePaginatedList();
+      }
+    })
+  }
+
+  updatePaginatedList() {
+    const startIndex = (this.pageReceipt - 1) * this.pageReceiptSize;
+    const endIndex = startIndex + this.pageReceiptSize;
+    this.paginatedList  = this.receiptList.slice(startIndex, endIndex);
+  }
+
+  onPageChange() {
+    this.updatePaginatedList();
   }
 
   calcularFechaHasta() {
@@ -403,6 +437,49 @@ export class DetailContractsComponent implements OnInit {
               location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
           }
       });
+    })
+  }
+
+  onCobrar(item: any){
+    Swal.fire({
+      icon: "question",
+      title: "¿Deseas cobrar este Recibo?",
+      showCancelButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#5e72e4",
+      cancelButtonText: "Cancelar",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: false,
+      preConfirm: async () => {
+        try {
+          let data = {
+            id_poliza: this.id,
+            nrecibo: item.nrecibo,
+            fcobrorec: new Date(),
+            iestadorec: 'C'
+          };
+
+          this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data).subscribe((response: any) => {
+            if (response.status_receipt) {
+              Swal.fire({
+                icon: "success",
+                title: `${response.message}`,
+                showConfirmButton: false,
+                timer: 4000
+              }).then((result) => {
+                location.reload()
+              });
+            }
+          });
+        } catch (error) {
+          // Mostrar un mensaje de error si algo falla
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Request failed: ${error.message}`,
+          });
+        }
+      },
     })
   }
 }

@@ -142,73 +142,109 @@
               </div>
             </div>
 
-            <div class="col-sm-8 mx-auto">
-              <mat-accordion class="example-headers-align expansion_notificacion" multi>
-                <mat-expansion-panel>
-                  <mat-expansion-panel-header style="background-color: #cad8eb;">
-                    <mat-panel-title style="font-weight: 500; color: black;">
-                        Lista de Documentos
-                    </mat-panel-title>
-                  </mat-expansion-panel-header>
-
-
-                  <div class="container" style="padding: 0 24px 24px 24px;">
-                    <button type="button" style="padding: 10px 14px; position: absolute; top: 10px; right: 10px;" class="btn btn-primary m-0" (click)="addFile('newFile')">
-                      <i class="fa-solid fa-plus"></i>
-                    </button>
-                      
-                    <div style="margin-top: 3.5rem;" *ngIf="documentosList.length > 0">
-            
-                      <div *ngFor="let nota of documentosList | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
-                        <form class="col-md-5 d-flex align-items-center">  
-                          <input  class="input-mat" type="text"
-                          placeholder="Titulo del Documento"
-                          [(ngModel)]="nota.xtitulo"
-                          [value]="nota.xtitulo"
-                          matInput
-                          >
-                        </form>
-                        <div class="col-md-6 d-flex align-items-center">
-                          <a style="text-decoration: none;" target="_blank" [href]="nota.xruta">
-                            <span style="color: black;">{{nota.xnombrenota}}</span>
-                            <i class="ml-1 fa-solid fa-arrow-up-right-from-square"></i>
-                          </a>
-                        </div>
-                        <div class="col-md-1 d-flex align-items-center justify-content-end">
-                          <button (click)="removeNote(i)" style="padding: 10px 14px;" class="btn btn-primary">
-                            <i class="fa-solid fa-trash"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div style="display: grid;place-items: center;" class="mt-4">
-                        <ngb-pagination
-                        *ngIf="documentosList.length > 0"
-                        [collectionSize]="documentosList.length" 
-                        [(page)]="pageNotas" 
-                        [pageSize]="pageNotasSize"
-                        [maxSize]="1"
-                        [previousLabel]="'‹'"
-                        [nextLabel]="'›'"
-                        [boundaryLinks]="true"
-                        [ellipses]="false"
+            <mat-tab-group  mat-align-tabs="center">
+              <mat-tab label="Recibos"> 
+                <div class="d-flex justify-content-center mt-3">
+                  <table class="table table-striped custom-table">
+                    <thead>
+                      <tr>
+                        <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">N° Recibo</strong></th>
+                        <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Fecha Desde</strong></th>
+                        <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Fecha Hasta</strong></th>
+                        <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Monto</strong></th>
+                        <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Estado</strong></th>
                         
-                        ></ngb-pagination>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr scope="row" *ngFor="let item of paginatedList">
+                        <td style="white-space: nowrap">{{ item.nrecibo }}</td>
+                        <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
+                        <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
+                        <td style="white-space: nowrap">{{ item.mprima }}</td>
+                        <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
+                          {{ item.iestadorec_t }}
+                        </td>
+                        <td>
+                          <button class="button"  *ngIf="!item.fcobrorec" (click)="onCobrar(item)">Cobrar</button>
+                        </td>
+                      </tr>
+                    </tbody>
+
+                    <div style="display: grid;place-items: center;" class="mt-4" mat-align-tabs="center">
+                      <ngb-pagination
+                      *ngIf="receiptList.length > 0"
+                      [collectionSize]="receiptList.length"
+                      [(page)]="pageReceipt"
+                      [pageSize]="pageReceiptSize"
+                      [maxSize]="1"
+                      [previousLabel]="'‹'"
+                      [nextLabel]="'›'"
+                      [boundaryLinks]="true"
+                      [ellipses]="false"
+                      (pageChange)="onPageChange()"
+                    ></ngb-pagination>
+                    </div>
+                  </table>
+
+                </div>
+              </mat-tab>
+              <mat-tab label="Documentos"> 
+                <div class="container" style="padding: 0 24px 24px 24px;">
+                  <button type="button" style="padding: 10px 14px; position: absolute; top: 10px; right: 10px;" class="btn btn-primary m-0" (click)="addFile('newFile')">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                    
+                  <div style="margin-top: 3.5rem;" *ngIf="documentosList.length > 0">
+          
+                    <div *ngFor="let nota of documentosList | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
+                      <form class="col-md-5 d-flex align-items-center">  
+                        <input  class="input-mat" type="text"
+                        placeholder="Titulo del Documento"
+                        [(ngModel)]="nota.xtitulo"
+                        [value]="nota.xtitulo"
+                        matInput
+                        >
+                      </form>
+                      <div class="col-md-6 d-flex align-items-center">
+                        <a style="text-decoration: none;" target="_blank" [href]="nota.xruta">
+                          <span style="color: black;">{{nota.xnombrenota}}</span>
+                          <i class="ml-1 fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                      </div>
+                      <div class="col-md-1 d-flex align-items-center justify-content-end">
+                        <button (click)="removeNote(i)" style="padding: 10px 14px;" class="btn btn-primary">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
                       </div>
                     </div>
-                    
-                    <div>
-                      <form [class]="documentosList.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
-                        <span *ngIf="documentosList.length <= 0">
-                          No hay documentos añadidos por el momento
-                        </span>
-                        <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
-                      </form>
+                    <div style="display: grid;place-items: center;" class="mt-4">
+                      <ngb-pagination
+                      *ngIf="documentosList.length > 0"
+                      [collectionSize]="documentosList.length" 
+                      [(page)]="pageNotas" 
+                      [pageSize]="pageNotasSize"
+                      [maxSize]="1"
+                      [previousLabel]="'‹'"
+                      [nextLabel]="'›'"
+                      [boundaryLinks]="true"
+                      [ellipses]="false"
+                      
+                      ></ngb-pagination>
                     </div>
                   </div>
-              
-                </mat-expansion-panel>
-              </mat-accordion>
-            </div>
+                  
+                  <div>
+                    <form [class]="documentosList.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
+                      <span *ngIf="documentosList.length <= 0">
+                        No hay documentos añadidos por el momento
+                      </span>
+                      <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
+                    </form>
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
 
             <div class="row py-3" *ngIf="primaAlterada">
               <div class="col-sm-12">
@@ -221,24 +257,7 @@
                     </mat-expansion-panel-header>
 
 
-                    <div class="row justify-content-center mt-3">
-                      <table class="table table-striped custom-table">
-                        <thead>
-                          <tr>
-                            <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Fecha Desde</strong></th>
-                            <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Fecha Hasta</strong></th>
-                            <th scope="col"><strong style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Monto</strong></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr scope="row" *ngFor="let item of receiptList">
-                            <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
-                            <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
-                            <td style="white-space: nowrap">{{ item.mprima }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+
                 
                   </mat-expansion-panel>
                 </mat-accordion>
