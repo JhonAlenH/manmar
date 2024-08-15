@@ -169,14 +169,20 @@
                                 <td>{{ item.fdesde_rec | date }}</td>
                                 <td>{{ item.fhasta_rec | date }}</td>
                                 <td>
-                                  <select class="form-select" [(ngModel)]="item.montoTipo">
+                                  <mat-form-field>
+                                    <mat-select [(ngModel)]="item.montoTipo">
+                                      <mat-option value="bruto">Monto Bruto</mat-option>
+                                      <mat-option value="neto">Monto Neto</mat-option>
+                                    </mat-select>
+                                  </mat-form-field>
+                                  <!-- <select class="form-select" [(ngModel)]="item.montoTipo">
                                     <option value="bruto">Monto Bruto</option>
                                     <option value="neto">Monto Neto</option>
-                                  </select>
+                                  </select> -->
                                 </td>
                                 <td>{{ item.mcomisionext | currency }}</td>
-                                <td *ngIf="item.montoTipo == 'bruto'">5%</td>
-                                <td *ngIf="item.montoTipo == 'bruto'">epale</td>
+                                <td >5</td>
+                                <td >epale</td>
 
                               </tr>
                             </tbody>
