@@ -34,6 +34,9 @@ export const MY_FORMATS = {
 export class DetailContractsComponent implements OnInit {
   bcv!: any;
 
+  public pageNotas = 1;
+  public pageNotasSize = 5;
+
   currentUser!: any
   ramo!: any;
   asegurado!: any;
@@ -52,6 +55,7 @@ export class DetailContractsComponent implements OnInit {
   coinsList: any[] = [];
   methodOfPaymentList: any[] = [];
   receiptList: any[] = [];
+  documentosList: any = []
 
   cedentsControl = new FormControl('');
   coinsControl = new FormControl('');
@@ -123,6 +127,7 @@ export class DetailContractsComponent implements OnInit {
       this.mprima_bs = response.data.mprima;
       this.metodologia = response.data.xmetodologiapago
       this.cmetodologia = response.data.cmetodologia
+      this.documentosList = response.documents
 
       this.detailFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(response.data.fdesde_pol))
       this.detailFormGroup.get('ccedente')?.setValue(response.data.ccedente)
@@ -335,6 +340,30 @@ export class DetailContractsComponent implements OnInit {
     
     // Si parseFloat devuelve NaN, devuelve 0 como valor predeterminado
     return isNaN(result) ? 0 : result;
+  }
+
+  addFile(id:any): void {
+    const newImgInput = <HTMLInputElement> document.getElementById(id)
+    newImgInput.click()
+  }
+
+  addNote(event: any){
+    
+    const form = new FormData()
+    form.append( "file", event.target.files[0], event.target.files[0].name)
+    form.append( "fileName", event.target.files[0].name)
+    const response = this.http.post(environment.apiUrl + '/api/upload/document/emission', form)
+    response.subscribe( data => {
+      this.documentosList.push({xnombrenota: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
+      const newImgInput = <HTMLInputElement> document.getElementById('newFile')
+      newImgInput.value = null
+
+      console.log(this.documentosList);
+    });
+  }
+  
+  removeNote(index:any){
+    this.documentosList.splice(index, 1)
   }
 
   onSubmit(){

@@ -142,6 +142,74 @@
               </div>
             </div>
 
+            <div class="col-sm-8 mx-auto">
+              <mat-accordion class="example-headers-align expansion_notificacion" multi>
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header style="background-color: #cad8eb;">
+                    <mat-panel-title style="font-weight: 500; color: black;">
+                        Lista de Documentos
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+
+
+                  <div class="container" style="padding: 0 24px 24px 24px;">
+                    <button type="button" style="padding: 10px 14px; position: absolute; top: 10px; right: 10px;" class="btn btn-primary m-0" (click)="addFile('newFile')">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                      
+                    <div style="margin-top: 3.5rem;" *ngIf="documentosList.length > 0">
+            
+                      <div *ngFor="let nota of documentosList | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
+                        <form class="col-md-5 d-flex align-items-center">  
+                          <input  class="input-mat" type="text"
+                          placeholder="Titulo del Documento"
+                          [(ngModel)]="nota.xtitulo"
+                          [value]="nota.xtitulo"
+                          matInput
+                          >
+                        </form>
+                        <div class="col-md-6 d-flex align-items-center">
+                          <a style="text-decoration: none;" target="_blank" [href]="nota.xruta">
+                            <span style="color: black;">{{nota.xnombrenota}}</span>
+                            <i class="ml-1 fa-solid fa-arrow-up-right-from-square"></i>
+                          </a>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-center justify-content-end">
+                          <button (click)="removeNote(i)" style="padding: 10px 14px;" class="btn btn-primary">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div style="display: grid;place-items: center;" class="mt-4">
+                        <ngb-pagination
+                        *ngIf="documentosList.length > 0"
+                        [collectionSize]="documentosList.length" 
+                        [(page)]="pageNotas" 
+                        [pageSize]="pageNotasSize"
+                        [maxSize]="1"
+                        [previousLabel]="'‹'"
+                        [nextLabel]="'›'"
+                        [boundaryLinks]="true"
+                        [ellipses]="false"
+                        
+                        ></ngb-pagination>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <form [class]="documentosList.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
+                        <span *ngIf="documentosList.length <= 0">
+                          No hay documentos añadidos por el momento
+                        </span>
+                        <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
+                      </form>
+                    </div>
+                  </div>
+              
+                </mat-expansion-panel>
+              </mat-accordion>
+            </div>
+
             <div class="row py-3" *ngIf="primaAlterada">
               <div class="col-sm-12">
                 <mat-accordion class="example-headers-align expansion_notificacion" multi>

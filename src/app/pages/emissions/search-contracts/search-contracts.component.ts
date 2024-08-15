@@ -24,6 +24,7 @@ export class SearchContractsComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+
   currentUser!: any
 
   cedentsList: any[] = [];

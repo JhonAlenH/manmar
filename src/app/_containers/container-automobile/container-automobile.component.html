@@ -499,7 +499,7 @@
           <div>
             <form [class]="documentosList.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
               <span *ngIf="documentosList.length <= 0">
-                No hay notas añadidas por el momento
+                No hay documentos añadidos por el momento
               </span>
               <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
             </form>
