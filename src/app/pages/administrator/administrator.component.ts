@@ -33,19 +33,23 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('bottomSheetReceipt') bottomSheetReceipt: TemplateRef<any>;
 
   @ViewChild('Distribution') Distribution!: TemplateRef<any>;
+  @ViewChild('Receipt') Receipt!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   columnsToDisplay: string[] = [ 'xpoliza', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
   columnsName: string[] = ['Póliza', 'Ramo', 'Asegurado', 'Fecha Desde', 'Fecha Hasta'];
   columnsToDisplayWithExpand: string[] = [...this.columnsToDisplay, 'expand'];
-  columnsNameDetail: string[] = ['N° Recibo', 'Fecha Desde', 'Fecha Hasta', 'Prima'];
+  columnsNameDetail: string[] = ['N° Recibo', 'Fecha Desde', 'Fecha Hasta', 'Monto Comisión'];
   expandedDetailData: any[] = [];
-
 
   expandedElement: any | null = null;
   comisionManmar: any;
   parametros: any;
+  moneda: any;
 
+  pageReceipt = 1; // Página actual
+  pageReceiptSize = 7; // Tamaño de página, cantidad de elementos por página
+  paginatedList: any[] = [];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -55,6 +59,8 @@ export class AdministratorComponent implements OnInit {
   bankList: any[] = [];
   receiptDueList: any[] = [];
   uniqueCedentes: any[] = [];
+  coinsList: any[] = [];
+  receipt: any[] = [];
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -76,7 +82,8 @@ export class AdministratorComponent implements OnInit {
     cramo: [''],
     cbanco: ['', Validators.required],
     xreferencia: ['', [Validators.maxLength(6)]],
-    mmonto: ['', Validators.required]
+    mmonto: ['', Validators.required],
+    cmoneda: ['']
   });
 
   constructor(
@@ -171,6 +178,33 @@ export class AdministratorComponent implements OnInit {
     this.administrativeForm.get('ccedente')?.setValue(selectedCedent.id);
   }
 
+  getCoins(){
+    this.http.post(environment.apiUrl + '/api/v1/valrep/coins', null).subscribe((response: any) => {
+      if (response.data.coins) {
+        this.coinsList = response.data.coins.map((item: any) => ({
+          id: item.cmoneda,
+          value: item.xmoneda,
+        }))
+      }
+    });
+  }
+
+  coinSelect(coinId: string) {
+    // Actualiza el valor del control de formulario
+    this.administrativeForm.get('cmoneda')?.setValue(coinId);
+    
+    // Busca la moneda seleccionada en la lista
+    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+    
+    // Actualiza la moneda seleccionada para mostrarla en el botón
+    if (selectedCoin) {
+      this.moneda = selectedCoin.value;
+    }
+    
+    console.log('Moneda seleccionada:', this.moneda);
+  }
+
+
   getTrades() {
     this.http.post(environment.apiUrl + '/api/v1/valrep/trade', null).subscribe((response: any) => {
       if (response.data.trade) {
@@ -223,6 +257,7 @@ export class AdministratorComponent implements OnInit {
   onBankSelection(event: any) {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
     this.administrativeForm.get('cbanco')?.setValue(selectedbank.id);
+    this.getCoins();
   }
 
   searchContracts() {
@@ -247,27 +282,38 @@ export class AdministratorComponent implements OnInit {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
 
-      // Asignar la propiedad 'selected' y 'montoTipo' a cada recibo
       this.receiptDueList.forEach(item => {
         item.selected = false;
         item.montoTipo = item.xcedente === 'LA MUNDIAL DE SEGUROS, C. A.' ? 'neto' : 'bruto';
+        item.mimpuesto = item.montoTipo === 'neto' ? '0' : 5;
+        item.mneto = item.montoTipo === 'neto' 
+                      ? item.mcomisionext 
+                      : item.mcomisionext * 0.05 - item.mcomisionext;
+
+                  item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
+                  item.mneto = parseFloat(item.mneto.toFixed(2));
       });
 
-      // Obtener una lista única de cedentes (xcedente)
-      this.uniqueCedentes = [...new Set(this.receiptDueList.map((item: any) => item.xcedente))];
-
-      console.log(this.uniqueCedentes)
+      this.uniqueCedentes = response.cedents
     });
   }
 
-  getReceiptsByCedente(cedente: string) {
-    return this.receiptDueList.filter((item: any) => item.xcedente === cedente);
+  onPanelOpen(cedenteId: number): void {
+    this.receipt = [];
+    this.receipt = this.receiptDueList.filter((item: any) => item.ccedente === cedenteId)
+    this.updatePaginatedList();
   }
 
-  toggleAllCedents(event: any, cedente: string) {
-    const isChecked = event.target.checked;
-    this.getReceiptsByCedente(cedente).forEach(item => item.selected = isChecked);
+  updatePaginatedList() {
+    const startIndex = (this.pageReceipt - 1) * this.pageReceiptSize;
+    const endIndex = startIndex + this.pageReceiptSize;
+    this.paginatedList  = this.receipt.slice(startIndex, endIndex);
   }
+
+  onPageChange() {
+    this.updatePaginatedList();
+  }
+
 
   toggleRow(element: any) {
     this.expandedElement = this.expandedElement === element ? null : element;
@@ -286,9 +332,14 @@ export class AdministratorComponent implements OnInit {
   }
 
   onCobrar(detail: any) {
+    this.moneda = 'Moneda'
     this.parametros = detail;
     this.comisionManmar = detail.mcomisionext;
-    this.bottomSheet.open(this.bottomSheetReceipt);
+    this.dialogRef = this.dialog.open(this.Receipt, {
+      width: '90%', // Ancho del diálogo
+      height: '50%', // Alto del diálogo
+      maxWidth: '800px'
+    });
   }
 
   activateModal(): void {
@@ -331,7 +382,7 @@ export class AdministratorComponent implements OnInit {
             fcobro: new Date(),
             cbanco: this.administrativeForm.get('cbanco')?.value,
             xreferencia: this.administrativeForm.get('xreferencia')?.value,
-            cmoneda_cobro: 1,
+            cmoneda_cobro: this.administrativeForm.get('cmoneda')?.value,
             mingreso: this.administrativeForm.get('mmonto')?.value,
           };
 
@@ -365,7 +416,7 @@ export class AdministratorComponent implements OnInit {
           fcobro: new Date(),
           cbanco: this.administrativeForm.get('cbanco')?.value,
           xreferencia: this.administrativeForm.get('xreferencia')?.value,
-          cmoneda_cobro: 1,
+          cmoneda_cobro: this.administrativeForm.get('cmoneda')?.value,
           mingreso: this.administrativeForm.get('mmonto')?.value,
         };
         this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
