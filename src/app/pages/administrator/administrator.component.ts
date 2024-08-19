@@ -283,18 +283,54 @@ export class AdministratorComponent implements OnInit {
       this.receiptDueList = response.receipt;
 
       this.receiptDueList.forEach(item => {
-        item.selected = false;
-        item.montoTipo = item.xcedente === 'LA MUNDIAL DE SEGUROS, C. A.' ? 'neto' : 'bruto';
-        item.mimpuesto = item.montoTipo === 'neto' ? '0' : 5;
+        // Determinar el tipo de monto basado en el valor de ivalor
+        item.montoTipo = item.ivalor === 'N' ? 'neto' : 'bruto';
+        
+        // Asignar impuestos y cálculos basados en el tipo de monto
+        item.mimpuesto = item.montoTipo === 'neto' ? 0 : 5;
         item.mneto = item.montoTipo === 'neto' 
                       ? item.mcomisionext 
                       : item.mcomisionext * 0.05 - item.mcomisionext;
-
-                  item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
-                  item.mneto = parseFloat(item.mneto.toFixed(2));
+  
+        // Asegurarse de que el monto neto sea positivo y redondearlo a dos decimales
+        item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
+        item.mneto = parseFloat(item.mneto.toFixed(2));
       });
 
       this.uniqueCedentes = response.cedents
+    });
+  }
+
+  getDefaultToggleValue(cedente: any): string {
+    // Filtrar los registros de receiptDueList por el cedente específico
+    const registrosCedente = this.receiptDueList.filter(item => item.xcedente === cedente.xcedente);
+    
+    // Si todos los registros tienen el mismo valor de ivalor, devolver ese valor.
+    // De lo contrario, devolver el valor predeterminado que prefieras.
+    if (registrosCedente.every(item => item.ivalor === 'N')) {
+      return 'neto';
+    } else if (registrosCedente.every(item => item.ivalor === 'B')) {
+      return 'bruto';
+    } else {
+      // Si hay una mezcla de valores, selecciona uno por defecto.
+      return 'bruto'; // O 'neto', dependiendo de lo que prefieras
+    }
+  }
+
+  onToggleChange(selectedValue: string, cedente: any) {
+    // Actualiza el valor de ivalor para todos los registros de este cedente
+    this.receiptDueList.forEach(item => {
+      if (item.xcedente === cedente.xcedente) {
+        item.ivalor = selectedValue === 'neto' ? 'N' : 'B';
+        item.montoTipo = selectedValue;
+        item.mimpuesto = selectedValue === 'neto' ? 0 : 5;
+        item.mneto = selectedValue === 'neto'
+          ? item.mcomisionext
+          : item.mcomisionext * 0.05 - item.mcomisionext;
+  
+        item.mneto = Math.abs(item.mneto);
+        item.mneto = parseFloat(item.mneto.toFixed(2));
+      }
     });
   }
 
