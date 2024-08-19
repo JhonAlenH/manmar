@@ -61,6 +61,10 @@ export class AdministratorComponent implements OnInit {
   uniqueCedentes: any[] = [];
   coinsList: any[] = [];
   receipt: any[] = [];
+  receiptSelected: any[] = [];
+
+  selectAll: boolean = false;
+  amount: boolean = false;
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -71,6 +75,8 @@ export class AdministratorComponent implements OnInit {
   filteredBank!: Observable<string[]>;
 
   dialogRef: MatDialogRef<any>;
+
+  totalMontoNeto: number = 0;  // Variable para almacenar la suma de mneta
 
   camposNecesarios: { [key: string]: string } = { // Mapa de nombres de campo
     cbanco: 'Banco',
@@ -355,6 +361,55 @@ export class AdministratorComponent implements OnInit {
     this.expandedElement = this.expandedElement === element ? null : element;
     if (this.expandedElement) {
       this.searchReceipt(element);
+    }
+  }
+
+  toggleSelectAll() {
+    this.receiptSelected = []; // Limpiamos la lista antes de agregar nuevos elementos
+    this.totalMontoNeto = 0; // Reiniciamos la suma
+    this.paginatedList.forEach(item => {
+      item.selected = this.selectAll;
+      if (this.selectAll) {
+        this.addToReceiptSelected(item);
+      }
+    });
+  }
+  
+  onItemSelect(item: any) {
+    if (item.selected) {
+      this.addToReceiptSelected(item);
+    } else {
+      this.removeFromReceiptSelected(item);
+    }
+  }
+  
+  addToReceiptSelected(item: any) {
+    this.receiptSelected.push({
+      id_poliza: item.xpoliza,
+      nrecibo: item.nrecibo,
+      mneta: item.mneto
+    });
+    this.totalMontoNeto += item.mneto; // Actualiza la suma total
+
+    if(this.totalMontoNeto > 0){
+      this.amount = true;
+    }else{
+      this.amount = false;
+    }
+    
+  }
+  
+  removeFromReceiptSelected(item: any) {
+    this.receiptSelected = this.receiptSelected.filter(selectedItem => 
+      selectedItem.id_poliza !== item.xpoliza || 
+      selectedItem.nrecibo !== item.nrecibo
+    );
+    this.totalMontoNeto -= item.mneto; // Actualiza la suma total
+    
+    if(this.totalMontoNeto > 0){
+      this.amount = true;
+    }else{
+      this.amount = false;
     }
   }
 

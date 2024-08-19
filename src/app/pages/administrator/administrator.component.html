@@ -167,6 +167,9 @@
                                 <th>Monto</th>
                                 <th>Impuesto</th>
                                 <th>Monto Neto</th>
+                                <th>
+                                  <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" />
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -178,7 +181,9 @@
                                 <td>{{ item.mcomisionext | currency }}</td>
                                 <td >{{item.mimpuesto}}</td>
                                 <td >{{item.mneto | currency}}</td>
-
+                                <td>
+                                  <input type="checkbox" [(ngModel)]="item.selected" (change)="onItemSelect(item)" />
+                                </td>
                               </tr>
                             </tbody>
                           </table>
@@ -295,3 +300,16 @@
     </form>
     </mat-dialog-content>
   </ng-template> 
+
+  <button
+    class="btn-flotante btn-flotante-2" 
+    mat-raised-button
+    style="background: #6f86e3;" 
+    *ngIf="amount"
+    >
+    <div class="d-flex" style="gap: 15px;margin-top: 10px;">
+      <i class= "fi fi-rs-coins" style="font-size: 20px;color: white;"></i>
+      <p style="color: white;font-weight: 500;">Monto Total: {{totalMontoNeto | currency}}</p>
+    </div>
+    
+  </button>
