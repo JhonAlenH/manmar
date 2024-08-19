@@ -142,18 +142,36 @@
                           </mat-panel-title>
                         </mat-expansion-panel-header>
 
-                        <div class="d-flex justify-content-center py-2">
-                          <mat-button-toggle-group 
-                            name="fontStyle" 
-                            aria-label="Font Style"
-                            [value]="getDefaultToggleValue(cedente)"
-                            (change)="onToggleChange($event.value, cedente)"
-                          >
-                            <mat-button-toggle value="bruto">Monto Bruto</mat-button-toggle>
-                            <mat-button-toggle value="neto">Monto Neto</mat-button-toggle>
-                          </mat-button-toggle-group>
+                        <div class="row">
+                          <div class="col-md-4">
+                            <mat-button-toggle-group 
+                              name="fontStyle" 
+                              aria-label="Font Style"
+                              [value]="getDefaultToggleValue(cedente)"
+                              (change)="onToggleChange($event.value, cedente)"
+                            >
+                              <mat-button-toggle value="bruto">Monto Bruto</mat-button-toggle>
+                              <mat-button-toggle value="neto">Monto Neto</mat-button-toggle>
+                            </mat-button-toggle-group>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="dropdown">
+                              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tipo de Comisiones
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Vencidas</a></li>
+                                <li><a class="dropdown-item" href="#">Vigentes</a></li>
+                                <li><a class="dropdown-item" href="#">Próximas</a></li>
+                              </ul>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="w-70">
+                              <input type="text" class="form-control" placeholder="Buscar..." (input)="filterSeguimientosData($event.target.value)">
+                            </div>           
+                          </div>
                         </div>
-
 
                         <div class="table-responsive">
 
@@ -161,7 +179,7 @@
                             <thead>
                               <tr>
                                 <th>Póliza</th>
-                                <th>Recibo</th>
+                                <th>Asegurado</th>
                                 <th>Fecha Desde</th>
                                 <th>Fecha Hasta</th>
                                 <th>Monto</th>
@@ -175,7 +193,7 @@
                             <tbody>
                               <tr *ngFor="let item of paginatedList">
                                 <td>{{ item.xpoliza }}</td>
-                                <td>{{ item.nrecibo }}</td>
+                                <td>{{ item.xnombre }}</td>
                                 <td>{{ item.fdesde_rec | date }}</td>
                                 <td>{{ item.fhasta_rec | date }}</td>
                                 <td>{{ item.mcomisionext | currency }}</td>

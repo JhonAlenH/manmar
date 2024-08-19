@@ -54,6 +54,7 @@ export class AdministratorComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   currentUser!: any;
+  bcv!: any;
   cedentsList: any[] = [];
   tradeList: any[] = [];
   bankList: any[] = [];
@@ -107,6 +108,16 @@ export class AdministratorComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
 
+    fetch('https://ve.dolarapi.com/v1/dolares')
+    .then((response) => response.json())
+    .then(data => {
+      const banco = data.map((item: any) => {
+        if(item.fuente == 'oficial'){
+          this.bcv = item.promedio
+        }
+      })
+    });
+
     if (this.currentUser) {
       this.getCedents();
       this.getTrades();
@@ -155,6 +166,18 @@ export class AdministratorComponent implements OnInit {
           confirmButtonColor: "#5e72e4",
       });
     }
+  }
+
+  filterSeguimientosData(values: string) {
+    this.paginatedList = this.paginatedList.filter((item) => {
+      const searchValue = values.toLowerCase();
+      const poliza = item.xpoliza ? item.xpoliza.toString().toLowerCase() : '';
+      const nombre = item.xnombre ? item.xnombre.toString().toLowerCase() : '';
+      const fdesde = item.fdesde_rec ? item.fdesde_rec.toString().toLowerCase() : '';
+      const fhasta = item.fhasta_rec ? item.fhasta_rec.toString().toLowerCase() : '';
+  
+      return poliza.includes(searchValue) || nombre.includes(searchValue) || fdesde.includes(searchValue) || fhasta.includes(searchValue)
+    });
   }
 
   getCedents() {
@@ -287,7 +310,6 @@ export class AdministratorComponent implements OnInit {
   searchDueReceipt() {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
-
       this.receiptDueList.forEach(item => {
         // Determinar el tipo de monto basado en el valor de ivalor
         item.montoTipo = item.ivalor === 'N' ? 'neto' : 'bruto';
@@ -384,10 +406,16 @@ export class AdministratorComponent implements OnInit {
   }
   
   addToReceiptSelected(item: any) {
+    const impuestoBs = item.mimpuesto * this.bcv;
+    const netoBs =  item.mneto * this.bcv;
     this.receiptSelected.push({
-      id_poliza: item.xpoliza,
+      id_poliza: item.id,
       nrecibo: item.nrecibo,
-      mneta: item.mneto
+      mimpuesto: impuestoBs,
+      mimpuestoext: item.mimpuesto,
+      mcomision_n: netoBs,
+      mcomision_next: item.mneto,
+      fcobro: new Date()
     });
     this.totalMontoNeto += item.mneto; // Actualiza la suma total
 
@@ -405,7 +433,7 @@ export class AdministratorComponent implements OnInit {
       selectedItem.nrecibo !== item.nrecibo
     );
     this.totalMontoNeto -= item.mneto; // Actualiza la suma total
-    
+
     if(this.totalMontoNeto > 0){
       this.amount = true;
     }else{
