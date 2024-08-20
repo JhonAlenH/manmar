@@ -169,7 +169,7 @@ export class AdministratorComponent implements OnInit {
   }
 
   filterSeguimientosData(values: string) {
-    this.paginatedList = this.paginatedList.filter((item) => {
+    this.paginatedList = this.receiptDueList.filter((item) => {
       const searchValue = values.toLowerCase();
       const poliza = item.xpoliza ? item.xpoliza.toString().toLowerCase() : '';
       const nombre = item.xnombre ? item.xnombre.toString().toLowerCase() : '';
@@ -324,7 +324,7 @@ export class AdministratorComponent implements OnInit {
         item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
         item.mneto = parseFloat(item.mneto.toFixed(2));
       });
-
+      console.log(this.receiptDueList)
       this.uniqueCedentes = response.cedents
     });
   }
@@ -362,10 +362,14 @@ export class AdministratorComponent implements OnInit {
     });
   }
 
-  onPanelOpen(cedenteId: number): void {
-    this.receipt = [];
-    this.receipt = this.receiptDueList.filter((item: any) => item.ccedente === cedenteId)
-    this.updatePaginatedList();
+  onPanelOpen(cedenteId: number, type: string = 'Todas'): void {
+    this.receipt = this.receiptDueList.filter((item: any) => item.ccedente === cedenteId);
+  
+    if (type) {
+      this.filterReceiptsByType(type);
+    } else {
+      this.updatePaginatedList();
+    }
   }
 
   updatePaginatedList() {
@@ -376,6 +380,25 @@ export class AdministratorComponent implements OnInit {
 
   onPageChange() {
     this.updatePaginatedList();
+  }
+
+  filterReceiptsByType(type: string) {
+    const today = new Date();
+  
+    if (type === 'Vencidas') {
+      // Filtrar recibos cuya fecha de finalización es menor que hoy
+      this.receipt = this.receiptDueList.filter((item: any) => new Date(item.fhasta_rec) < today);
+    } else if (type === 'Vigentes') {
+      // Filtrar recibos cuya fecha de finalización es mayor o igual a hoy
+      this.receipt = this.receiptDueList.filter((item: any) => new Date(item.fhasta_rec) >= today);
+    } else if (type === 'Próximas') {
+      // Filtrar recibos cuya fecha de inicio es mayor a hoy
+      this.receipt = this.receiptDueList.filter((item: any) => new Date(item.fhasta_rec) > today);
+    } else if(type === 'Todas'){
+      this.receipt = this.receiptDueList
+    }
+    
+    this.updatePaginatedList(); // Actualizar la lista paginada con los resultados filtrados
   }
 
 

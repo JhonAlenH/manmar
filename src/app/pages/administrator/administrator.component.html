@@ -135,7 +135,7 @@
                 <div class="d-flex py-4">
                   <div class="col-sm-12">
                     <mat-accordion>
-                      <mat-expansion-panel *ngFor="let cedente of uniqueCedentes" style="background: #6f86e3;;" (opened)="onPanelOpen(cedente.ccedente)">
+                      <mat-expansion-panel *ngFor="let cedente of uniqueCedentes" style="background: #6f86e3;;" (opened)="onPanelOpen(cedente.ccedente, 'Todas')">
                         <mat-expansion-panel-header>
                           <mat-panel-title style="font-weight: 500; color: aliceblue;">
                             {{ cedente.xcedente }}
@@ -160,9 +160,10 @@
                                 Tipo de Comisiones
                               </button>
                               <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Vencidas</a></li>
-                                <li><a class="dropdown-item" href="#">Vigentes</a></li>
-                                <li><a class="dropdown-item" href="#">Próximas</a></li>
+                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Vencidas')">Vencidas</a></li>
+                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Vigentes')">Vigentes</a></li>
+                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Próximas')">Próximas</a></li>
+                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Todas')">Todas</a></li>
                               </ul>
                             </div>
                           </div>
