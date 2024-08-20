@@ -464,6 +464,8 @@ export class AdministratorComponent implements OnInit {
     }else{
       this.amount = false;
     }
+
+    console.log(this.receiptSelected)
     
   }
   

@@ -199,7 +199,10 @@
                                 <td>{{ item.fhasta_rec | date }}</td>
                                 <td>{{ item.mcomisionext | currency }}</td>
                                 <td >{{item.mimpuesto}}</td>
-                                <td >{{item.mneto | currency}}</td>
+                                <!-- <td >{{item.mneto | currency}}</td> -->
+                                <div>
+                                  <input type="number" [(ngModel)]="item.mneto" class="custom-input">
+                                </div>
                                 <td>
                                   <input type="checkbox" [(ngModel)]="item.selected" (change)="onItemSelect(item)" />
                                 </td>

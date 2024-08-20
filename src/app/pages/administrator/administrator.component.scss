@@ -243,3 +243,24 @@ table {
   right: 22px;
   bottom: 22px;
 }
+
+.custom-input-container {
+  position: relative;
+  margin: 20px 0;
+}
+
+.custom-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  padding: 10px 5px;
+  box-sizing: border-box;
+  background-color: transparent; /* Fondo transparente */
+  color: #000; /* Color del texto */
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.custom-input:focus {
+  border-bottom: 2px solid #3f51b5; /* Color de borde al hacer focus */
+}
