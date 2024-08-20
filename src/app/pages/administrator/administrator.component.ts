@@ -47,6 +47,9 @@ export class AdministratorComponent implements OnInit {
   parametros: any;
   moneda: any;
 
+  firstCedenteId: number | null = null; // Para rastrear el primer cedenteId seleccionado
+  cedenteNombre: string = ''; // Nombre del cedente del primer ítem seleccionado
+
   pageReceipt = 1; // Página actual
   pageReceiptSize = 7; // Tamaño de página, cantidad de elementos por página
   paginatedList: any[] = [];
@@ -427,24 +430,75 @@ export class AdministratorComponent implements OnInit {
   }
 
   toggleSelectAll() {
+    if (this.selectAll) {
+      this.firstCedenteId = null; // Reiniciar el `firstCedenteId` para una nueva selección
+      this.cedenteNombre = ''; // Reiniciar el nombre del primer cedente
+    }
+  
     this.receiptSelected = []; // Limpiamos la lista antes de agregar nuevos elementos
     this.totalMontoNeto = 0; // Reiniciamos la suma
-    this.paginatedList.forEach(item => {
-      item.selected = this.selectAll;
+  
+    for (const item of this.paginatedList) {
       if (this.selectAll) {
-        this.addToReceiptSelected(item);
+        if (this.firstCedenteId === null) {
+          // Si es el primer ítem seleccionado, guarda el `cedenteId` y el nombre del cedente
+          this.firstCedenteId = item.ccedente;
+          this.cedenteNombre = item.xcedente; // Asume que tienes el nombre del cedente en item.xnombreCedente
+          item.selected = true;
+          this.addToReceiptSelected(item);
+        } else if (item.ccedente !== this.firstCedenteId) {
+          // Si el cedenteId no coincide, muestra un mensaje de error y rompe el bucle
+          Swal.fire({
+            icon: 'error',
+            text: `No se puede seleccionar porque ya tiene una selección de ${this.cedenteNombre}`,
+          });
+          this.selectAll = false; // Deselecciona el checkbox de "Seleccionar todo"
+          break; // Sale del bucle, no selecciona más ítems
+        } else {
+          item.selected = true;
+          this.addToReceiptSelected(item);
+        }
+      } else {
+        item.selected = false; // Deselecciona todos los elementos si `selectAll` es false
       }
-    });
+    }
+  
+    // Si no se seleccionó ningún elemento, reinicia las variables
+    if (this.receiptSelected.length === 0) {
+      this.firstCedenteId = null;
+      this.cedenteNombre = '';
+    }
   }
   
   onItemSelect(item: any) {
     if (item.selected) {
-      this.addToReceiptSelected(item);
+      if (this.firstCedenteId === null) {
+        // Si no hay cedentes seleccionados aún, almacena el cedenteId del primer seleccionado
+        this.firstCedenteId = item.ccedente;
+        this.cedenteNombre = item.xcedente; // Asume que tienes el nombre del cedente en item.xnombreCedente
+        this.addToReceiptSelected(item);
+      } else if (item.ccedente !== this.firstCedenteId) {
+        // Si el cedenteId no coincide, muestra un mensaje de error
+        Swal.fire({
+          icon: 'error',
+          text: `No se puede seleccionar porque ya tiene una selección de ${this.cedenteNombre}`,
+        });
+
+        item.selected = false; // Deselecciona el checkbox
+      } else {
+        this.addToReceiptSelected(item);
+      }
     } else {
       this.removeFromReceiptSelected(item);
+
+      // Si no quedan recibos seleccionados, reinicia el `firstCedenteId`
+      if (this.receiptSelected.length === 0) {
+        this.firstCedenteId = null;
+        this.cedenteNombre = '';
+      }
     }
   }
-  
+
   addToReceiptSelected(item: any) {
     const impuestoBs = item.mimpuesto * this.bcv;
     const netoBs =  item.mneto * this.bcv;
@@ -459,16 +513,11 @@ export class AdministratorComponent implements OnInit {
     });
     this.totalMontoNeto += item.mneto; // Actualiza la suma total
 
-    if(this.totalMontoNeto > 0){
-      this.amount = true;
-    }else{
-      this.amount = false;
-    }
+    this.amount = this.totalMontoNeto > 0;
 
-    console.log(this.receiptSelected)
-    
+    console.log(this.receiptSelected);
   }
-  
+
   removeFromReceiptSelected(item: any) {
     this.receiptSelected = this.receiptSelected.filter(selectedItem => 
       selectedItem.id_poliza !== item.xpoliza || 
@@ -476,10 +525,12 @@ export class AdministratorComponent implements OnInit {
     );
     this.totalMontoNeto -= item.mneto; // Actualiza la suma total
 
-    if(this.totalMontoNeto > 0){
-      this.amount = true;
-    }else{
-      this.amount = false;
+    this.amount = this.totalMontoNeto > 0;
+
+    // Si no quedan recibos seleccionados, reinicia el `firstCedenteId`
+    if (this.receiptSelected.length === 0) {
+      this.firstCedenteId = null;
+      this.cedenteNombre = '';
     }
   }
 
