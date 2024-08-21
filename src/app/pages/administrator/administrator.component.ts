@@ -110,24 +110,32 @@ export class AdministratorComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
-
+  
     fetch('https://ve.dolarapi.com/v1/dolares')
-    .then((response) => response.json())
-    .then(data => {
-      const banco = data.map((item: any) => {
-        if(item.fuente == 'oficial'){
-          this.bcv = item.promedio
-        }
+      .then((response) => response.json())
+      .then(data => {
+        data.forEach((item: any) => {
+          if (item.fuente === 'oficial') {
+            this.bcv = item.promedio;
+          }
+        });
+  
+        console.log('BCV actualizado:', this.bcv);
       })
-    });
-
-    if (this.currentUser) {
-      this.getCedents();
-      this.getTrades();
-      this.getBank();
-      this.searchContracts();
-      this.searchDueReceipt();
-    }
+      .catch(error => {
+        console.error('Error al obtener la tasa del BCV:', error);
+        // Continuar con el valor predeterminado de `this.bcv`
+      })
+      .finally(() => {
+        // Ejecutar las funciones que dependen de `this.bcv`, ya sea que la API haya fallado o no
+        if (this.currentUser) {
+          this.getCedents();
+          this.getTrades();
+          this.getBank();
+          this.searchContracts();
+          this.searchDueReceipt();
+        }
+      });
   }
 
   ngAfterViewInit() {
@@ -313,10 +321,11 @@ export class AdministratorComponent implements OnInit {
   searchDueReceipt() {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
+  
       this.receiptDueList.forEach(item => {
         // Determinar el tipo de monto basado en el valor de ivalor
         item.montoTipo = item.ivalor === 'N' ? 'neto' : 'bruto';
-        
+  
         // Asignar impuestos y cálculos basados en el tipo de monto
         item.mimpuesto = item.montoTipo === 'neto' ? 0 : 5;
         item.mneto = item.montoTipo === 'neto' 
@@ -326,9 +335,11 @@ export class AdministratorComponent implements OnInit {
         // Asegurarse de que el monto neto sea positivo y redondearlo a dos decimales
         item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
         item.mneto = parseFloat(item.mneto.toFixed(2));
+        item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
       });
-      console.log(this.receiptDueList)
-      this.uniqueCedentes = response.cedents
+  
+      console.log(this.receiptDueList);
+      this.uniqueCedentes = response.cedents;
     });
   }
 
@@ -361,6 +372,7 @@ export class AdministratorComponent implements OnInit {
   
         item.mneto = Math.abs(item.mneto);
         item.mneto = parseFloat(item.mneto.toFixed(2));
+        item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
       }
     });
   }
@@ -501,9 +513,9 @@ export class AdministratorComponent implements OnInit {
 
   addToReceiptSelected(item: any) {
     const impuestoBs = item.mimpuesto * this.bcv;
-    const netoBs =  item.mneto * this.bcv;
+    const netoBs =  item.mnetobs;
     this.receiptSelected.push({
-      id_poliza: item.id,
+      id_poliza: item.id_poliza,
       nrecibo: item.nrecibo,
       mimpuesto: impuestoBs,
       mimpuestoext: item.mimpuesto,
@@ -511,7 +523,7 @@ export class AdministratorComponent implements OnInit {
       mcomision_next: item.mneto,
       fcobro: new Date()
     });
-    this.totalMontoNeto += item.mneto; // Actualiza la suma total
+    this.totalMontoNeto += item.mnetobs; // Actualiza la suma total
 
     this.amount = this.totalMontoNeto > 0;
 
@@ -520,10 +532,10 @@ export class AdministratorComponent implements OnInit {
 
   removeFromReceiptSelected(item: any) {
     this.receiptSelected = this.receiptSelected.filter(selectedItem => 
-      selectedItem.id_poliza !== item.xpoliza || 
+      selectedItem.id_poliza !== item.id_poliza || 
       selectedItem.nrecibo !== item.nrecibo
     );
-    this.totalMontoNeto -= item.mneto; // Actualiza la suma total
+    this.totalMontoNeto -= item.mnetobs; // Actualiza la suma total
 
     this.amount = this.totalMontoNeto > 0;
 
@@ -543,6 +555,7 @@ export class AdministratorComponent implements OnInit {
     });
   }
 
+  //Este es el individual
   onCobrar(detail: any) {
     this.moneda = 'Moneda'
     this.parametros = detail;
@@ -554,6 +567,19 @@ export class AdministratorComponent implements OnInit {
     });
   }
 
+  //Este es como el masivo
+  onCobrar2(comision: any) {
+    this.moneda = 'Moneda'
+    this.comisionManmar = comision;
+    this.administrativeForm.get('mmonto')?.setValue(this.comisionManmar)
+    this.dialogRef = this.dialog.open(this.Receipt, {
+      width: '90%', // Ancho del diálogo
+      height: '40%', // Alto del diálogo
+      maxWidth: '800px'
+    });
+  }
+
+
   activateModal(): void {
     this.bottomSheet.dismiss()
     this.dialogRef = this.dialog.open(this.Distribution, {
@@ -561,6 +587,80 @@ export class AdministratorComponent implements OnInit {
       height: '90%', // Alto del diálogo
       maxWidth: '1200px'
     });
+  }
+
+  validateCobro(){
+    const banco = this.administrativeForm.get('cbanco')?.value;
+    const referencia = this.administrativeForm.get('xreferencia')?.value;
+    if(banco && referencia){
+      this.receiptSelected.forEach(item => {
+        item.cbanco = banco;
+        item.xreferencia = referencia;
+        item.cmoneda_cobro = 1;
+        item.mingreso = item.mcomision_n
+      });
+
+      Swal.fire({
+        icon: "question",
+        title: "¿Deseas realizar este Cobro?",
+        showCancelButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#5e72e4",
+        cancelButtonText: "Cancelar",
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        preConfirm: async () => {
+          // Cerramos el modal original para proceder con la lógica
+          Swal.close();
+      
+          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+          Swal.fire({
+            title: 'Espere por favor...',
+            text: 'Procesando su solicitud',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+      
+          try {
+            let data = {
+              recibos: this.receiptSelected
+            };
+  
+            this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
+              if (response.status_receipt) {
+                Swal.close();
+                Swal.fire({
+                  icon: "success",
+                  title: `Se ha registrado el cobro exitosamente`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then((result) => {
+                  location.reload()
+                });
+              }
+            },(err)=>{
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `No se pudo actualizar el cobro`,
+              });
+            });
+          } catch (error) {
+            // Mostrar un mensaje de error si algo falla
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Request failed: ${error.message}`,
+            });
+          }
+        },
+      });
+    }else{
+
+    }
+    console.log(this.receiptSelected)
   }
 
   onSubmit(){
