@@ -34,6 +34,7 @@ export class AdministratorComponent implements OnInit {
 
   @ViewChild('Distribution') Distribution!: TemplateRef<any>;
   @ViewChild('Receipt') Receipt!: TemplateRef<any>;
+  @ViewChild('Abonar') Abonar!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   columnsToDisplay: string[] = [ 'xpoliza', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
@@ -58,6 +59,11 @@ export class AdministratorComponent implements OnInit {
 
   currentUser!: any;
   bcv!: any;
+  currentPolizaId: string | undefined;
+  currentRecibo: string | undefined;
+  netoBs: any;
+
+
   cedentsList: any[] = [];
   tradeList: any[] = [];
   bankList: any[] = [];
@@ -66,6 +72,8 @@ export class AdministratorComponent implements OnInit {
   coinsList: any[] = [];
   receipt: any[] = [];
   receiptSelected: any[] = [];
+  abonosList: any[] = [];
+  newAbono: any = { fabono: '', mabono: null };
 
   selectAll: boolean = false;
   amount: boolean = false;
@@ -587,6 +595,83 @@ export class AdministratorComponent implements OnInit {
       height: '90%', // Alto del diálogo
       maxWidth: '1200px'
     });
+  }
+
+  abonar(item: any){
+    this.currentPolizaId = item.id_poliza
+    this.currentRecibo = item.crecibo
+    this.netoBs = item.mnetobs
+
+    let data = {
+      id_poliza: item.id_poliza,
+      crecibo: item.crecibo
+    }
+    this.http.post(environment.apiUrl + `/api/v1/emission/search-fertilizers`, data).subscribe((response: any) => {
+      if (response.abonos && response.abonos.length > 0) {
+        const correctedAbono = response.abonos.map((contract: any) => {
+          // Convertimos la fecha a cadena antes de ajustar
+          const dateAsString = new Date(contract.fabono).toISOString();
+          contract.fabono = this.dateUtilService.adjustDate(dateAsString);
+          return contract;
+        });
+        this.abonosList = correctedAbono;
+        console.log(this.abonosList);
+      } else {
+        this.abonosList = []; // Lista vacía si no hay abonos existentes
+      }
+    });
+
+    this.dialogRef = this.dialog.open(this.Abonar, {
+      width: '60%', // Ancho del diálogo
+      height: '60%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+
+  calcularAbonoRestante(){
+     const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mabono || 0), 0);
+     this.newAbono.mabono = this.netoBs - totalAbonos;  // Calcula cuánto queda para llegar a netoBs
+     this.newAbono.mabono = this.newAbono.mabono.toFixed(2);
+  }
+
+  validarNuevoAbono() {
+    const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mabono || 0), 0);
+    const maxAbono = this.netoBs + totalAbonos;
+
+    if (maxAbono > this.netoBs) {
+      Swal.fire({
+        icon: 'error',
+        text: `No se puede agregar un Abono mayor al Monto Neto en Bolívares`,
+      });
+    }
+  }
+
+  guardarNuevoAbono() {
+
+    if(this.newAbono.mabono > this.netoBs){
+      Swal.fire({
+        icon: 'error',
+        text: `No se puede agregar un Abono mayor al Monto Neto en Bolívares`,
+      });
+
+    }else{
+      const data = {
+        fabono: this.newAbono.fabono,
+        mabono: this.newAbono.mabono,
+        id_poliza: this.currentPolizaId,
+        crecibo: this.currentRecibo
+      };
+  
+      this.http.post(environment.apiUrl + '/api/v1/emission/add-abono', data)
+        .subscribe(response => {
+          // Manejar la respuesta, cerrar el diálogo, etc.
+          if (this.dialogRef) {
+            this.dialogRef.close();
+          }
+        }); 
+    }
+
   }
 
   validateCobro(){
