@@ -53,7 +53,13 @@ export class AdministratorComponent implements OnInit {
 
   pageReceipt = 1; // Página actual
   pageReceiptSize = 7; // Tamaño de página, cantidad de elementos por página
+
+  pageFee = 1; // Página actual
+  pageFeeSize = 7; // Tamaño de página, cantidad de elementos por página
+
+
   paginatedList: any[] = [];
+  paginatedFeeList: any[] = [];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -69,11 +75,12 @@ export class AdministratorComponent implements OnInit {
   bankList: any[] = [];
   receiptDueList: any[] = [];
   uniqueCedentes: any[] = [];
+  uniqueCedentesFee: any[] = [];
   coinsList: any[] = [];
   receipt: any[] = [];
+  fee: any[] = [];
   receiptSelected: any[] = [];
-  abonosList: any[] = [];
-  newAbono: any = { fabono: '', mabono: null };
+  feeChargedList: any[] = [];
 
   selectAll: boolean = false;
   amount: boolean = false;
@@ -140,8 +147,8 @@ export class AdministratorComponent implements OnInit {
           this.getCedents();
           this.getTrades();
           this.getBank();
-          this.searchContracts();
           this.searchDueReceipt();
+          this.feeCharged();
         }
       });
   }
@@ -161,30 +168,6 @@ export class AdministratorComponent implements OnInit {
     value = (value / 100).toFixed(2);
     event.target.value = value;
     this.administrativeForm.get('mmonto')?.setValue(event.target.value)
-  }
-
-  onNextStepReceipt() {
-    if (this.administrativeForm.valid) {
-      this.onSubmit();
-    } else {
-      let camposFaltantes = '';
-      camposFaltantes += '<br>- '; // Iniciar con un salto de línea y guión
-      Object.keys(this.administrativeForm.controls).forEach(key => {
-          const control = this.administrativeForm.get(key);
-          if (control && control.invalid) { // Agregar verificación de nulidad
-              camposFaltantes += this.camposNecesarios[key] + '<br>-'; // Usar el mapa de nombres de campo y agregar un salto de línea
-          }
-      });
-      camposFaltantes = camposFaltantes.slice(0, -4); // Eliminar el espacio extra al final
-      
-      Swal.fire({
-          title: "Por favor, complete los siguientes campos para registrar el cobro: <br>",
-          html: `${camposFaltantes}`, // Usar html en lugar de text
-          icon: "warning",
-          confirmButtonText: "<strong>Aceptar</strong>",
-          confirmButtonColor: "#5e72e4",
-      });
-    }
   }
 
   filterSeguimientosData(values: string) {
@@ -308,24 +291,6 @@ export class AdministratorComponent implements OnInit {
     this.getCoins();
   }
 
-  searchContracts() {
-    const data = {
-      ccedente: this.administrativeForm.get('ccedente')?.value,
-      cramo: this.administrativeForm.get('cramo')?.value,
-    };
-
-    this.http.post(environment.apiUrl + '/api/v1/emission/search', data).subscribe((response: any) => {
-      if (response.data.contracts) {
-        const correctedContracts = response.data.contracts.map((contract: any) => {
-          contract.fdesde_pol = this.dateUtilService.adjustDate(contract.fdesde);
-          contract.fhasta_pol = this.dateUtilService.adjustDate(contract.fhasta);
-          return contract;
-        });
-        this.dataSource.data = correctedContracts;
-      }
-    });
-  }
-
   searchDueReceipt() {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
@@ -345,9 +310,15 @@ export class AdministratorComponent implements OnInit {
         item.mneto = parseFloat(item.mneto.toFixed(2));
         item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
       });
-  
-      console.log(this.receiptDueList);
       this.uniqueCedentes = response.cedents;
+    });
+  }
+
+  feeCharged() {
+    this.http.post(environment.apiUrl + '/api/v1/emission/fee-charged', null).subscribe((response: any) => {
+      this.feeChargedList = response.fee;
+  
+      this.uniqueCedentesFee = response.cedents;
     });
   }
 
@@ -410,7 +381,15 @@ export class AdministratorComponent implements OnInit {
     // Asignar los recibos filtrados a this.receipt y actualizar la lista paginada
     this.receipt = filteredReceipts;
     this.updatePaginatedList();
-}
+  }
+
+  onPanelOpen2(cedenteId: number): void {
+    // Filtrar primero por ccedente
+    let filteredFee = this.feeChargedList.filter((item: any) => item.ccedente === cedenteId);
+    
+    this.fee = filteredFee;
+    this.updatePaginatedFeeList();
+  } 
 
   updatePaginatedList() {
     const startIndex = (this.pageReceipt - 1) * this.pageReceiptSize;
@@ -418,8 +397,18 @@ export class AdministratorComponent implements OnInit {
     this.paginatedList  = this.receipt.slice(startIndex, endIndex);
   }
 
+  updatePaginatedFeeList() {
+    const startIndex = (this.pageFee - 1) * this.pageFeeSize;
+    const endIndex = startIndex + this.pageFeeSize;
+    this.paginatedFeeList  = this.fee.slice(startIndex, endIndex);
+  }
+
   onPageChange() {
     this.updatePaginatedList();
+  }
+
+  onPageChangeFee() {
+    this.updatePaginatedFeeList();
   }
 
   filterReceiptsByType(type: string) {
@@ -534,8 +523,6 @@ export class AdministratorComponent implements OnInit {
     this.totalMontoNeto += item.mnetobs; // Actualiza la suma total
 
     this.amount = this.totalMontoNeto > 0;
-
-    console.log(this.receiptSelected);
   }
 
   removeFromReceiptSelected(item: any) {
@@ -563,18 +550,6 @@ export class AdministratorComponent implements OnInit {
     });
   }
 
-  //Este es el individual
-  onCobrar(detail: any) {
-    this.moneda = 'Moneda'
-    this.parametros = detail;
-    this.comisionManmar = detail.mcomisionext;
-    this.dialogRef = this.dialog.open(this.Receipt, {
-      width: '90%', // Ancho del diálogo
-      height: '50%', // Alto del diálogo
-      maxWidth: '800px'
-    });
-  }
-
   //Este es como el masivo
   onCobrar2(comision: any) {
     this.moneda = 'Moneda'
@@ -585,93 +560,6 @@ export class AdministratorComponent implements OnInit {
       height: '40%', // Alto del diálogo
       maxWidth: '800px'
     });
-  }
-
-
-  activateModal(): void {
-    this.bottomSheet.dismiss()
-    this.dialogRef = this.dialog.open(this.Distribution, {
-      width: '90%', // Ancho del diálogo
-      height: '90%', // Alto del diálogo
-      maxWidth: '1200px'
-    });
-  }
-
-  abonar(item: any){
-    this.currentPolizaId = item.id_poliza
-    this.currentRecibo = item.crecibo
-    this.netoBs = item.mnetobs
-
-    let data = {
-      id_poliza: item.id_poliza,
-      crecibo: item.crecibo
-    }
-    this.http.post(environment.apiUrl + `/api/v1/emission/search-fertilizers`, data).subscribe((response: any) => {
-      if (response.abonos && response.abonos.length > 0) {
-        const correctedAbono = response.abonos.map((contract: any) => {
-          // Convertimos la fecha a cadena antes de ajustar
-          const dateAsString = new Date(contract.fabono).toISOString();
-          contract.fabono = this.dateUtilService.adjustDate(dateAsString);
-          return contract;
-        });
-        this.abonosList = correctedAbono;
-        console.log(this.abonosList);
-      } else {
-        this.abonosList = []; // Lista vacía si no hay abonos existentes
-      }
-    });
-
-    this.dialogRef = this.dialog.open(this.Abonar, {
-      width: '60%', // Ancho del diálogo
-      height: '60%', // Alto del diálogo
-      maxWidth: '1200px',
-      maxHeight: '1200px'
-    });
-  }
-
-  calcularAbonoRestante(){
-     const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mabono || 0), 0);
-     this.newAbono.mabono = this.netoBs - totalAbonos;  // Calcula cuánto queda para llegar a netoBs
-     this.newAbono.mabono = this.newAbono.mabono.toFixed(2);
-  }
-
-  validarNuevoAbono() {
-    const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mabono || 0), 0);
-    const maxAbono = this.netoBs + totalAbonos;
-
-    if (maxAbono > this.netoBs) {
-      Swal.fire({
-        icon: 'error',
-        text: `No se puede agregar un Abono mayor al Monto Neto en Bolívares`,
-      });
-    }
-  }
-
-  guardarNuevoAbono() {
-
-    if(this.newAbono.mabono > this.netoBs){
-      Swal.fire({
-        icon: 'error',
-        text: `No se puede agregar un Abono mayor al Monto Neto en Bolívares`,
-      });
-
-    }else{
-      const data = {
-        fabono: this.newAbono.fabono,
-        mabono: this.newAbono.mabono,
-        id_poliza: this.currentPolizaId,
-        crecibo: this.currentRecibo
-      };
-  
-      this.http.post(environment.apiUrl + '/api/v1/emission/add-abono', data)
-        .subscribe(response => {
-          // Manejar la respuesta, cerrar el diálogo, etc.
-          if (this.dialogRef) {
-            this.dialogRef.close();
-          }
-        }); 
-    }
-
   }
 
   validateCobro(){
@@ -746,97 +634,5 @@ export class AdministratorComponent implements OnInit {
 
     }
     console.log(this.receiptSelected)
-  }
-
-  onSubmit(){
-    Swal.fire({
-      icon: "question",
-      title: "¿Deseas realizar la Distribución?",
-      showCancelButton: true,
-      confirmButtonText: "Aceptar",
-      confirmButtonColor: "#5e72e4",
-      cancelButtonText: "Cancelar",
-      showLoaderOnConfirm: true,
-      allowOutsideClick: false,
-      preConfirm: async () => {
-        // Cerramos el modal original para proceder con la lógica
-        Swal.close();
-    
-        // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-        Swal.fire({
-          title: 'Espere por favor...',
-          text: 'Procesando su solicitud',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          }
-        });
-    
-        try {
-          let data = {
-            id_poliza: this.parametros.id_poliza,
-            nrecibo: this.parametros.nrecibo,
-            fcobro: new Date(),
-            cbanco: this.administrativeForm.get('cbanco')?.value,
-            xreferencia: this.administrativeForm.get('xreferencia')?.value,
-            cmoneda_cobro: this.administrativeForm.get('cmoneda')?.value,
-            mingreso: this.administrativeForm.get('mmonto')?.value,
-          };
-
-          this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
-            if (response.status_receipt) {
-              Swal.close();
-              this.activateModal();
-            }
-          },(err)=>{
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: `No se pudo actualizar el cobro`,
-            });
-          });
-        } catch (error) {
-          // Mostrar un mensaje de error si algo falla
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: `Request failed: ${error.message}`,
-          });
-        }
-      },
-    }).then((result) => {
-      if (result.dismiss === Swal.DismissReason.cancel) {
-        // Si se presionó "Cancelar", realizar la consulta a la API
-        let data = {
-          id_poliza: this.parametros.id_poliza,
-          nrecibo: this.parametros.nrecibo,
-          fcobro: new Date(),
-          cbanco: this.administrativeForm.get('cbanco')?.value,
-          xreferencia: this.administrativeForm.get('xreferencia')?.value,
-          cmoneda_cobro: this.administrativeForm.get('cmoneda')?.value,
-          mingreso: this.administrativeForm.get('mmonto')?.value,
-        };
-        this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt`, data).subscribe((response: any) => {
-          if (response.status_receipt) {
-            Swal.fire({
-              icon: "success",
-              title: `Se ha registrado el cobro exitosamente`,
-              showConfirmButton: false,
-              timer: 4000
-            }).then((result) => {
-              location.reload()
-            });
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error al registrar el cobro',
-            });
-          }
-        });
-      }
-    });
-    
-
-
   }
 }
