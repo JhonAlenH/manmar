@@ -33,15 +33,18 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('bottomSheetReceipt') bottomSheetReceipt: TemplateRef<any>;
 
   @ViewChild('Distribution') Distribution!: TemplateRef<any>;
-  @ViewChild('Receipt') Receipt!: TemplateRef<any>;
+  @ViewChild('Complemento') Complemento!: TemplateRef<any>;
   @ViewChild('Abonar') Abonar!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  columnsToDisplay: string[] = [ 'xpoliza', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
-  columnsName: string[] = ['Póliza', 'Ramo', 'Asegurado', 'Fecha Desde', 'Fecha Hasta'];
+  columnsToDisplay: string[] = [ 'xpoliza', 'xnombre', 'fcobro', 'mingreso', 'mcomisionext'];
+  columnsName: string[] = ['Póliza', 'Asegurado', 'Fecha Cobro', 'Monto Cobrado Bs.', 'Monto Cobrado $'];
   columnsToDisplayWithExpand: string[] = [...this.columnsToDisplay, 'expand'];
-  columnsNameDetail: string[] = ['N° Recibo', 'Fecha Desde', 'Fecha Hasta', 'Monto Comisión'];
+  columnsNameDetail: string[] = ['Fecha de Complemento', 'Monto de Complemento'];
   expandedDetailData: any[] = [];
+  currentRecordComplements: { [key: string]: any[] } = {};
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   expandedElement: any | null = null;
   comisionManmar: any;
@@ -60,8 +63,7 @@ export class AdministratorComponent implements OnInit {
 
   paginatedList: any[] = [];
   paginatedFeeList: any[] = [];
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
 
   currentUser!: any;
   bcv!: any;
@@ -84,6 +86,7 @@ export class AdministratorComponent implements OnInit {
 
   selectAll: boolean = false;
   amount: boolean = false;
+  newComplementAdded: boolean = false;
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -108,7 +111,9 @@ export class AdministratorComponent implements OnInit {
     cbanco: ['', Validators.required],
     xreferencia: ['', [Validators.maxLength(6)]],
     mmonto: ['', Validators.required],
-    cmoneda: ['']
+    cmoneda: [''],
+    fcomplemento: [''],
+    mcomplemento: [''],
   });
 
   constructor(
@@ -154,8 +159,7 @@ export class AdministratorComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
+
   }
 
   applyFilter(event: Event) {
@@ -167,7 +171,7 @@ export class AdministratorComponent implements OnInit {
     let value = event.target.value.replace(/\D/g, '');
     value = (value / 100).toFixed(2);
     event.target.value = value;
-    this.administrativeForm.get('mmonto')?.setValue(event.target.value)
+    this.administrativeForm.get('mcomplemento')?.setValue(event.target.value)
   }
 
   filterSeguimientosData(values: string) {
@@ -179,6 +183,18 @@ export class AdministratorComponent implements OnInit {
       const fhasta = item.fhasta_rec ? item.fhasta_rec.toString().toLowerCase() : '';
   
       return poliza.includes(searchValue) || nombre.includes(searchValue) || fdesde.includes(searchValue) || fhasta.includes(searchValue)
+    });
+  }
+
+  filterComplementosData(values: string) {
+    this.paginatedFeeList = this.feeChargedList.filter((item) => {
+      const searchValue = values.toLowerCase();
+      const poliza = item.xpoliza ? item.xpoliza.toString().toLowerCase() : '';
+      const nombre = item.xnombre ? item.xnombre.toString().toLowerCase() : '';
+      const mingreso = item.mingreso ? item.mingreso.toString().toLowerCase() : '';
+      const mcomisionext = item.mcomisionext ? item.mcomisionext.toString().toLowerCase() : '';
+  
+      return poliza.includes(searchValue) || nombre.includes(searchValue) || mingreso.includes(searchValue) || mcomisionext.includes(searchValue)
     });
   }
 
@@ -316,9 +332,16 @@ export class AdministratorComponent implements OnInit {
 
   feeCharged() {
     this.http.post(environment.apiUrl + '/api/v1/emission/fee-charged', null).subscribe((response: any) => {
-      this.feeChargedList = response.fee;
-  
+      this.feeChargedList = response.fee.map((item: any) => {
+        return {
+          ...item,
+          fcobro: this.dateUtilService.formatDate(new Date(item.fcobro))
+        };
+      });
+
       this.uniqueCedentesFee = response.cedents;
+
+      this.dataSource.data = this.feeChargedList;
     });
   }
 
@@ -398,6 +421,8 @@ export class AdministratorComponent implements OnInit {
   }
 
   updatePaginatedFeeList() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
     const startIndex = (this.pageFee - 1) * this.pageFeeSize;
     const endIndex = startIndex + this.pageFeeSize;
     this.paginatedFeeList  = this.fee.slice(startIndex, endIndex);
@@ -434,7 +459,7 @@ export class AdministratorComponent implements OnInit {
   toggleRow(element: any) {
     this.expandedElement = this.expandedElement === element ? null : element;
     if (this.expandedElement) {
-      this.searchReceipt(element);
+      this.searchComplement(element);
     }
   }
 
@@ -542,23 +567,81 @@ export class AdministratorComponent implements OnInit {
   }
 
 
-  searchReceipt(element: any) {
-    this.http.post(environment.apiUrl + `/api/v1/emission/search-receipt/${element.id}`, null).subscribe((response: any) => {
-      if (response.receipt) {
-        this.expandedDetailData = response.receipt;
+  searchComplement(element: any) {
+    console.log(element);
+    this.http.post(environment.apiUrl + `/api/v1/emission/search-complement/${element.id_poliza}`, null).subscribe((response: any) => {
+      if (response.complement) {
+        // Carga los complementos específicos para el registro actual
+        console.log(response.complement)
+        this.currentRecordComplements[element.id] = response.complement;
+      } else {
+        this.currentRecordComplements[element.id] = [];
       }
     });
   }
 
-  //Este es como el masivo
-  onCobrar2(comision: any) {
-    this.moneda = 'Moneda'
-    this.comisionManmar = comision;
-    this.administrativeForm.get('mmonto')?.setValue(this.comisionManmar)
-    this.dialogRef = this.dialog.open(this.Receipt, {
-      width: '90%', // Ancho del diálogo
-      height: '40%', // Alto del diálogo
+
+  addComplement(element: any) {
+    this.administrativeForm.get('fcomplemento')?.setValue('');
+    this.administrativeForm.get('mcomplemento')?.setValue('');
+    this.parametros = element;
+  
+    // Asegúrate de inicializar los complementos para el registro actual si no existen
+    if (!this.currentRecordComplements[element.id]) {
+      this.currentRecordComplements[element.id] = [];
+    }
+  
+    this.dialogRef = this.dialog.open(this.Complemento, {
+      width: '90%',
+      height: '45%',
       maxWidth: '800px'
+    });
+  }
+
+  validateComplement() {
+    this.snackBar.open('Recuerda que debes darle click al botón de guardar para que se apliquen los cambios', '', {
+      duration: 4000,
+    });
+  
+    // Asegúrate de agregar el complemento al registro correcto
+    if (!this.currentRecordComplements[this.parametros.id]) {
+      this.currentRecordComplements[this.parametros.id] = [];
+    }
+  
+    this.currentRecordComplements[this.parametros.id].push({
+      id_poliza: this.parametros.id_poliza,
+      crecibo: this.parametros.crecibo,
+      fcomplemento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
+      mcomplemento: this.administrativeForm.get('mcomplemento')?.value,
+    });
+  
+    this.newComplementAdded = true;
+  
+    this.dialogRef.close();
+  }
+
+  onSubmitComplement(){
+    let data = {
+      complemento: Object.values(this.currentRecordComplements).flat()
+    };
+    console.log(data)
+    this.http.post(environment.apiUrl + `/api/v1/emission/complement`, data).subscribe((response: any) => {
+      if (response.status) {
+        Swal.fire({
+          icon: "success",
+          title: `¡Se ha ingresado el complemento exitosamente!`,
+          showConfirmButton: false,
+          timer: 4000
+        }).then((result) => {
+          location.reload()
+        });
+      }
+    },(err)=>{
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `No se pudo ingresar el complemento`,
+      });
     });
   }
 

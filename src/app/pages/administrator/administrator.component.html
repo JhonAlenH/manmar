@@ -183,76 +183,72 @@
                           </mat-panel-title>
                         </mat-expansion-panel-header>
 
-                        <!-- <div class="row">
-                          <div class="col-md-4">
-                            <mat-button-toggle-group 
-                              name="fontStyle" 
-                              aria-label="Font Style"
-                              [value]="getDefaultToggleValue(cedente)"
-                              (change)="onToggleChange($event.value, cedente)"
-                            >
-                              <mat-button-toggle value="bruto">Monto Bruto</mat-button-toggle>
-                              <mat-button-toggle value="neto">Monto Neto</mat-button-toggle>
-                            </mat-button-toggle-group>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="dropdown">
-                              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Tipo de Comisiones
+                        <div class="col-md-6 mx-auto py-3">
+                          <div class="w-70">
+                            <input type="text" class="form-control" placeholder="Buscar..." (input)="filterComplementosData($event.target.value)">
+                          </div>           
+                        </div>
+                        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort multiTemplateDataRows>
+                          <!-- Columna Crámo -->
+                          <ng-container [matColumnDef]="column" *ngFor="let column of columnsToDisplay; let i = index">
+                            <th mat-header-cell *matHeaderCellDef> {{ columnsName[i] }} </th>
+                            <td mat-cell *matCellDef="let element"> {{ element[column] }} </td>
+                          </ng-container>
+                        
+                          <ng-container matColumnDef="expand">
+                            <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+                            <td mat-cell *matCellDef="let element">
+                              <button mat-button (click)="toggleRow(element)">
+                                <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+                                <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
                               </button>
-                              <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Vencidas')">Vencidas</a></li>
-                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Vigentes')">Vigentes</a></li>
-                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Próximas')">Próximas</a></li>
-                                <li><a class="dropdown-item" (click)="filterReceiptsByType('Todas')">Todas</a></li>
-                              </ul>
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="w-70">
-                              <input type="text" class="form-control" placeholder="Buscar..." (input)="filterSeguimientosData($event.target.value)">
-                            </div>           
-                          </div>
-                        </div>-->
+                            </td>
+                          </ng-container>
+                        
+                          <ng-container matColumnDef="expandedDetail">
+                            <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length" style="background: aliceblue;">
+                              <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                                <div class="expanded-element-detail">
+                                  <table class="details-table">
+                                    <tr *ngIf="currentRecordComplements[element.id]?.length > 0">
+                                      <ng-container *ngFor="let column of columnsNameDetail">
+                                        <th>{{ column }}</th>
+                                      </ng-container>
+                                    </tr>
+                        
+                                    <ng-container *ngIf="currentRecordComplements[element.id]?.length > 0; else noData">
+                                      <tr *ngFor="let detail of currentRecordComplements[element.id]">
+                                        <td>{{ detail.fcomplemento }}</td>
+                                        <td>{{ detail.mcomplemento }}</td>
+                                      </tr>
+                                    </ng-container>
+                        
+                                    <ng-template #noData>
+                                      <tr>
+                                        <td colspan="3" class="text-center">No se ha encontrado complementos</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="3" class="text-center">
+                                          <button mat-button color="primary" (click)="addComplement(element)">Agregar</button>
+                                        </td>
+                                      </tr>
+                                    </ng-template>
+                                  </table>
+                                </div>
+                              </div>
+                            </td>
+                          </ng-container>
+                        
+                          <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+                          <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+                              class="example-element-row" [class.example-expanded-row]="expandedElement === element"
+                              (click)="toggleRow(element)">
+                          </tr>
+                          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+                        </table>
+                        
 
-                        <div class="table-responsive">
-
-                          <table class="table table-striped custom-table">
-                            <thead>
-                              <tr>
-                                <th>Póliza</th>
-                                <th>Asegurado</th>
-                                <th>Fecha Cobro</th>
-                                <th>Monto Cobrado Bs.</th>
-                                <th>Monto Cobrado $</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr *ngFor="let item of paginatedFeeList">
-                                <td>{{ item.xpoliza }}</td>
-                                <td>{{ item.xnombre }}</td>
-                                <td>{{ item.fcobro | date }}</td>
-                                <td>{{ item.mingreso }} Bs</td>
-                                <td>{{ item.mcomisionext | currency }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          <div class="d-flex justify-content-center mt-4">
-                            <ngb-pagination
-                            *ngIf="fee.length > 0"
-                            [collectionSize]="fee.length"
-                            [(page)]="pageFee"
-                            [pageSize]="pageFeeSize"
-                            [maxSize]="1"
-                            [previousLabel]="'‹'"
-                            [nextLabel]="'›'"
-                            [boundaryLinks]="true"
-                            [ellipses]="false"
-                            (pageChange)="onPageChangeFee()"
-                          ></ngb-pagination>
-                          </div>
-                        </div> 
+                        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="5"></mat-paginator>
                     
                       </mat-expansion-panel>
                     </mat-accordion>     
@@ -336,3 +332,45 @@
 
     </form>
   </mat-menu>
+
+  <ng-template #Complemento let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Complementos</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <mat-dialog-content>
+      <!-- <hr style="background: black;"> -->
+      <div class="row">
+        <div class="col-md-12 ">
+          <form [formGroup]="administrativeForm">
+            <div class="row">
+              <div class="col-md-6">
+                <h5 class="text-center"><strong>Fecha Complemento</strong></h5>
+                <div>
+                  <input type="date" formControlName="fcomplemento" class="custom-input">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h5 class="text-center"><strong>Monto del Complemento</strong></h5>
+                <mat-form-field class="example-full-width">
+                  <input matInput formControlName="mcomplemento" type="text" (input)="formatPrima($event)">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-center py-2">
+              <button class="btn btn-primary btn-sm" style="background: #6f86e3;" (click)="validateComplement()">
+                Aceptar
+              </button>
+            </div>
+          </form>
+
+        </div>
+
+      </div>
+    </mat-dialog-content>
+  </ng-template>
+  
+  <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" *ngIf="newComplementAdded" (click)="onSubmitComplement()">
+    <mat-icon>save</mat-icon>
+  </button>
