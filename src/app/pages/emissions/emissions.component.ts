@@ -456,7 +456,7 @@ export class EmissionsComponent implements OnInit {
 
   calcularFechaHasta(event: any) {
     const fechaDesde = new Date(event.value);
-    const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate());
+    const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
     const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
     this.emissionsFormGroup.get('fhasta')?.setValue(fechaHastaISO);
     this.fdesde = new Date(fechaDesde.getFullYear(), fechaDesde.getMonth(), fechaDesde.getDate());

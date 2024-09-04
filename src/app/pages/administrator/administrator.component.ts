@@ -83,6 +83,8 @@ export class AdministratorComponent implements OnInit {
   fee: any[] = [];
   receiptSelected: any[] = [];
   feeChargedList: any[] = [];
+  abonosList: any[] = [];
+  newAbono: any = { fmovimiento: '', mpagado: null };
 
   selectAll: boolean = false;
   amount: boolean = false;
@@ -156,10 +158,6 @@ export class AdministratorComponent implements OnInit {
           this.feeCharged();
         }
       });
-  }
-
-  ngAfterViewInit() {
-
   }
 
   applyFilter(event: Event) {
@@ -411,6 +409,8 @@ export class AdministratorComponent implements OnInit {
     let filteredFee = this.feeChargedList.filter((item: any) => item.ccedente === cedenteId);
     
     this.fee = filteredFee;
+    this.dataSource.paginator = null;
+    this.dataSource.sort = null;
     this.updatePaginatedFeeList();
   } 
 
@@ -421,6 +421,7 @@ export class AdministratorComponent implements OnInit {
   }
 
   updatePaginatedFeeList() {
+
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     const startIndex = (this.pageFee - 1) * this.pageFeeSize;
@@ -620,6 +621,134 @@ export class AdministratorComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  abonar(item: any){
+    this.currentPolizaId = item.id_poliza
+    this.currentRecibo = item.crecibo
+    this.netoBs = item.mnetobs
+
+    let data = {
+      id_poliza: item.id_poliza,
+      crecibo: item.crecibo
+    }
+    this.http.post(environment.apiUrl + `/api/v1/emission/search-fertilizers`, data).subscribe((response: any) => {
+      if (response.abonos && response.abonos.length > 0) {
+        const correctedAbono = response.abonos.map((contract: any) => {
+          // Convertimos la fecha a cadena antes de ajustar
+          const dateAsString = new Date(contract.fmovimiento).toISOString();
+          contract.fmovimiento = this.dateUtilService.adjustDate(dateAsString);
+          return contract;
+        });
+        this.abonosList = correctedAbono;
+        console.log(this.abonosList);
+      } else {
+        this.abonosList = []; // Lista vacía si no hay abonos existentes
+      }
+    });
+
+    this.dialogRef = this.dialog.open(this.Abonar, {
+      width: '60%', // Ancho del diálogo
+      height: '60%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+
+  calcularAbonoRestante(){
+     const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
+     this.newAbono.mpagado = this.netoBs - totalAbonos;  // Calcula cuánto queda para llegar a netoBs
+     this.newAbono.mpagado = this.newAbono.mpagado.toFixed(2);
+  }
+
+  validarNuevoAbono() {
+    const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
+    const maxAbono = this.netoBs + totalAbonos;
+  }
+
+  guardarNuevoAbono() {
+    this.dialogRef.close();
+    Swal.fire({
+      icon: "question",
+      title: "¿Deseas realizar este Abono?",
+      showCancelButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#5e72e4",
+      cancelButtonText: "Cancelar",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: false,
+      preConfirm: async () => {
+        // Cerramos el modal original para proceder con la lógica
+        Swal.close();
+    
+        // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+        Swal.fire({
+          title: 'Espere por favor...',
+          text: 'Procesando su solicitud',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+    
+        try {
+          const data = {
+            fmovimiento: this.newAbono.fmovimiento,
+            mpagado: this.newAbono.mpagado,
+            id_poliza: this.currentPolizaId,
+            crecibo: this.currentRecibo,
+            itipomov: 'A'
+          };
+
+          this.http.post(environment.apiUrl + `/api/v1/emission/add-abono`, data).subscribe((response: any) => {
+            if (response.status) {
+              Swal.close();
+              Swal.fire({
+                icon: "success",
+                title: `Se ha registrado el abono exitosamente`,
+                showConfirmButton: false,
+                timer: 4000
+              }).then((result) => {
+                let maxAbono;
+                const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
+                if(totalAbonos === 0){
+                  maxAbono = this.newAbono.mpagado
+                }else{
+                  maxAbono = this.newAbono.mpagado + totalAbonos; 
+                }
+                
+                if(maxAbono > this.netoBs){
+                  Swal.fire({
+                    icon: 'info',
+                    text: `Recuerda que el monto de abono superó el Monto Neto, por ende se regularizará el recibo`,
+                    showConfirmButton: false,
+                    timer: 4000
+                  }).then((result) => {
+                    location.reload()
+                  });
+                }else{
+                  location.reload()
+                }
+
+              });
+            }
+          },(err)=>{
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `No se pudo realizar el abono`,
+            });
+          });
+        } catch (error) {
+          // Mostrar un mensaje de error si algo falla
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Request failed: ${error.message}`,
+          });
+        }
+      },
+    });
+  }
+
   onSubmitComplement(){
     let data = {
       complemento: Object.values(this.currentRecordComplements).flat()
@@ -653,7 +782,8 @@ export class AdministratorComponent implements OnInit {
         item.cbanco = banco;
         item.xreferencia = referencia;
         item.cmoneda_cobro = 1;
-        item.mingreso = item.mcomision_n
+        item.mingreso = item.mcomision_n;
+        item.iestado = 'CO';
       });
 
       Swal.fire({

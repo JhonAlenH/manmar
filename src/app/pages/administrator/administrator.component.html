@@ -128,6 +128,7 @@
                                 <th>Fecha Hasta</th>
                                 <th>Monto Neto</th>
                                 <th>Monto Neto Bs.</th>
+                                <th>Abono</th>
                                 <th>
                                   <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" />
                                 </th>
@@ -142,6 +143,9 @@
                                 <td>{{ item.mneto | currency }}</td>
                                 <td style="padding: 0.4rem;">
                                   <input type="number" [(ngModel)]="item.mnetobs" class="custom-input">
+                                </td>
+                                <td>
+                                  <button class="btn btn-primary btn-sm custom-small-button" (click)="abonar(item)">Abonar</button>
                                 </td>
                                 <td>
                                   <input type="checkbox" [(ngModel)]="item.selected" (change)="onItemSelect(item)" />
@@ -183,11 +187,17 @@
                           </mat-panel-title>
                         </mat-expansion-panel-header>
 
-                        <div class="col-md-6 mx-auto py-3">
+                        <!-- <div class="col-md-6 mx-auto py-3">
                           <div class="w-70">
                             <input type="text" class="form-control" placeholder="Buscar..." (input)="filterComplementosData($event.target.value)">
                           </div>           
-                        </div>
+                        </div> -->
+
+                        <mat-form-field>
+                          <mat-label>Filter</mat-label>
+                          <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium" #input>
+                        </mat-form-field>
+
                         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort multiTemplateDataRows>
                           <!-- Columna Crámo -->
                           <ng-container [matColumnDef]="column" *ngFor="let column of columnsToDisplay; let i = index">
@@ -370,6 +380,69 @@
       </div>
     </mat-dialog-content>
   </ng-template>
+
+  <ng-template #Abonar let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+     <label>Abonos</label>
+    </div>
+    <mat-divider></mat-divider>
+    <mat-dialog-content>
+      <table class="table custom-table">
+        <thead>
+          <tr>
+            <th>Fecha de Abono</th>
+            <th>Monto de Abono Bs.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let abono of abonosList">
+            <td style="padding: 0.4rem;">
+              <input 
+                type="date" 
+                [(ngModel)]="abono.fmovimiento" 
+                class="custom-input" 
+                disabled />
+            </td>
+            <td style="padding: 0.4rem;">
+              <input 
+                type="number" 
+                [(ngModel)]="abono.mpagado" 
+                class="custom-input" 
+                disabled />
+            </td>
+          </tr>
+          <!-- Fila adicional para nuevo abono -->
+          <tr>
+            <td style="padding: 0.4rem;">
+              <input 
+                type="date" 
+                [(ngModel)]="newAbono.fmovimiento" 
+                class="custom-input" />
+            </td>
+            <td style="padding: 0.4rem;">
+              <input 
+                type="text" 
+                [(ngModel)]="newAbono.mpagado" 
+                class="custom-input " 
+                (change)="validarNuevoAbono()"
+                />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="text-end w-100">
+        <button class="btn btn-primary btn-sm" (click)="calcularAbonoRestante()" *ngIf="abonosList.length > 0">Calcular Restante</button>
+        <button class="btn btn-primary btn-sm" (click)="guardarNuevoAbono()">Aceptar</button>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <p><strong>Neto en Bs: </strong>{{netoBs}}</p>
+      </div>
+      
+    
+    </mat-dialog-content>
+  </ng-template> 
   
   <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" *ngIf="newComplementAdded" (click)="onSubmitComplement()">
     <mat-icon>save</mat-icon>

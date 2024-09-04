@@ -146,7 +146,12 @@ export class SearchContractsComponent implements OnInit {
           contract.fhasta_pol = this.dateUtilService.adjustDate(contract.fhasta);
           return contract;
         });
-        
+  
+        // Ordenar los contratos del último al primero
+        correctedContracts.sort((a: any, b: any) => {
+          return new Date(b.fdesde_pol).getTime() - new Date(a.fdesde_pol).getTime();
+        });
+  
         this.dataSource.data = correctedContracts;
       }
     })
