@@ -35,6 +35,9 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('Distribution') Distribution!: TemplateRef<any>;
   @ViewChild('Complemento') Complemento!: TemplateRef<any>;
   @ViewChild('Abonar') Abonar!: TemplateRef<any>;
+  @ViewChild('DetalleProductor') DetalleProductor!: TemplateRef<any>;
+  @ViewChild('DetalleEjecutivo') DetalleEjecutivo!: TemplateRef<any>;
+  @ViewChild('DetalleAgente') DetalleAgente!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   columnsToDisplay: string[] = [ 'xpoliza', 'xnombre', 'fcobro', 'mingreso', 'mcomisionext'];
@@ -84,7 +87,17 @@ export class AdministratorComponent implements OnInit {
   receiptSelected: any[] = [];
   feeChargedList: any[] = [];
   abonosList: any[] = [];
+  distributionList: any[] = [];
   newAbono: any = { fmovimiento: '', mpagado: null };
+
+  //Aqui separamos listas por productor y ejecutivos
+  productores: any[] = [];
+  ejecutivos: any[] = [];
+  agentes: any[] = [];
+
+  detalleProductores: any[] = [];
+  detalleEjecutivos: any[] = [];
+  detalleAgentes: any[] = [];
 
   selectAll: boolean = false;
   amount: boolean = false;
@@ -146,8 +159,6 @@ export class AdministratorComponent implements OnInit {
             this.bcv = item.promedio;
           }
         });
-  
-        console.log('BCV actualizado:', this.bcv);
       })
       .catch(error => {
         console.error('Error al obtener la tasa del BCV:', error);
@@ -250,8 +261,6 @@ export class AdministratorComponent implements OnInit {
     if (selectedCoin) {
       this.moneda = selectedCoin.value;
     }
-    
-    console.log('Moneda seleccionada:', this.moneda);
   }
 
 
@@ -574,7 +583,6 @@ export class AdministratorComponent implements OnInit {
 
 
   searchComplement(element: any) {
-    console.log(element);
     this.http.post(environment.apiUrl + `/api/v1/emission/search-complement/${element.id_poliza}`, null).subscribe((response: any) => {
       if (response.complement) {
         const formattedComplement = response.complement.map((complement: any) => {
@@ -762,7 +770,6 @@ export class AdministratorComponent implements OnInit {
     let data = {
       complemento: Object.values(this.currentRecordComplements).flat()
     };
-    console.log(data)
     this.http.post(environment.apiUrl + `/api/v1/emission/complement`, data).subscribe((response: any) => {
       if (response.status) {
         Swal.fire({
@@ -867,5 +874,147 @@ export class AdministratorComponent implements OnInit {
   
     // Establecer la nueva fecha en el campo correspondiente
     this.commisionsForm.get('fhasta')?.setValue(fechaHasta.toISOString().split('T')[0]);  // Formato YYYY-MM-DD
+
+    this.searchDistributions();
+  }
+
+  searchDistributions() {
+    let data = {
+      fdesde: this.commisionsForm.get('fdesde')?.value,
+      fhasta: this.commisionsForm.get('fhasta')?.value
+    };
+  
+    this.http.post(environment.apiUrl + '/api/v1/emission/search-distribution', data).subscribe((response: any) => {
+      this.distributionList = response.distribucion;
+  
+      // Agrupar por productor y sumar comisiones
+      this.productores = this.distributionList.reduce((acc: any[], item: any) => {
+        let existingProductor = acc.find(p => p.cproductor === item.cproductor);
+      
+        if (existingProductor) {
+          // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
+          const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
+          existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
+        } else {
+          // Si no existe, lo agregamos al array con toda su información
+          acc.push({
+            cproductor: item.cproductor,
+            xproductor: item.xproductor,
+            mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
+          });
+        }
+        return acc;
+      }, []);
+      
+      // Agrupar por ejecutivo y sumar comisiones con dos decimales
+      this.ejecutivos = this.distributionList.reduce((acc: any[], item: any) => {
+        let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
+      
+        if (existingEjecutivo) {
+          // Si ya existe el ejecutivo, sumamos la comisión y redondeamos a dos decimales
+          const comisionActual = existingEjecutivo.mcomision_e || 0; // Asegura que no sea null/undefined
+          existingEjecutivo.mcomision_e = parseFloat((comisionActual + (item.mcomision_e || 0)).toFixed(2));
+        } else {
+          // Si no existe, lo agregamos al array con toda su información
+          acc.push({
+            cejecutivo: item.cejecutivo,
+            xejecutivo: item.xejecutivo,
+            mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)) // Inicializamos con el valor redondeado
+          });
+        }
+        return acc;
+      }, []);
+    });
+  }
+
+  searchAgents(cejecutivo: string) {
+    // Filtrar los agentes que pertenecen al cejecutivo
+    const agentes = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
+  
+    // Agrupar por cagente y sumar mcomision_a
+    this.agentes = agentes.reduce((acc: any[], item: any) => {
+      let existingAgente = acc.find(a => a.cagente === item.cagente);
+  
+      if (existingAgente) {
+        // Si el agente ya existe en el array, sumamos la comisión
+        const comisionActual = existingAgente.mcomision_a || 0; // Asegura que no sea null/undefined
+        existingAgente.mcomision_a = parseFloat((comisionActual + (item.mcomision_a || 0)).toFixed(2));
+      } else {
+        // Si no existe, lo agregamos con la información y la comisión inicial
+        acc.push({
+          cagente: item.cagente,
+          xagente: item.xagente,
+          mcomision_a: parseFloat((item.mcomision_a || 0).toFixed(2)) // Iniciar con la comisión actual
+        });
+      }
+  
+      return acc;
+    }, []);
+
+    this.agentes = this.agentes.filter(agente => agente.cagente !== null && agente.cagente !== '');
+  }
+
+  verDetallesProductor(cproductor: string) {
+    const productor = this.distributionList.filter(item => item.cproductor === cproductor);
+    this.detalleProductores = productor
+
+    this.dialogRef = this.dialog.open(this.DetalleProductor, {
+      width: '90%', // Ancho del diálogo
+      height: '90%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+
+  getTipoMovimiento(tipo: string): string {
+    switch (tipo) {
+      case 'N':
+        return 'Recibo Directo';
+      case 'A':
+        return 'Abonado';
+      case 'C':
+        return 'Complemento';
+      default:
+        return 'Desconocido';
+    }
+  }
+  
+  pagarProductor(cproductor: string) {
+    console.log('Pagar al ejecutivo:', cproductor);
+    // Aquí puedes manejar el proceso de pago
+  }
+
+  verDetallesEjecutivo(cejecutivo: string) {
+    const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
+    this.detalleEjecutivos = ejecutivo
+
+    this.dialogRef = this.dialog.open(this.DetalleEjecutivo, {
+      width: '90%', // Ancho del diálogo
+      height: '90%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+  
+  pagarEjecutivo(cejecutivo: string) {
+    console.log('Pagar al ejecutivo:', cejecutivo);
+    // Aquí puedes manejar el proceso de pago
+  }
+
+  verDetallesAgente(cagente: string) {
+    const agente = this.distributionList.filter(item => item.cagente === cagente);
+    this.detalleAgentes = agente
+
+    this.dialogRef = this.dialog.open(this.DetalleAgente, {
+      width: '90%', // Ancho del diálogo
+      height: '90%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+  
+  pagarAgente(cejecutivo: string) {
+    console.log('Pagar al ejecutivo:', cejecutivo);
+    // Aquí puedes manejar el proceso de pago
   }
 }

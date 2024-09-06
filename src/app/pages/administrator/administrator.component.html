@@ -279,10 +279,118 @@
                       <div class="col-md-6">
                         <h5 class="text-center"><strong>Fecha Hasta</strong></h5>
                         <div>
-                          <input type="date" formControlName="fhasta" class="custom-input">
+                          <input type="date" formControlName="fhasta" class="custom-input" (change)="searchDistributions()">
                         </div>
                       </div>  
                   </div>
+
+                  
+                    <!-- Sección de Productores -->
+                    <div class="d-flex" *ngIf="this.distributionList.length > 0">
+                      <div class="col-sm-12">
+                        <h3>Productores</h3>
+                        <mat-accordion>
+                          <mat-expansion-panel *ngFor="let productor of productores">
+                            <mat-expansion-panel-header>
+                              <mat-panel-title>
+                                {{productor.xproductor}} - Total Comisión: {{productor.mcomision_p}} Bs.
+                              </mat-panel-title>
+                            </mat-expansion-panel-header>
+                  
+                            <!-- Información adicional del productor -->
+                            <div>
+                              <!-- Acciones -->
+                              <h5 class="text-center">Acciones</h5>
+                      
+                              <!-- Botones de acción -->
+                              <div class="d-flex justify-content-center mt-3">
+                                  <!-- Botón Detalles -->
+                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                          matTooltip="Detalles de {{productor.xproductor}}" 
+                                          (click)="verDetallesProductor(productor.cproductor)">
+                                    <i class="fi fi-br-file-circle-info"></i>
+                                  </button>
+                    
+                                  <!-- Botón Pagar -->
+                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                          matTooltip="Pagar a {{productor.xproductor}}" 
+                                          (click)="pagarProductor(productor.cproductor)">
+                                    <i class="fi fi-ss-expense"></i>
+                                  </button>
+                              </div>
+                            </div>
+                          </mat-expansion-panel>
+                        </mat-accordion>
+                      </div>
+                    </div>
+                  
+                    <!-- Sección de Ejecutivos -->
+                    <div class="d-flex" *ngIf="this.distributionList.length > 0">
+                      <div class="col-sm-12 py-3">
+                        <h3>Ejecutivos</h3>
+                        <div class="executives-grid">
+                          <mat-accordion *ngFor="let ejecutivo of ejecutivos">
+                            <mat-expansion-panel (opened)="searchAgents(ejecutivo.cejecutivo)">
+                              <mat-expansion-panel-header>
+                                <mat-panel-title>
+                                  {{ejecutivo.xejecutivo}} - Total Comisión: {{ejecutivo.mcomision_e}} Bs.
+                                </mat-panel-title>
+                              </mat-expansion-panel-header>
+                    
+                              <!-- Información adicional del ejecutivo -->
+                              <div>
+                                <!-- Acciones -->
+                                <h4 class="text-center" style="font-weight: 500;">Acciones</h4>
+                    
+                                <!-- Botones de acción -->
+                                <div class="d-flex justify-content-center mt-3">
+                                  <!-- Botón Detalles -->
+                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                          matTooltip="Detalles de {{ejecutivo.xejecutivo}}" 
+                                          (click)="verDetallesEjecutivo(ejecutivo.cejecutivo)">
+                                    <i class="fi fi-br-file-circle-info"></i>
+                                  </button>
+                    
+                                  <!-- Botón Pagar -->
+                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                          matTooltip="Pagar a {{ejecutivo.xejecutivo}}" 
+                                          (click)="pagarEjecutivo(ejecutivo.cejecutivo)">
+                                    <i class="fi fi-ss-expense"></i>
+                                  </button>
+                                </div>
+
+                                <div class="mt-3" *ngIf="this.agentes.length > 0">
+                                  <h4>Agentes Asociados</h4>
+                                  <ul class="agentes-list">
+                                    <li *ngFor="let agente of agentes" class="agente-item">
+                                      {{agente.xagente}} - Total Comisión: {{agente.mcomision_a}} Bs.
+                                      <!-- Botones de acción -->
+                                      <div class="agente-actions">
+                                        <!-- Botón Detalles -->
+                                        <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                                matTooltip="Detalles de {{agente.xagente}}" 
+                                                (click)="verDetallesAgente(agente.cagente)">
+                                          <i class="fi fi-br-file-circle-info"></i>
+                                        </button>
+                                
+                                        <!-- Botón Pagar -->
+                                        <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                                matTooltip="Pagar a {{agente.xagente}}" 
+                                                (click)="pagarAgente(agente.cagente)">
+                                          <i class="fi fi-ss-expense"></i>
+                                        </button>
+                                      </div>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </mat-expansion-panel>
+                          </mat-accordion>
+                        </div>
+                      </div>
+                    </div>
+                  
+                  
                 </form>
               </mat-tab>
             </mat-tab-group>
@@ -447,6 +555,87 @@
     
     </mat-dialog-content>
   </ng-template> 
+
+  <ng-template #DetalleProductor let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Detalle del Productor</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <mat-dialog-content>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Productor</th>
+            <th>Comisión</th>
+            <th>Tipo Movimiento</th>
+            <th>Fecha Movimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of detalleProductores">
+            <td>{{item.xproductor}}</td>
+            <td>{{item.mcomision_p}} Bs.</td>
+            <td>{{getTipoMovimiento(item.itipomov)}}</td>
+            <td>{{item.fmovimiento | date}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-dialog-content>
+  </ng-template>
+
+  <ng-template #DetalleEjecutivo let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Detalle del Ejecutivo</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <mat-dialog-content>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Ejecutivo</th>
+            <th>Comisión</th>
+            <th>Tipo Movimiento</th>
+            <th>Fecha Movimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of detalleEjecutivos">
+            <td>{{item.xejecutivo}}</td>
+            <td>{{item.mcomision_e}} Bs.</td>
+            <td>{{getTipoMovimiento(item.itipomov)}}</td>
+            <td>{{item.fmovimiento | date}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-dialog-content>
+  </ng-template>
+
+  <ng-template #DetalleAgente let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Detalle del Agente</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <mat-dialog-content>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Agente</th>
+            <th>Comisión</th>
+            <th>Tipo Movimiento</th>
+            <th>Fecha Movimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of detalleAgentes">
+            <td>{{item.xagente}}</td>
+            <td>{{item.mcomision_a}} Bs.</td>
+            <td>{{getTipoMovimiento(item.itipomov)}}</td>
+            <td>{{item.fmovimiento | date}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-dialog-content>
+  </ng-template>
   
   <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #334ebd;" *ngIf="newComplementAdded" (click)="onSubmitComplement()">
     <mat-icon>save</mat-icon>
