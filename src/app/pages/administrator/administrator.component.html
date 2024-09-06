@@ -228,8 +228,8 @@
                         
                                     <ng-container *ngIf="currentRecordComplements[element.id]?.length > 0; else noData">
                                       <tr *ngFor="let detail of currentRecordComplements[element.id]">
-                                        <td>{{ detail.fcomplemento }}</td>
-                                        <td>{{ detail.mcomplemento }}</td>
+                                        <td>{{ detail.fmovimiento }}</td>
+                                        <td>{{ detail.mpagado }}</td>
                                       </tr>
                                     </ng-container>
                         
@@ -267,12 +267,23 @@
                 </div>
               </mat-tab>
               <mat-tab label="Gestionar Distribución de Comisiones">
-                <div class="d-flex py-4">
-                  <div class="col-sm-12">
-       
+                <form [formGroup]="commisionsForm">
+                  <div class="d-flex py-4">
+                    
+                      <div class="col-md-6">
+                        <h5 class="text-center"><strong>Fecha Desde</strong></h5>
+                        <div>
+                          <input type="date" formControlName="fdesde" class="custom-input" (change)="calcularFechaHasta()">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <h5 class="text-center"><strong>Fecha Hasta</strong></h5>
+                        <div>
+                          <input type="date" formControlName="fhasta" class="custom-input">
+                        </div>
+                      </div>  
                   </div>
-
-                </div>
+                </form>
               </mat-tab>
             </mat-tab-group>
 
@@ -396,19 +407,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let abono of abonosList">
-            <td style="padding: 0.4rem;">
-              <input 
-                type="date" 
-                [(ngModel)]="abono.fmovimiento" 
-                class="custom-input" 
-                disabled />
+            <td style="padding: 1.4rem;">
+              <!-- Mostrar la fecha formateada como texto -->
+              <span>{{ abono.fmovimiento }}</span>
             </td>
-            <td style="padding: 0.4rem;">
-              <input 
-                type="number" 
-                [(ngModel)]="abono.mpagado" 
-                class="custom-input" 
-                disabled />
+            <td style="padding: 1.4rem;">
+              <span>{{ abono.mpagado }}</span>
             </td>
           </tr>
           <!-- Fila adicional para nuevo abono -->

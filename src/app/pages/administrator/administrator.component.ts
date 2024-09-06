@@ -118,6 +118,11 @@ export class AdministratorComponent implements OnInit {
     mcomplemento: [''],
   });
 
+  commisionsForm = this._formBuilder.group({
+    fdesde: [''],
+    fhasta: [''],
+  });
+
   constructor(
     private _formBuilder: FormBuilder,
     private http: HttpClient,
@@ -572,9 +577,13 @@ export class AdministratorComponent implements OnInit {
     console.log(element);
     this.http.post(environment.apiUrl + `/api/v1/emission/search-complement/${element.id_poliza}`, null).subscribe((response: any) => {
       if (response.complement) {
-        // Carga los complementos específicos para el registro actual
-        console.log(response.complement)
-        this.currentRecordComplements[element.id] = response.complement;
+        const formattedComplement = response.complement.map((complement: any) => {
+          return {
+            ...complement,
+            fmovimiento: this.dateUtilService.formatDate(new Date(complement.fmovimiento)) // Formatea la fecha
+          };
+        });
+        this.currentRecordComplements[element.id] = formattedComplement;
       } else {
         this.currentRecordComplements[element.id] = [];
       }
@@ -612,8 +621,9 @@ export class AdministratorComponent implements OnInit {
     this.currentRecordComplements[this.parametros.id].push({
       id_poliza: this.parametros.id_poliza,
       crecibo: this.parametros.crecibo,
-      fcomplemento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
-      mcomplemento: this.administrativeForm.get('mcomplemento')?.value,
+      itipomov: 'C',
+      fmovimiento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
+      mpagado: this.administrativeForm.get('mcomplemento')?.value,
     });
   
     this.newComplementAdded = true;
@@ -634,12 +644,11 @@ export class AdministratorComponent implements OnInit {
       if (response.abonos && response.abonos.length > 0) {
         const correctedAbono = response.abonos.map((contract: any) => {
           // Convertimos la fecha a cadena antes de ajustar
-          const dateAsString = new Date(contract.fmovimiento).toISOString();
-          contract.fmovimiento = this.dateUtilService.adjustDate(dateAsString);
+          const dateAsString = new Date(contract.fmovimiento);
+          contract.fmovimiento = this.dateUtilService.formatDate(dateAsString);
           return contract;
         });
         this.abonosList = correctedAbono;
-        console.log(this.abonosList);
       } else {
         this.abonosList = []; // Lista vacía si no hay abonos existentes
       }
@@ -846,6 +855,17 @@ export class AdministratorComponent implements OnInit {
     }else{
 
     }
-    console.log(this.receiptSelected)
+  }
+
+  calcularFechaHasta() {
+    // Suponiendo que tienes una variable que almacena la fecha inicial
+    const fechaDesde = new Date(this.commisionsForm.get('fdesde')?.value);
+  
+    // Crear una nueva fecha sumando un mes
+    const fechaHasta = new Date(fechaDesde);
+    fechaHasta.setMonth(fechaHasta.getMonth() + 1);
+  
+    // Establecer la nueva fecha en el campo correspondiente
+    this.commisionsForm.get('fhasta')?.setValue(fechaHasta.toISOString().split('T')[0]);  // Formato YYYY-MM-DD
   }
 }
