@@ -16,6 +16,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import Swal from 'sweetalert2'
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 
+
 @Component({
   selector: 'app-administrator',
   templateUrl: './administrator.component.html',
@@ -38,6 +39,9 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('DetalleProductor') DetalleProductor!: TemplateRef<any>;
   @ViewChild('DetalleEjecutivo') DetalleEjecutivo!: TemplateRef<any>;
   @ViewChild('DetalleAgente') DetalleAgente!: TemplateRef<any>;
+  @ViewChild('PagarProductor') PagarProductor!: TemplateRef<any>;
+  @ViewChild('PagarEjecutivo') PagarEjecutivo!: TemplateRef<any>;
+  @ViewChild('PagarAgente') PagarAgente!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   columnsToDisplay: string[] = [ 'xpoliza', 'xnombre', 'fcobro', 'mingreso', 'mcomisionext'];
@@ -134,6 +138,21 @@ export class AdministratorComponent implements OnInit {
   commisionsForm = this._formBuilder.group({
     fdesde: [''],
     fhasta: [''],
+    fpago_p: [''],
+    cbanco_p: [''],
+    xreferencia_p: [''],
+    mmonto_p: [{ value: '', disabled: true }],
+    cmoneda_p: [''],
+    fpago_e: [''],
+    cbanco_e: [''],
+    xreferencia_e: [''],
+    mmonto_e: [{ value: '', disabled: true }],
+    cmoneda_e: [''],
+    fpago_a: [''],
+    cbanco_a: [''],
+    xreferencia_a: [''],
+    mmonto_a: [{ value: '', disabled: true }],
+    cmoneda_a: [''],
   });
 
   constructor(
@@ -263,6 +282,45 @@ export class AdministratorComponent implements OnInit {
     }
   }
 
+  coinSelectProductor(coinId: string) {
+    // Actualiza el valor del control de formulario
+    this.commisionsForm.get('cmoneda_p')?.setValue(coinId);
+    
+    // Busca la moneda seleccionada en la lista
+    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+    
+    // Actualiza la moneda seleccionada para mostrarla en el botón
+    if (selectedCoin) {
+      this.moneda = selectedCoin.value;
+    }
+  }
+
+  coinSelectEjecutivo(coinId: string) {
+    // Actualiza el valor del control de formulario
+    this.commisionsForm.get('cmoneda_e')?.setValue(coinId);
+    
+    // Busca la moneda seleccionada en la lista
+    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+    
+    // Actualiza la moneda seleccionada para mostrarla en el botón
+    if (selectedCoin) {
+      this.moneda = selectedCoin.value;
+    }
+  }
+
+  coinSelectAgente(coinId: string) {
+    // Actualiza el valor del control de formulario
+    this.commisionsForm.get('cmoneda_a')?.setValue(coinId);
+    
+    // Busca la moneda seleccionada en la lista
+    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+    
+    // Actualiza la moneda seleccionada para mostrarla en el botón
+    if (selectedCoin) {
+      this.moneda = selectedCoin.value;
+    }
+  }
+
 
   getTrades() {
     this.http.post(environment.apiUrl + '/api/v1/valrep/trade', null).subscribe((response: any) => {
@@ -319,6 +377,24 @@ export class AdministratorComponent implements OnInit {
     this.getCoins();
   }
 
+  onBankSelectionProductor(event: any) {
+    const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
+    this.commisionsForm.get('cbanco_p')?.setValue(selectedbank.id);
+    this.getCoins();
+  }
+
+  onBankSelectionEjecutivo(event: any) {
+    const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
+    this.commisionsForm.get('cbanco_e')?.setValue(selectedbank.id);
+    this.getCoins();
+  }
+
+  onBankSelectionAgente(event: any) {
+    const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
+    this.commisionsForm.get('cbanco_e')?.setValue(selectedbank.id);
+    this.getCoins();
+  }
+
   searchDueReceipt() {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
@@ -336,7 +412,7 @@ export class AdministratorComponent implements OnInit {
         // Asegurarse de que el monto neto sea positivo y redondearlo a dos decimales
         item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
         item.mneto = parseFloat(item.mneto.toFixed(2));
-        item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
+        item.mnetobs = parseFloat((item.mcomision).toFixed(2));
       });
       this.uniqueCedentes = response.cedents;
     });
@@ -353,7 +429,7 @@ export class AdministratorComponent implements OnInit {
 
       this.uniqueCedentesFee = response.cedents;
 
-      this.dataSource.data = this.feeChargedList;
+      // this.dataSource.data = this.feeChargedList;
     });
   }
 
@@ -386,7 +462,7 @@ export class AdministratorComponent implements OnInit {
   
         item.mneto = Math.abs(item.mneto);
         item.mneto = parseFloat(item.mneto.toFixed(2));
-        item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
+        item.mnetobs = parseFloat((item.mcomision * this.bcv).toFixed(2));
       }
     });
   }
@@ -423,6 +499,7 @@ export class AdministratorComponent implements OnInit {
     let filteredFee = this.feeChargedList.filter((item: any) => item.ccedente === cedenteId);
     
     this.fee = filteredFee;
+    this.dataSource.data = this.fee
     this.dataSource.paginator = null;
     this.dataSource.sort = null;
     this.updatePaginatedFeeList();
@@ -889,20 +966,25 @@ export class AdministratorComponent implements OnInit {
   
       // Agrupar por productor y sumar comisiones
       this.productores = this.distributionList.reduce((acc: any[], item: any) => {
-        let existingProductor = acc.find(p => p.cproductor === item.cproductor);
+        // Solo agregamos productores que no tienen un valor en 'fpago_p'
+        if (!item.fpago_p) {  // Si 'fpago_p' es null, undefined o vacío, el productor se procesa
       
-        if (existingProductor) {
-          // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
-          const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
-          existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
-        } else {
-          // Si no existe, lo agregamos al array con toda su información
-          acc.push({
-            cproductor: item.cproductor,
-            xproductor: item.xproductor,
-            mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
-          });
+          let existingProductor = acc.find(p => p.cproductor === item.cproductor);
+          
+          if (existingProductor) {
+            // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
+            const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
+            existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
+          } else {
+            // Si no existe, lo agregamos al array con toda su información
+            acc.push({
+              cproductor: item.cproductor,
+              xproductor: item.xproductor,
+              mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
+            });
+          }
         }
+      
         return acc;
       }, []);
       
@@ -955,7 +1037,7 @@ export class AdministratorComponent implements OnInit {
   }
 
   verDetallesProductor(cproductor: string) {
-    const productor = this.distributionList.filter(item => item.cproductor === cproductor);
+    const productor = this.distributionList.filter(item => item.cproductor === cproductor && !item.fpago_p);
     this.detalleProductores = productor
 
     this.dialogRef = this.dialog.open(this.DetalleProductor, {
@@ -979,10 +1061,140 @@ export class AdministratorComponent implements OnInit {
     }
   }
   
-  pagarProductor(cproductor: string) {
-    console.log('Pagar al ejecutivo:', cproductor);
-    // Aquí puedes manejar el proceso de pago
+  pagarProductor(cproductor: string, mcomision_p: any) {
+    this.parametros = cproductor
+    this.commisionsForm.get('mmonto_p')?.setValue('  ' + mcomision_p)
+    this.dialogRef = this.dialog.open(this.PagarProductor, {
+      width: '60%', // Ancho del diálogo
+      height: '60%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
   }
+
+  guardarPagoProductor() {
+    // Filtra los productores que coincidan con `cproductor`
+    const productores = this.distributionList.filter(item => item.cproductor === this.parametros);
+    
+    // Recorre cada productor filtrado y actualiza los valores
+    productores.forEach(productor => {
+      productor.fpago_p = this.commisionsForm.get('fpago_p')?.value;
+      productor.cbanco_p = this.commisionsForm.get('cbanco_p')?.value;
+      productor.xreferencia_p = this.commisionsForm.get('xreferencia_p')?.value;
+      productor.cmoneda_p = this.commisionsForm.get('cmoneda_p')?.value;
+    });
+  
+    // Define los controles y sus nombres amigables
+    const formControls = [
+      { name: 'cbanco_p', value: this.commisionsForm.get('cbanco_p')?.value },
+      { name: 'fpago_p', value: this.commisionsForm.get('fpago_p')?.value },
+      { name: 'xreferencia_p', value: this.commisionsForm.get('xreferencia_p')?.value },
+      { name: 'cmoneda_p', value: this.commisionsForm.get('cmoneda_p')?.value }
+    ];
+  
+    const friendlyNames: { [key: string]: string } = {
+      cbanco_p: 'Banco',
+      fpago_p: 'Fecha de Pago',
+      xreferencia_p: 'Referencia',
+      cmoneda_p: 'Moneda',
+    };
+  
+    let camposFaltantes: string[] = [];
+  
+    // Recorre cada control y verifica si el valor es nulo o vacío
+    formControls.forEach(control => {
+      const formControl = this.commisionsForm.get(control.name);
+  
+      // Verifica si el valor es nulo, vacío, o no está definido
+      if (!control.value || control.value === '') {
+        formControl.setValidators([Validators.required]);
+        formControl.markAsTouched();
+        formControl.markAsDirty();
+  
+        // Agrega el nombre amigable del campo faltante
+        camposFaltantes.push(friendlyNames[control.name] || control.name);
+      } else {
+        formControl.clearValidators();
+      }
+      formControl.updateValueAndValidity({ onlySelf: true });
+    });
+  
+    // Si hay campos faltantes, mostrar alerta
+    if (camposFaltantes.length > 0) {
+      Swal.fire({
+        title: "Por favor, complete campos requeridos.",
+        html: `
+          <p>Estimado Usuario, para realizar el pago a ${productores[0].xproductor} se requieren:</p>
+          <ul><li>${camposFaltantes.join('</li><li>')}</li></ul>`,
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5d87ff",
+      });
+    } else {
+      // Si no hay campos faltantes, procesar los datos
+      Swal.fire({
+        icon: "question",
+        title: "¿Deseas realizar este Pago al Productor?",
+        showCancelButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#5e72e4",
+        cancelButtonText: "Cancelar",
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        preConfirm: async () => {
+          // Cerramos el modal original para proceder con la lógica
+          Swal.close();
+      
+          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+          Swal.fire({
+            title: 'Espere por favor...',
+            text: 'Procesando su solicitud',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+      
+          try {
+            let data = {
+              productores: productores
+            }
+  
+            this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentProductor`, data).subscribe((response: any) => {
+              if (response.status) {
+                Swal.close();
+                Swal.fire({
+                  icon: "success",
+                  title: `Se ha registrado el Pago al Productor exitosamente`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then((result) => {
+                  location.reload()
+                });
+              }
+            },(err)=>{
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `No se pudo realizar el abono`,
+              });
+            });
+          } catch (error) {
+            // Mostrar un mensaje de error si algo falla
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Request failed: ${error.message}`,
+            });
+          }
+        },
+      });
+    }
+  
+    // Actualiza la validez general del formulario
+    this.commisionsForm.updateValueAndValidity();
+  }
+  
 
   verDetallesEjecutivo(cejecutivo: string) {
     const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
