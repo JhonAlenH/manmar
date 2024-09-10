@@ -734,6 +734,7 @@ export class AdministratorComponent implements OnInit {
           return contract;
         });
         this.abonosList = correctedAbono;
+        console.log(this.abonosList)
       } else {
         this.abonosList = []; // Lista vacía si no hay abonos existentes
       }
@@ -951,16 +952,14 @@ export class AdministratorComponent implements OnInit {
   
     // Establecer la nueva fecha en el campo correspondiente
     this.commisionsForm.get('fhasta')?.setValue(fechaHasta.toISOString().split('T')[0]);  // Formato YYYY-MM-DD
-
-    this.searchDistributions();
   }
 
-  searchDistributions() {
+  searchDistributions(ccedente: string) {
     let data = {
       fdesde: this.commisionsForm.get('fdesde')?.value,
-      fhasta: this.commisionsForm.get('fhasta')?.value
+      fhasta: this.commisionsForm.get('fhasta')?.value,
+      ccedente: ccedente
     };
-  
     this.http.post(environment.apiUrl + '/api/v1/emission/search-distribution', data).subscribe((response: any) => {
       this.distributionList = response.distribucion;
   
@@ -990,50 +989,51 @@ export class AdministratorComponent implements OnInit {
       
       // Agrupar por ejecutivo y sumar comisiones con dos decimales
       this.ejecutivos = this.distributionList.reduce((acc: any[], item: any) => {
-        let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
+
+        if (!item.fpago_e) {
+          let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
       
-        if (existingEjecutivo) {
-          // Si ya existe el ejecutivo, sumamos la comisión y redondeamos a dos decimales
-          const comisionActual = existingEjecutivo.mcomision_e || 0; // Asegura que no sea null/undefined
-          existingEjecutivo.mcomision_e = parseFloat((comisionActual + (item.mcomision_e || 0)).toFixed(2));
-        } else {
-          // Si no existe, lo agregamos al array con toda su información
-          acc.push({
-            cejecutivo: item.cejecutivo,
-            xejecutivo: item.xejecutivo,
-            mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)) // Inicializamos con el valor redondeado
-          });
+          if (existingEjecutivo) {
+            const comisionActual = existingEjecutivo.mcomision_e || 0;
+            existingEjecutivo.mcomision_e = parseFloat((comisionActual + (item.mcomision_e || 0)).toFixed(2));
+          } else {
+            // Si no existe, lo agregamos al array solo si 'fpago_e' no tiene valor o si 'fpago_a' es null
+            if (!item.fpago_e || item.fpago_a === null) {
+              acc.push({
+                cejecutivo: item.cejecutivo,
+                xejecutivo: item.xejecutivo,
+                mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)) // Inicializamos con el valor redondeado
+              });
+            }
+          }
         }
+
+        return acc;
+      }, [])
+
+      this.agentes = this.distributionList.reduce((acc: any[], item: any) => {
+
+        if (!item.fpago_a) {
+          let existingAgente = acc.find(a => a.cagente === item.cagente);
+      
+          if (existingAgente) {
+            // Si el agente ya existe en el array, sumamos la comisión
+            const comisionActual = existingAgente.mcomision_a || 0; // Asegura que no sea null/undefined
+            existingAgente.mcomision_a = parseFloat((comisionActual + (item.mcomision_a || 0)).toFixed(2));
+          } else {
+            // Si no existe, lo agregamos con la información y la comisión inicial
+            acc.push({
+              cagente: item.cagente,
+              xagente: item.xagente,
+              mcomision_a: parseFloat((item.mcomision_a || 0).toFixed(2)) // Iniciar con la comisión actual
+            });
+          }      
+        }
+
         return acc;
       }, []);
+
     });
-  }
-
-  searchAgents(cejecutivo: string) {
-    // Filtrar los agentes que pertenecen al cejecutivo
-    const agentes = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
-  
-    // Agrupar por cagente y sumar mcomision_a
-    this.agentes = agentes.reduce((acc: any[], item: any) => {
-      let existingAgente = acc.find(a => a.cagente === item.cagente);
-  
-      if (existingAgente) {
-        // Si el agente ya existe en el array, sumamos la comisión
-        const comisionActual = existingAgente.mcomision_a || 0; // Asegura que no sea null/undefined
-        existingAgente.mcomision_a = parseFloat((comisionActual + (item.mcomision_a || 0)).toFixed(2));
-      } else {
-        // Si no existe, lo agregamos con la información y la comisión inicial
-        acc.push({
-          cagente: item.cagente,
-          xagente: item.xagente,
-          mcomision_a: parseFloat((item.mcomision_a || 0).toFixed(2)) // Iniciar con la comisión actual
-        });
-      }
-  
-      return acc;
-    }, []);
-
-    this.agentes = this.agentes.filter(agente => agente.cagente !== null && agente.cagente !== '');
   }
 
   verDetallesProductor(cproductor: string) {
@@ -1195,7 +1195,6 @@ export class AdministratorComponent implements OnInit {
     this.commisionsForm.updateValueAndValidity();
   }
   
-
   verDetallesEjecutivo(cejecutivo: string) {
     const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
     this.detalleEjecutivos = ejecutivo
@@ -1208,9 +1207,138 @@ export class AdministratorComponent implements OnInit {
     });
   }
   
-  pagarEjecutivo(cejecutivo: string) {
-    console.log('Pagar al ejecutivo:', cejecutivo);
-    // Aquí puedes manejar el proceso de pago
+  pagarEjecutivo(cejecutivo: string, mcomision_e: any) {
+    this.parametros = cejecutivo
+    this.commisionsForm.get('mmonto_e')?.setValue('  ' + mcomision_e)
+    this.dialogRef = this.dialog.open(this.PagarEjecutivo, {
+      width: '60%', // Ancho del diálogo
+      height: '60%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+
+  guardarPagoEjecutivo() {
+    // Filtra los productores que coincidan con `cproductor`
+    const ejecutivos = this.distributionList.filter(item => item.cejecutivo === this.parametros);
+    
+    // Recorre cada productor filtrado y actualiza los valores
+    ejecutivos.forEach(productor => {
+      productor.fpago_e = this.commisionsForm.get('fpago_e')?.value;
+      productor.cbanco_e = this.commisionsForm.get('cbanco_e')?.value;
+      productor.xreferencia_e = this.commisionsForm.get('xreferencia_e')?.value;
+      productor.cmoneda_e = this.commisionsForm.get('cmoneda_e')?.value;
+    });
+  
+    // Define los controles y sus nombres amigables
+    const formControls = [
+      { name: 'cbanco_e', value: this.commisionsForm.get('cbanco_e')?.value },
+      { name: 'fpago_e', value: this.commisionsForm.get('fpago_e')?.value },
+      { name: 'xreferencia_e', value: this.commisionsForm.get('xreferencia_e')?.value },
+      { name: 'cmoneda_e', value: this.commisionsForm.get('cmoneda_e')?.value }
+    ];
+  
+    const friendlyNames: { [key: string]: string } = {
+      cbanco_e: 'Banco',
+      fpago_e: 'Fecha de Pago',
+      xreferencia_e: 'Referencia',
+      cmoneda_e: 'Moneda',
+    };
+  
+    let camposFaltantes: string[] = [];
+  
+    // Recorre cada control y verifica si el valor es nulo o vacío
+    formControls.forEach(control => {
+      const formControl = this.commisionsForm.get(control.name);
+  
+      // Verifica si el valor es nulo, vacío, o no está definido
+      if (!control.value || control.value === '') {
+        formControl.setValidators([Validators.required]);
+        formControl.markAsTouched();
+        formControl.markAsDirty();
+  
+        // Agrega el nombre amigable del campo faltante
+        camposFaltantes.push(friendlyNames[control.name] || control.name);
+      } else {
+        formControl.clearValidators();
+      }
+      formControl.updateValueAndValidity({ onlySelf: true });
+    });
+  
+    // Si hay campos faltantes, mostrar alerta
+    if (camposFaltantes.length > 0) {
+      Swal.fire({
+        title: "Por favor, complete campos requeridos.",
+        html: `
+          <p>Estimado Usuario, para realizar el pago a ${ejecutivos[0].xejecutivo} se requieren:</p>
+          <ul><li>${camposFaltantes.join('</li><li>')}</li></ul>`,
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5d87ff",
+      });
+    } else {
+      // Si no hay campos faltantes, procesar los datos
+      Swal.fire({
+        icon: "question",
+        title: "¿Deseas realizar este Pago al Ejecutivo?",
+        showCancelButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#5e72e4",
+        cancelButtonText: "Cancelar",
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        preConfirm: async () => {
+          // Cerramos el modal original para proceder con la lógica
+          Swal.close();
+      
+          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+          Swal.fire({
+            title: 'Espere por favor...',
+            text: 'Procesando su solicitud',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+      
+          try {
+            let data = {
+              ejecutivos: ejecutivos
+            }
+  
+            this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentEjecutivo`, data).subscribe((response: any) => {
+              if (response.status) {
+                Swal.close();
+                Swal.fire({
+                  icon: "success",
+                  title: `Se ha registrado el Pago al Ejecutivo exitosamente`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then((result) => {
+                  location.reload()
+                });
+              }
+            },(err)=>{
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `No se pudo realizar el abono`,
+              });
+            });
+          } catch (error) {
+            // Mostrar un mensaje de error si algo falla
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Request failed: ${error.message}`,
+            });
+          }
+        },
+      });
+    }
+  
+    // Actualiza la validez general del formulario
+    this.commisionsForm.updateValueAndValidity();
   }
 
   verDetallesAgente(cagente: string) {
