@@ -230,6 +230,11 @@
                                       <tr *ngFor="let detail of currentRecordComplements[element.id]">
                                         <td>{{ detail.fmovimiento }}</td>
                                         <td>{{ detail.mpagado }}</td>
+                                        <td>
+                                          <a *ngIf="detail.xruta_tipomov" [href]="detail.xruta_tipomov" target="_blank">
+                                            Ver comprobante
+                                          </a>
+                                        </td>
                                       </tr>
                                     </ng-container>
                         
@@ -546,6 +551,11 @@
             </td>
             <td style="padding: 1.4rem;">
               <span>{{ abono.mpagado }}</span>
+            </td>
+            <td style="padding: 1.4rem;">
+              <a *ngIf="abono.xruta_tipomov" [href]="abono.xruta_tipomov" target="_blank">
+                Ver comprobante
+              </a>
             </td>
           </tr>
           <!-- Fila adicional para nuevo abono -->

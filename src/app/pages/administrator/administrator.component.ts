@@ -106,6 +106,7 @@ export class AdministratorComponent implements OnInit {
   selectAll: boolean = false;
   amount: boolean = false;
   newComplementAdded: boolean = false;
+  rutaCapture!: any;
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -734,7 +735,6 @@ export class AdministratorComponent implements OnInit {
           return contract;
         });
         this.abonosList = correctedAbono;
-        console.log(this.abonosList)
       } else {
         this.abonosList = []; // Lista vacía si no hay abonos existentes
       }
@@ -761,9 +761,19 @@ export class AdministratorComponent implements OnInit {
 
   guardarNuevoAbono() {
     this.dialogRef.close();
+  
     Swal.fire({
-      icon: "question",
-      title: "¿Deseas realizar este Abono?",
+      title: "Adjunte el comprobante (opcional)",
+      html: `
+        <div style="text-align: center;">
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+          <label for="fileInput" style="cursor: pointer;">
+            <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+              Arrastra o haz clic para adjuntar la imagen (opcional)
+            </div>
+          </label>
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#5e72e4",
@@ -771,65 +781,197 @@ export class AdministratorComponent implements OnInit {
       showLoaderOnConfirm: true,
       allowOutsideClick: false,
       preConfirm: async () => {
-        // Cerramos el modal original para proceder con la lógica
-        Swal.close();
-    
-        // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-        Swal.fire({
-          title: 'Espere por favor...',
-          text: 'Procesando su solicitud',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        
+        let rutaCapture: string | null = null;
+  
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const fileName = fileInput.files[0].name;
+  
+          // Convertir el archivo a base64 o enviarlo directamente en el FormData
+          const formData = new FormData();
+          formData.append('file', file, fileName);
+          formData.append('fileName', fileName);
+  
+          try {
+            const responseImg = await this.http.post(environment.apiUrl + '/api/upload/document/emission', formData).toPromise();
+            rutaCapture = environment.apiUrl + responseImg['data']['url'];
+          } catch (err) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Hubo un error al subir el archivo',
+            });
+            throw new Error('Error al subir el archivo');
           }
-        });
-    
+        }
+  
+        // Registrar el abono, con o sin comprobante
         try {
           const data = {
             fmovimiento: this.newAbono.fmovimiento,
             mpagado: this.newAbono.mpagado,
             id_poliza: this.currentPolizaId,
             crecibo: this.currentRecibo,
-            itipomov: 'A'
+            itipomov: 'A',
+            xruta_tipomov: rutaCapture // Asignar la ruta del comprobante solo si existe
           };
+  
+          const response = await this.http.post(environment.apiUrl + `/api/v1/emission/add-abono`, data).toPromise();
+          
+          if (response) {
+            Swal.close();
+            Swal.fire({
+              icon: "success",
+              title: `Se ha registrado el abono exitosamente`,
+              showConfirmButton: false,
+              timer: 4000
+            }).then(() => {
+              const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
+              const maxAbono = totalAbonos + this.newAbono.mpagado;
+  
+              if (maxAbono > this.netoBs) {
+                Swal.fire({
+                  icon: 'info',
+                  text: `Recuerda que el monto de abono superó el Monto Neto, por ende se regularizará el recibo`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then(() => {
+                  location.reload();
+                });
+              } else {
+                location.reload();
+              }
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `No se pudo realizar el abono`,
+          });
+        }
+      },
+    });
+  
+    // Funcionalidad para mostrar la previsualización de la imagen seleccionada
+    const loadFile = (event: any) => {
+      const preview = document.getElementById('filePreview');
+      if (preview && event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    };
+  
+    // Manejar el evento de arrastrar y soltar
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) {
+      filePreview.addEventListener('dragover', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+      });
+  
+      filePreview.addEventListener('drop', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+        const files = e.dataTransfer?.files;
+        if (files && files[0]) {
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          fileInput.files = files; // Asignar el archivo arrastrado al input
+          loadFile({ target: { files } }); // Mostrar la previsualización
+        }
+      });
+  
+      filePreview.addEventListener('dragleave', () => {
+        filePreview.style.borderColor = '#ccc';
+      });
+    }
+  
+    window['loadFile'] = loadFile;
+  }
+  
 
-          this.http.post(environment.apiUrl + `/api/v1/emission/add-abono`, data).subscribe((response: any) => {
-            if (response.status) {
-              Swal.close();
-              Swal.fire({
-                icon: "success",
-                title: `Se ha registrado el abono exitosamente`,
-                showConfirmButton: false,
-                timer: 4000
-              }).then((result) => {
-                let maxAbono;
-                const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
-                if(totalAbonos === 0){
-                  maxAbono = this.newAbono.mpagado
-                }else{
-                  maxAbono = this.newAbono.mpagado + totalAbonos; 
-                }
-                
-                if(maxAbono > this.netoBs){
-                  Swal.fire({
-                    icon: 'info',
-                    text: `Recuerda que el monto de abono superó el Monto Neto, por ende se regularizará el recibo`,
-                    showConfirmButton: false,
-                    timer: 4000
-                  }).then((result) => {
-                    location.reload()
-                  });
-                }else{
-                  location.reload()
-                }
-
-              });
-            }
-          },(err)=>{
+  onSubmitComplement() {
+    Swal.fire({
+      title: "Adjunte el comprobante",
+      html: `
+        <div style="text-align: center;">
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+          <label for="fileInput" style="cursor: pointer;">
+            <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+              Arrastra o haz clic para adjuntar la imagen
+            </div>
+          </label>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#5e72e4",
+      cancelButtonText: "Cancelar",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: false,
+      preConfirm: async () => {
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        let rutaCapture = null; // Inicializamos la variable de ruta de captura como null
+  
+        // Si hay un archivo seleccionado, subimos la imagen
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const fileName = fileInput.files[0].name;
+  
+          // Crear FormData para el archivo
+          const formData = new FormData();
+          formData.append('file', file, fileName);
+          formData.append('fileName', fileName);
+  
+          // Subir la imagen
+          const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+  
+          // Esperar la respuesta de la imagen antes de continuar
+          await responseImg.toPromise().then((data: any) => {
+            rutaCapture = environment.apiUrl + data['data']['url'];
+          }).catch(() => {
             Swal.fire({
               icon: 'error',
               title: 'Error',
-              text: `No se pudo realizar el abono`,
+              text: 'No se pudo subir el archivo.',
+            });
+          });
+        }
+  
+        // Proseguir con el guardado del complemento
+        try {
+          const data = {
+            complemento: Object.values(this.currentRecordComplements).flat().map((item: any) => {
+              return {
+                ...item, // Mantener el resto de las propiedades originales
+                xruta_tipomov: rutaCapture || null // Si no hay imagen, se guarda como null
+              };
+            })
+          };
+  
+          // Realizar la solicitud para guardar el complemento
+          this.http.post(environment.apiUrl + `/api/v1/emission/complement`, data).subscribe((response: any) => {
+            if (response.status) {
+              Swal.fire({
+                icon: "success",
+                title: `¡Se ha ingresado el complemento exitosamente!`,
+                showConfirmButton: false,
+                timer: 4000
+              }).then(() => {
+                location.reload();
+              });
+            }
+          }, (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `No se pudo ingresar el complemento`,
             });
           });
         } catch (error) {
@@ -842,36 +984,55 @@ export class AdministratorComponent implements OnInit {
         }
       },
     });
-  }
-
-  onSubmitComplement(){
-    let data = {
-      complemento: Object.values(this.currentRecordComplements).flat()
-    };
-    this.http.post(environment.apiUrl + `/api/v1/emission/complement`, data).subscribe((response: any) => {
-      if (response.status) {
-        Swal.fire({
-          icon: "success",
-          title: `¡Se ha ingresado el complemento exitosamente!`,
-          showConfirmButton: false,
-          timer: 4000
-        }).then((result) => {
-          location.reload()
-        });
+  
+    // Funcionalidad para previsualizar la imagen seleccionada
+    const loadFile = (event: any) => {
+      const preview = document.getElementById('filePreview');
+      if (preview && event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+        };
+        reader.readAsDataURL(event.target.files[0]);
       }
-    },(err)=>{
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: `No se pudo ingresar el complemento`,
+    };
+  
+    // Manejar el evento de arrastrar y soltar
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) {
+      // Cuando se arrastra algo sobre el área de previsualización
+      filePreview.addEventListener('dragover', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
       });
-    });
+  
+      // Cuando el usuario suelta el archivo sobre el área de previsualización
+      filePreview.addEventListener('drop', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+        const files = e.dataTransfer?.files;
+        if (files && files[0]) {
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          fileInput.files = files; // Asignar el archivo arrastrado al input
+          loadFile({ target: { files } }); // Mostrar la previsualización
+        }
+      });
+  
+      // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+      filePreview.addEventListener('dragleave', () => {
+        filePreview.style.borderColor = '#ccc';
+      });
+    }
+  
+    // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+    window['loadFile'] = loadFile;
   }
 
-  validateCobro(){
+  validateCobro() {
     const banco = this.administrativeForm.get('cbanco')?.value;
     const referencia = this.administrativeForm.get('xreferencia')?.value;
-    if(banco && referencia){
+    if (banco && referencia) {
       this.receiptSelected.forEach(item => {
         item.cbanco = banco;
         item.xreferencia = referencia;
@@ -879,10 +1040,19 @@ export class AdministratorComponent implements OnInit {
         item.mingreso = item.mcomision_n;
         item.iestado = 'CO';
       });
-
+  
       Swal.fire({
-        icon: "question",
-        title: "¿Deseas realizar este Cobro?",
+        title: "Adjunte el comprobante (opcional)",
+        html: `
+          <div style="text-align: center;">
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+            <label for="fileInput" style="cursor: pointer;">
+              <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+                Arrastra o haz clic para adjuntar la imagen (opcional)
+              </div>
+            </label>
+          </div>
+        `,
         showCancelButton: true,
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#5e72e4",
@@ -890,19 +1060,44 @@ export class AdministratorComponent implements OnInit {
         showLoaderOnConfirm: true,
         allowOutsideClick: false,
         preConfirm: async () => {
-          // Cerramos el modal original para proceder con la lógica
-          Swal.close();
-      
-          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-          Swal.fire({
-            title: 'Espere por favor...',
-            text: 'Procesando su solicitud',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
-      
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  
+          // Si no hay archivo seleccionado, continúa sin subir archivo
+          if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const fileName = fileInput.files[0].name;
+  
+            // Convertir el archivo a base64 o enviarlo directamente en el FormData
+            const formData = new FormData();
+            formData.append('file', file, fileName);
+            formData.append('fileName', fileName);
+  
+            const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+  
+            return responseImg.toPromise().then(data => {
+              this.rutaCapture = environment.apiUrl + data['data']['url'];
+  
+              // Si se sube una imagen, asigna la ruta a los recibos seleccionados
+              this.receiptSelected.forEach(item => {
+                item.xruta_cobro = this.rutaCapture;
+              });
+            }).catch(err => {
+              // Si algo falla con la subida del archivo, muestra un mensaje de error
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un error al subir el archivo',
+              });
+              return false;
+            });
+          } else {
+            // Si no se selecciona ningún archivo, simplemente retorna true para continuar
+            return true;
+          }
+        },
+      }).then(result => {
+        // Solo si el proceso de subir archivo o la confirmación sin archivo fue exitosa
+        if (result.isConfirmed) {
           try {
             let data = {
               recibos: this.receiptSelected
@@ -916,11 +1111,11 @@ export class AdministratorComponent implements OnInit {
                   title: `Se ha registrado el cobro exitosamente`,
                   showConfirmButton: false,
                   timer: 4000
-                }).then((result) => {
-                  location.reload()
+                }).then(() => {
+                  location.reload();
                 });
               }
-            },(err)=>{
+            }, (err) => {
               Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -928,19 +1123,62 @@ export class AdministratorComponent implements OnInit {
               });
             });
           } catch (error) {
-            // Mostrar un mensaje de error si algo falla
             Swal.fire({
               icon: 'error',
               title: 'Error',
               text: `Request failed: ${error.message}`,
             });
           }
-        },
+        }
       });
-    }else{
-
+  
+      // Funcionalidad de previsualización de la imagen seleccionada
+      const loadFile = (event: any) => {
+        const preview = document.getElementById('filePreview');
+        if (preview && event.target.files && event.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+          };
+          reader.readAsDataURL(event.target.files[0]);
+        }
+      };
+  
+      // Manejar el evento de arrastrar y soltar
+      const filePreview = document.getElementById('filePreview');
+      if (filePreview) {
+        filePreview.addEventListener('dragover', (e: DragEvent) => {
+          e.preventDefault();
+          filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+        });
+  
+        filePreview.addEventListener('drop', (e: DragEvent) => {
+          e.preventDefault();
+          filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+          const files = e.dataTransfer?.files;
+          if (files && files[0]) {
+            const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+            fileInput.files = files; // Asignar el archivo arrastrado al input
+            loadFile({ target: { files } }); // Mostrar la previsualización
+          }
+        });
+  
+        filePreview.addEventListener('dragleave', () => {
+          filePreview.style.borderColor = '#ccc';
+        });
+      }
+  
+      window['loadFile'] = loadFile;
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor complete todos los campos requeridos',
+      });
     }
   }
+  
 
   calcularFechaHasta() {
     // Suponiendo que tienes una variable que almacena la fecha inicial

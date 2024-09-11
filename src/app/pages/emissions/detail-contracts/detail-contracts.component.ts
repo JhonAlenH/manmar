@@ -442,49 +442,6 @@ export class DetailContractsComponent implements OnInit {
     })
   }
 
-  // onCobrar(item: any){
-  //   Swal.fire({
-  //     icon: "question",
-  //     title: "¿Deseas cobrar este Recibo?",
-  //     showCancelButton: true,
-  //     confirmButtonText: "Aceptar",
-  //     confirmButtonColor: "#5e72e4",
-  //     cancelButtonText: "Cancelar",
-  //     showLoaderOnConfirm: true,
-  //     allowOutsideClick: false,
-  //     preConfirm: async () => {
-  //       try {
-  //         let data = {
-  //           id_poliza: this.id,
-  //           nrecibo: item.nrecibo,
-  //           fcobrorec: new Date(),
-  //           iestadorec: 'C'
-  //         };
-
-  //         this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data).subscribe((response: any) => {
-  //           if (response.status_receipt) {
-  //             Swal.fire({
-  //               icon: "success",
-  //               title: `${response.message}`,
-  //               showConfirmButton: false,
-  //               timer: 4000
-  //             }).then((result) => {
-  //               location.reload()
-  //             });
-  //           }
-  //         });
-  //       } catch (error) {
-  //         // Mostrar un mensaje de error si algo falla
-  //         Swal.fire({
-  //           icon: 'error',
-  //           title: 'Error',
-  //           text: `Request failed: ${error.message}`,
-  //         });
-  //       }
-  //     },
-  //   })
-  // }
-
   onCobrar(item: any) {
     Swal.fire({
       title: "Adjunte el comprobante",
@@ -506,57 +463,65 @@ export class DetailContractsComponent implements OnInit {
       allowOutsideClick: false,
       preConfirm: async () => {
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        let rutaCapture = null;
+    
         if (fileInput.files && fileInput.files[0]) {
           const file = fileInput.files[0];
           const fileName = fileInput.files[0].name;
-
-          // Convertir el archivo a base64 o enviarlo directamente en el FormData
+    
+          // Crear FormData para el archivo
           const formData = new FormData();
           formData.append('file', file, fileName);
           formData.append('fileName', fileName);
-          const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData)
-
-          responseImg.subscribe( data => {
-            this.rutaCapture = environment.apiUrl + data['data']['url'];
-            try {
-              let data = {
-                id_poliza: this.id,
-                nrecibo: item.nrecibo,
-                fcobrorec: new Date(),
-                iestadorec: 'C',
-                xruta_rec: this.rutaCapture || null
-              };
-              const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
-
-              response.subscribe( res => {
-                if (res['status_receipt']) {
-                  Swal.fire({
-                    icon: "success",
-                    title: `${res['message']}`,
-                    showConfirmButton: false,
-                    timer: 4000
-                  }).then(() => {
-                    location.reload();
-                  });
-                } else {
-                  throw new Error('No se pudo completar la operación');
-                }
-              })
     
-            } catch (error) {
+          // Subir la imagen
+          const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+    
+          // Esperar la respuesta de la imagen antes de continuar
+          await responseImg.toPromise().then((data: any) => {
+            rutaCapture = environment.apiUrl + data['data']['url'];
+          }).catch(() => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo subir el archivo.',
+            });
+          });
+        }
+    
+        // Proseguir con el guardado del complemento
+        try {
+          const data = {
+            id_poliza: this.id,
+            nrecibo: item.nrecibo,
+            fcobrorec: new Date(),
+            iestadorec: 'C',
+            xruta_rec: rutaCapture || null // Si no hay imagen, se guarda como null
+          };
+    
+          const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
+    
+          // Esperar la respuesta del complemento
+          response.subscribe(res => {
+            if (res['status_receipt']) {
               Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Request failed: ${error.message}`,
+                icon: "success",
+                title: `${res['message']}`,
+                showConfirmButton: false,
+                timer: 4000
+              }).then(() => {
+                location.reload();
               });
+            } else {
+              throw new Error('No se pudo completar la operación');
             }
           });
-
-         
-  
-
-        } else {
-          Swal.showValidationMessage('Por favor adjunta un archivo antes de continuar');
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Request failed: ${error.message}`,
+          });
         }
       }
     });
