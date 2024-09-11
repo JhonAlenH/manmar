@@ -53,6 +53,7 @@ export class DetailContractsComponent implements OnInit {
   primaAlterada: boolean = false;
   metodologia!: any;
   cmetodologia!: any;
+  rutaCapture!: any;
 
   cedentsList: any[] = [];
   coinsList: any[] = [];
@@ -259,6 +260,7 @@ export class DetailContractsComponent implements OnInit {
           iestadorec_t: item.iestadorec === 'P' ? 'Pendiente' : item.iestadorec === 'C' ? 'Cobrado' : '',
           color: item.iestadorec === 'P' ? 'red' : item.iestadorec === 'C' ? 'green' : 'black',
           mprima: item.mprimaext.toFixed(2),
+          xruta_rec: item.xruta_rec,
         }));
 
         this.updatePaginatedList();
@@ -440,10 +442,62 @@ export class DetailContractsComponent implements OnInit {
     })
   }
 
-  onCobrar(item: any){
+  // onCobrar(item: any){
+  //   Swal.fire({
+  //     icon: "question",
+  //     title: "¿Deseas cobrar este Recibo?",
+  //     showCancelButton: true,
+  //     confirmButtonText: "Aceptar",
+  //     confirmButtonColor: "#5e72e4",
+  //     cancelButtonText: "Cancelar",
+  //     showLoaderOnConfirm: true,
+  //     allowOutsideClick: false,
+  //     preConfirm: async () => {
+  //       try {
+  //         let data = {
+  //           id_poliza: this.id,
+  //           nrecibo: item.nrecibo,
+  //           fcobrorec: new Date(),
+  //           iestadorec: 'C'
+  //         };
+
+  //         this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data).subscribe((response: any) => {
+  //           if (response.status_receipt) {
+  //             Swal.fire({
+  //               icon: "success",
+  //               title: `${response.message}`,
+  //               showConfirmButton: false,
+  //               timer: 4000
+  //             }).then((result) => {
+  //               location.reload()
+  //             });
+  //           }
+  //         });
+  //       } catch (error) {
+  //         // Mostrar un mensaje de error si algo falla
+  //         Swal.fire({
+  //           icon: 'error',
+  //           title: 'Error',
+  //           text: `Request failed: ${error.message}`,
+  //         });
+  //       }
+  //     },
+  //   })
+  // }
+
+  onCobrar(item: any) {
     Swal.fire({
-      icon: "question",
-      title: "¿Deseas cobrar este Recibo?",
+      title: "Adjunte el comprobante",
+      html: `
+        <div style="text-align: center;">
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+          <label for="fileInput" style="cursor: pointer;">
+            <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+              Arrastra o haz clic para adjuntar la imagen
+            </div>
+          </label>
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#5e72e4",
@@ -451,35 +505,104 @@ export class DetailContractsComponent implements OnInit {
       showLoaderOnConfirm: true,
       allowOutsideClick: false,
       preConfirm: async () => {
-        try {
-          let data = {
-            id_poliza: this.id,
-            nrecibo: item.nrecibo,
-            fcobrorec: new Date(),
-            iestadorec: 'C'
-          };
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const fileName = fileInput.files[0].name;
 
-          this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data).subscribe((response: any) => {
-            if (response.status_receipt) {
+          // Convertir el archivo a base64 o enviarlo directamente en el FormData
+          const formData = new FormData();
+          formData.append('file', file, fileName);
+          formData.append('fileName', fileName);
+          const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData)
+
+          responseImg.subscribe( data => {
+            this.rutaCapture = environment.apiUrl + data['data']['url'];
+            try {
+              let data = {
+                id_poliza: this.id,
+                nrecibo: item.nrecibo,
+                fcobrorec: new Date(),
+                iestadorec: 'C',
+                xruta_rec: this.rutaCapture || null
+              };
+              const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
+
+              response.subscribe( res => {
+                if (res['status_receipt']) {
+                  Swal.fire({
+                    icon: "success",
+                    title: `${res['message']}`,
+                    showConfirmButton: false,
+                    timer: 4000
+                  }).then(() => {
+                    location.reload();
+                  });
+                } else {
+                  throw new Error('No se pudo completar la operación');
+                }
+              })
+    
+            } catch (error) {
               Swal.fire({
-                icon: "success",
-                title: `${response.message}`,
-                showConfirmButton: false,
-                timer: 4000
-              }).then((result) => {
-                location.reload()
+                icon: 'error',
+                title: 'Error',
+                text: `Request failed: ${error.message}`,
               });
             }
           });
-        } catch (error) {
-          // Mostrar un mensaje de error si algo falla
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: `Request failed: ${error.message}`,
-          });
+
+         
+  
+
+        } else {
+          Swal.showValidationMessage('Por favor adjunta un archivo antes de continuar');
         }
-      },
-    })
+      }
+    });
+  
+    // Añadir funcionalidad para mostrar la previsualización de la imagen seleccionada
+    const loadFile = (event: any) => {
+      const preview = document.getElementById('filePreview');
+      if (preview && event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    };
+  
+    // Manejar el evento de arrastrar y soltar
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) {
+      // Cuando se arrastra algo sobre el área de previsualización
+      filePreview.addEventListener('dragover', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+      });
+  
+      // Cuando el usuario suelta el archivo sobre el área de previsualización
+      filePreview.addEventListener('drop', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+        const files = e.dataTransfer?.files;
+        if (files && files[0]) {
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          fileInput.files = files; // Asignar el archivo arrastrado al input
+          loadFile({ target: { files } }); // Mostrar la previsualización
+        }
+      });
+  
+      // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+      filePreview.addEventListener('dragleave', () => {
+        filePreview.style.borderColor = '#ccc';
+      });
+    }
+  
+    // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+    window['loadFile'] = loadFile;
   }
+  
 }

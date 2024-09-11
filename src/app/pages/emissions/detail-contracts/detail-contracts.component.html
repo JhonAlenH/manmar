@@ -165,8 +165,16 @@
                         <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                           {{ item.iestadorec_t }}
                         </td>
-                        <td>
-                          <button class="button"  *ngIf="!item.fcobrorec" (click)="onCobrar(item)">Cobrar</button>
+                        <td style="white-space: nowrap">
+                          <!-- Mostrar el botón si xruta_rec está vacío -->
+                          <button *ngIf="!item.xruta_rec && !item.fcobrorec" class="button" (click)="onCobrar(item)">
+                            Cobrar
+                          </button>
+                    
+                          <!-- Mostrar el enlace si xruta_rec tiene información -->
+                          <a *ngIf="item.xruta_rec" [href]="item.xruta_rec" target="_blank">
+                            Ver comprobante
+                          </a>
                         </td>
                       </tr>
                     </tbody>

@@ -391,7 +391,7 @@ export class AdministratorComponent implements OnInit {
 
   onBankSelectionAgente(event: any) {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
-    this.commisionsForm.get('cbanco_e')?.setValue(selectedbank.id);
+    this.commisionsForm.get('cbanco_a')?.setValue(selectedbank.id);
     this.getCoins();
   }
 
@@ -1219,15 +1219,15 @@ export class AdministratorComponent implements OnInit {
   }
 
   guardarPagoEjecutivo() {
-    // Filtra los productores que coincidan con `cproductor`
+    // Filtra los productores que coincidan con `cejecutivo`
     const ejecutivos = this.distributionList.filter(item => item.cejecutivo === this.parametros);
     
     // Recorre cada productor filtrado y actualiza los valores
-    ejecutivos.forEach(productor => {
-      productor.fpago_e = this.commisionsForm.get('fpago_e')?.value;
-      productor.cbanco_e = this.commisionsForm.get('cbanco_e')?.value;
-      productor.xreferencia_e = this.commisionsForm.get('xreferencia_e')?.value;
-      productor.cmoneda_e = this.commisionsForm.get('cmoneda_e')?.value;
+    ejecutivos.forEach(ejecutivo => {
+      ejecutivo.fpago_e = this.commisionsForm.get('fpago_e')?.value;
+      ejecutivo.cbanco_e = this.commisionsForm.get('cbanco_e')?.value;
+      ejecutivo.xreferencia_e = this.commisionsForm.get('xreferencia_e')?.value;
+      ejecutivo.cmoneda_e = this.commisionsForm.get('cmoneda_e')?.value;
     });
   
     // Define los controles y sus nombres amigables
@@ -1353,8 +1353,137 @@ export class AdministratorComponent implements OnInit {
     });
   }
   
-  pagarAgente(cejecutivo: string) {
-    console.log('Pagar al ejecutivo:', cejecutivo);
-    // Aquí puedes manejar el proceso de pago
+  pagarAgente(cagente: string, mcomision_a: any) {
+    this.parametros = cagente
+    this.commisionsForm.get('mmonto_a')?.setValue('  ' + mcomision_a)
+    this.dialogRef = this.dialog.open(this.PagarAgente, {
+      width: '60%', // Ancho del diálogo
+      height: '60%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+
+  guardarPagoAgente() {
+    // Filtra los productores que coincidan con `cagente`
+    const agentes = this.distributionList.filter(item => item.cagente === this.parametros);
+    
+    // Recorre cada productor filtrado y actualiza los valores
+    agentes.forEach(agente => {
+      agente.fpago_a = this.commisionsForm.get('fpago_a')?.value;
+      agente.cbanco_a = this.commisionsForm.get('cbanco_a')?.value;
+      agente.xreferencia_a = this.commisionsForm.get('xreferencia_a')?.value;
+      agente.cmoneda_a = this.commisionsForm.get('cmoneda_a')?.value;
+    });
+  
+    // Define los controles y sus nombres amigables
+    const formControls = [
+      { name: 'cbanco_a', value: this.commisionsForm.get('cbanco_a')?.value },
+      { name: 'fpago_a', value: this.commisionsForm.get('fpago_a')?.value },
+      { name: 'xreferencia_a', value: this.commisionsForm.get('xreferencia_a')?.value },
+      { name: 'cmoneda_a', value: this.commisionsForm.get('cmoneda_a')?.value }
+    ];
+  
+    const friendlyNames: { [key: string]: string } = {
+      cbanco_a: 'Banco',
+      fpago_a: 'Fecha de Pago',
+      xreferencia_a: 'Referencia',
+      cmoneda_a: 'Moneda',
+    };
+  
+    let camposFaltantes: string[] = [];
+  
+    // Recorre cada control y verifica si el valor es nulo o vacío
+    formControls.forEach(control => {
+      const formControl = this.commisionsForm.get(control.name);
+  
+      // Verifica si el valor es nulo, vacío, o no está definido
+      if (!control.value || control.value === '') {
+        formControl.setValidators([Validators.required]);
+        formControl.markAsTouched();
+        formControl.markAsDirty();
+  
+        // Agrega el nombre amigable del campo faltante
+        camposFaltantes.push(friendlyNames[control.name] || control.name);
+      } else {
+        formControl.clearValidators();
+      }
+      formControl.updateValueAndValidity({ onlySelf: true });
+    });
+  
+    // Si hay campos faltantes, mostrar alerta
+    if (camposFaltantes.length > 0) {
+      Swal.fire({
+        title: "Por favor, complete campos requeridos.",
+        html: `
+          <p>Estimado Usuario, para realizar el pago a ${agentes[0].xagente} se requieren:</p>
+          <ul><li>${camposFaltantes.join('</li><li>')}</li></ul>`,
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5d87ff",
+      });
+    } else {
+      // Si no hay campos faltantes, procesar los datos
+      Swal.fire({
+        icon: "question",
+        title: "¿Deseas realizar este Pago al Ejecutivo?",
+        showCancelButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#5e72e4",
+        cancelButtonText: "Cancelar",
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        preConfirm: async () => {
+          // Cerramos el modal original para proceder con la lógica
+          Swal.close();
+      
+          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+          Swal.fire({
+            title: 'Espere por favor...',
+            text: 'Procesando su solicitud',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+      
+          try {
+            let data = {
+              agentes: agentes
+            }
+  
+            this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentAgente`, data).subscribe((response: any) => {
+              if (response.status) {
+                Swal.close();
+                Swal.fire({
+                  icon: "success",
+                  title: `Se ha registrado el Pago al Agente exitosamente`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then((result) => {
+                  location.reload()
+                });
+              }
+            },(err)=>{
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `No se pudo realizar el abono`,
+              });
+            });
+          } catch (error) {
+            // Mostrar un mensaje de error si algo falla
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Request failed: ${error.message}`,
+            });
+          }
+        },
+      });
+    }
+  
+    // Actualiza la validez general del formulario
+    this.commisionsForm.updateValueAndValidity();
   }
 }
