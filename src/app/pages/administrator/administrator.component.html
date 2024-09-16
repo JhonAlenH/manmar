@@ -140,7 +140,9 @@
                                 <td>{{ item.xnombre }}</td>
                                 <td>{{ item.fdesde_rec | date }}</td>
                                 <td>{{ item.fhasta_rec | date }}</td>
-                                <td>{{ item.mneto | currency }}</td>
+                                <td style="padding: 0.4rem;">
+                                  <input type="number" [(ngModel)]="item.mneto" class="custom-input" (ngModelChange)="updateMnetobs(item)">
+                                </td>
                                 <td style="padding: 0.4rem;">
                                   <input type="number" [(ngModel)]="item.mnetobs" class="custom-input">
                                 </td>
@@ -304,38 +306,13 @@
                     <div class="d-flex" *ngIf="this.distributionList.length > 0">
                       <div class="col-sm-12">
                         <h3>Productores</h3>
-                        <mat-accordion [multi]="false">
-                          <mat-expansion-panel *ngFor="let productor of productores">
-                            <mat-expansion-panel-header>
-                              <mat-panel-title>
-                                {{productor.xproductor}} - Total Comisión: {{productor.mcomision_p}} Bs.
-                              </mat-panel-title>
-                            </mat-expansion-panel-header>
-                  
-                            <!-- Información adicional del productor -->
-                            <div>
-                              <!-- Acciones -->
-                              <h5 class="text-center">Acciones</h5>
-                      
-                              <!-- Botones de acción -->
-                              <div class="d-flex justify-content-center mt-3">
-                                  <!-- Botón Detalles -->
-                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
-                                          matTooltip="Detalles de {{productor.xproductor}}" 
-                                          (click)="verDetallesProductor(productor.cproductor)">
-                                    <i class="fi fi-br-file-circle-info"></i>
-                                  </button>
-                    
-                                  <!-- Botón Pagar -->
-                                  <button type="button" class="btn btn-secondary btn-sm custom-small-button" 
-                                          matTooltip="Pagar a {{productor.xproductor}}" 
-                                          (click)="pagarProductor(productor.cproductor, productor.mcomision_p)">
-                                    <i class="fi fi-ss-expense"></i>
-                                  </button>
-                              </div>
-                            </div>
-                          </mat-expansion-panel>
-                        </mat-accordion>
+
+                        <h3 *ngIf="this.productores.length > 0">
+                          <strong *ngFor="let productor of productores">
+                            {{productor.xproductor}} - Total Comisión: {{productor.mcomision_p}} Bs.
+                          </strong>
+                        </h3>
+
                       </div>
                     </div>
                   
@@ -343,6 +320,14 @@
                     <div class="d-flex" *ngIf="this.distributionList.length > 0">
                       <div class="col-sm-12 py-3">
                         <h3>Ejecutivos</h3>
+
+                        <h3 *ngIf="this.ejecutivos.length === 0">
+                          <strong>
+                            No se encontraron Ejecutivos según los parametros seleccionados
+                          </strong>
+                        </h3>
+
+
                         <div class="executives-grid">
                           <mat-accordion *ngFor="let ejecutivo of ejecutivos" [multi]="false">
                             <mat-expansion-panel>
@@ -385,6 +370,14 @@
                     <div class="d-flex" *ngIf="this.distributionList.length > 0">
                       <div class="col-sm-12 py-3">
                         <h3>Agentes</h3>
+
+                        <h3 *ngIf="this.agentes.length === 0">
+                          <strong>
+                            No se encontraron Agentes según los parametros seleccionados
+                          </strong>
+                        </h3>
+
+
                         <div class="executives-grid">
                           <mat-accordion *ngFor="let agente of agentes" [multi]="false">
                             <mat-expansion-panel>
@@ -441,13 +434,13 @@
     >
     <div class="d-flex" style="gap: 15px;margin-top: 10px;">
       <i class= "fi fi-rs-coins" style="font-size: 20px;color: white;"></i>
-      <p style="color: white;font-weight: 500;">Monto Total: {{totalMontoNeto | currency}}</p>
+      <p style="color: white;font-weight: 500;">Monto Total: {{totalMontoNeto}} {{simbolo}}</p>
     </div>
     
   </button>
 
-  <mat-menu #menu="matMenu">
-    <form [formGroup]="administrativeForm" (click)="$event.stopPropagation()">
+  <mat-menu #menu="matMenu" xPosition="after">
+    <form style="min-width: 500px;"  [formGroup]="administrativeForm" (click)="$event.stopPropagation()">
       <div class="col-sm-12">
         <mat-form-field class="example-full-width">
           <mat-label>Banco</mat-label>
@@ -627,16 +620,24 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Ejecutivo</th>
-            <th>Comisión</th>
+            <th>Cedente</th>
+            <th>Tomador</th>
+            <th>Póliza</th>
+            <th>N° Recibo</th>
+            <th>Comisión Bs.</th>
+            <th>Comisión $.</th>
             <th>Tipo Movimiento</th>
             <th>Fecha Movimiento</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of detalleEjecutivos">
-            <td>{{item.xejecutivo}}</td>
+            <td>{{item.xcedente}}</td>
+            <td>{{item.xtomador}}</td>
+            <td>{{item.xpoliza}}</td>
+            <td>{{item.crecibo}}</td>
             <td>{{item.mcomision_e}} Bs.</td>
+            <td>{{item.mcomision_eext}} $.</td>
             <td>{{getTipoMovimiento(item.itipomov)}}</td>
             <td>{{item.fmovimiento | date}}</td>
           </tr>

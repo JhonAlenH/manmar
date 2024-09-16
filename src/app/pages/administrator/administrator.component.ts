@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -15,6 +14,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import Swal from 'sweetalert2'
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import { ChangeDetectorRef } from '@angular/core';
 
 
 @Component({
@@ -77,7 +77,8 @@ export class AdministratorComponent implements OnInit {
   currentPolizaId: string | undefined;
   currentRecibo: string | undefined;
   netoBs: any;
-
+  monedaDebanco: any;
+  neto: any;
 
   cedentsList: any[] = [];
   tradeList: any[] = [];
@@ -107,6 +108,7 @@ export class AdministratorComponent implements OnInit {
   amount: boolean = false;
   newComplementAdded: boolean = false;
   rutaCapture!: any;
+  simbolo: any;
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -160,40 +162,71 @@ export class AdministratorComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private http: HttpClient,
     private dateUtilService: DateUtilService,
-    private bottomSheet: MatBottomSheet,
+    private cdRef: ChangeDetectorRef,
     readonly dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private router: Router,
-  ) {}
+  ) {
+    fetch('https://ve.dolarapi.com/v1/dolares')
+    .then((response) => response.json())
+    .then(data => {
+      data.forEach((item: any) => {
+        if (item.fuente === 'oficial') {
+          this.bcv = item.promedio;
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error al obtener la tasa del BCV:', error);
+      // Continuar con el valor predeterminado de `this.bcv`
+    })
+  }
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
+
+    if (!this.bcv) {
+      fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
+        .then((response) => response.json())
+        .then(data => {
+          data.data.forEach((item: any) => {
+            if (item.cmoneda === '$') {
+              this.bcv = item.ptasamon;
+            }
+          });
   
-    fetch('https://ve.dolarapi.com/v1/dolares')
-      .then((response) => response.json())
-      .then(data => {
-        data.forEach((item: any) => {
-          if (item.fuente === 'oficial') {
-            this.bcv = item.promedio;
+          // Ejecutar las funciones que dependen de this.bcv después de que se haya actualizado
+          if (this.currentUser) {
+            this.getCedents();
+            this.getTrades();
+            this.getBank();
+            this.searchDueReceipt();
+            this.feeCharged();
+          }
+        })
+        .catch(error => {
+          console.error('Error al obtener la tasa del BCV:', error);
+          // Puedes continuar con el valor predeterminado de `this.bcv` si es necesario
+          if (this.currentUser) {
+            this.getCedents();
+            this.getTrades();
+            this.getBank();
+            this.searchDueReceipt();
+            this.feeCharged();
           }
         });
-      })
-      .catch(error => {
-        console.error('Error al obtener la tasa del BCV:', error);
-        // Continuar con el valor predeterminado de `this.bcv`
-      })
-      .finally(() => {
-        // Ejecutar las funciones que dependen de `this.bcv`, ya sea que la API haya fallado o no
-        if (this.currentUser) {
-          this.getCedents();
-          this.getTrades();
-          this.getBank();
-          this.searchDueReceipt();
-          this.feeCharged();
-        }
-      });
+    } else {
+      // Si this.bcv ya tiene valor, ejecutar las funciones directamente
+      if (this.currentUser) {
+        this.getCedents();
+        this.getTrades();
+        this.getBank();
+        this.searchDueReceipt();
+        this.feeCharged();
+      }
+    }
   }
 
   applyFilter(event: Event) {
@@ -356,6 +389,7 @@ export class AdministratorComponent implements OnInit {
         this.bankList = response.data.bank.map((banco: any) => ({
           id: banco.cbanco,
           value: banco.xbanco,
+          coin: banco.cmoneda
         })).sort((a, b) => a.value > b.value ? 1 : -1);
         this.filteredBank = this.bankControl.valueChanges.pipe(
           startWith(''),
@@ -375,6 +409,13 @@ export class AdministratorComponent implements OnInit {
   onBankSelection(event: any) {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
     this.administrativeForm.get('cbanco')?.setValue(selectedbank.id);
+    this.monedaDebanco = selectedbank.coin
+
+    if(this.monedaDebanco == 2){
+      this.totalMontoNeto = this.neto;
+      this.simbolo = '$';
+    }
+
     this.getCoins();
   }
 
@@ -399,7 +440,6 @@ export class AdministratorComponent implements OnInit {
   searchDueReceipt() {
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-due', null).subscribe((response: any) => {
       this.receiptDueList = response.receipt;
-  
       this.receiptDueList.forEach(item => {
         // Determinar el tipo de monto basado en el valor de ivalor
         item.montoTipo = item.ivalor === 'N' ? 'neto' : 'bruto';
@@ -413,7 +453,7 @@ export class AdministratorComponent implements OnInit {
         // Asegurarse de que el monto neto sea positivo y redondearlo a dos decimales
         item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
         item.mneto = parseFloat(item.mneto.toFixed(2));
-        item.mnetobs = parseFloat((item.mcomision).toFixed(2));
+        item.mnetobs = parseFloat((item.mcomisionext * this.bcv).toFixed(2));
       });
       this.uniqueCedentes = response.cedents;
     });
@@ -457,15 +497,33 @@ export class AdministratorComponent implements OnInit {
         item.ivalor = selectedValue === 'neto' ? 'N' : 'B';
         item.montoTipo = selectedValue;
         item.mimpuesto = selectedValue === 'neto' ? 0 : 5;
+  
         item.mneto = selectedValue === 'neto'
           ? item.mcomisionext
           : item.mcomisionext * 0.05 - item.mcomisionext;
   
+        // Asegurarse de que mneto no tenga valores negativos
         item.mneto = Math.abs(item.mneto);
         item.mneto = parseFloat(item.mneto.toFixed(2));
-        item.mnetobs = parseFloat((item.mcomision * this.bcv).toFixed(2));
+  
+        // Recalcular mnetobs cada vez que se cambia el valor
+        item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
       }
     });
+  
+    // Forzar la detección de cambios para asegurarse de que Angular actualice el DOM
+    this.cdRef.detectChanges();
+  }
+
+  updateMnetobs(item: any): void {
+    // Verificar que this.bcv tenga un valor válido
+    if (this.bcv && item.mneto) {
+      // Calcular mnetobs como mneto * bcv y redondearlo a 2 decimales
+      item.mnetobs = parseFloat((item.mneto * this.bcv).toFixed(2));
+    } else {
+      // Si no hay un valor válido de bcv o mneto, colocar mnetobs a 0
+      item.mnetobs = 0;
+    }
   }
 
   onPanelOpen(cedenteId: number, type: string = 'Todas'): void {
@@ -636,10 +694,12 @@ export class AdministratorComponent implements OnInit {
       mimpuestoext: item.mimpuesto,
       mcomision_n: netoBs,
       mcomision_next: item.mneto,
+      mcomisionext: item.mneto,
       fcobro: new Date()
     });
     this.totalMontoNeto += item.mnetobs; // Actualiza la suma total
-
+    this.neto = item.mneto;
+    this.simbolo = 'Bs';
     this.amount = this.totalMontoNeto > 0;
   }
 
@@ -1036,7 +1096,7 @@ export class AdministratorComponent implements OnInit {
       this.receiptSelected.forEach(item => {
         item.cbanco = banco;
         item.xreferencia = referencia;
-        item.cmoneda_cobro = 1;
+        item.cmoneda_cobro = this.monedaDebanco;
         item.mingreso = item.mcomision_n;
         item.iestado = 'CO';
       });
@@ -1204,22 +1264,19 @@ export class AdministratorComponent implements OnInit {
       // Agrupar por productor y sumar comisiones
       this.productores = this.distributionList.reduce((acc: any[], item: any) => {
         // Solo agregamos productores que no tienen un valor en 'fpago_p'
-        if (!item.fpago_p) {  // Si 'fpago_p' es null, undefined o vacío, el productor se procesa
-      
-          let existingProductor = acc.find(p => p.cproductor === item.cproductor);
+        let existingProductor = acc.find(p => p.cproductor === item.cproductor);
           
-          if (existingProductor) {
-            // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
-            const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
-            existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
-          } else {
-            // Si no existe, lo agregamos al array con toda su información
-            acc.push({
-              cproductor: item.cproductor,
-              xproductor: item.xproductor,
-              mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
-            });
-          }
+        if (existingProductor) {
+          // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
+          const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
+          existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
+        } else {
+          // Si no existe, lo agregamos al array con toda su información
+          acc.push({
+            cproductor: item.cproductor,
+            xproductor: item.xproductor,
+            mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
+          });
         }
       
         return acc;
@@ -1251,7 +1308,7 @@ export class AdministratorComponent implements OnInit {
 
       this.agentes = this.distributionList.reduce((acc: any[], item: any) => {
 
-        if (!item.fpago_a) {
+        if (!item.fpago_a && item.cagente != null) {
           let existingAgente = acc.find(a => a.cagente === item.cagente);
       
           if (existingAgente) {
@@ -1271,20 +1328,23 @@ export class AdministratorComponent implements OnInit {
         return acc;
       }, []);
 
+      console.log(this.agentes);
+      
+
     });
   }
 
-  verDetallesProductor(cproductor: string) {
-    const productor = this.distributionList.filter(item => item.cproductor === cproductor && !item.fpago_p);
-    this.detalleProductores = productor
+  // verDetallesProductor(cproductor: string) {
+  //   const productor = this.distributionList.filter(item => item.cproductor === cproductor && !item.fpago_p);
+  //   this.detalleProductores = productor
 
-    this.dialogRef = this.dialog.open(this.DetalleProductor, {
-      width: '90%', // Ancho del diálogo
-      height: '90%', // Alto del diálogo
-      maxWidth: '1200px',
-      maxHeight: '1200px'
-    });
-  }
+  //   this.dialogRef = this.dialog.open(this.DetalleProductor, {
+  //     width: '90%', // Ancho del diálogo
+  //     height: '90%', // Alto del diálogo
+  //     maxWidth: '1200px',
+  //     maxHeight: '1200px'
+  //   });
+  // }
 
   getTipoMovimiento(tipo: string): string {
     switch (tipo) {
@@ -1299,143 +1359,214 @@ export class AdministratorComponent implements OnInit {
     }
   }
   
-  pagarProductor(cproductor: string, mcomision_p: any) {
-    this.parametros = cproductor
-    this.commisionsForm.get('mmonto_p')?.setValue('  ' + mcomision_p)
-    this.dialogRef = this.dialog.open(this.PagarProductor, {
-      width: '60%', // Ancho del diálogo
-      height: '60%', // Alto del diálogo
-      maxWidth: '1200px',
-      maxHeight: '1200px'
-    });
-  }
+  // pagarProductor(cproductor: string, mcomision_p: any) {
+  //   this.parametros = cproductor
+  //   this.commisionsForm.get('mmonto_p')?.setValue('  ' + mcomision_p)
+  //   this.dialogRef = this.dialog.open(this.PagarProductor, {
+  //     width: '60%', // Ancho del diálogo
+  //     height: '60%', // Alto del diálogo
+  //     maxWidth: '1200px',
+  //     maxHeight: '1200px'
+  //   });
+  // }
 
-  guardarPagoProductor() {
-    // Filtra los productores que coincidan con `cproductor`
-    const productores = this.distributionList.filter(item => item.cproductor === this.parametros);
+  // guardarPagoProductor() {
+  //   // Filtra los productores que coincidan con `cproductor`
+  //   const productores = this.distributionList.filter(item => item.cproductor === this.parametros);
     
-    // Recorre cada productor filtrado y actualiza los valores
-    productores.forEach(productor => {
-      productor.fpago_p = this.commisionsForm.get('fpago_p')?.value;
-      productor.cbanco_p = this.commisionsForm.get('cbanco_p')?.value;
-      productor.xreferencia_p = this.commisionsForm.get('xreferencia_p')?.value;
-      productor.cmoneda_p = this.commisionsForm.get('cmoneda_p')?.value;
-    });
+  //   // Recorre cada productor filtrado y actualiza los valores
+  //   productores.forEach(productor => {
+  //     productor.fpago_p = this.commisionsForm.get('fpago_p')?.value;
+  //     productor.cbanco_p = this.commisionsForm.get('cbanco_p')?.value;
+  //     productor.xreferencia_p = this.commisionsForm.get('xreferencia_p')?.value;
+  //     productor.cmoneda_p = this.commisionsForm.get('cmoneda_p')?.value;
+  //   });
   
-    // Define los controles y sus nombres amigables
-    const formControls = [
-      { name: 'cbanco_p', value: this.commisionsForm.get('cbanco_p')?.value },
-      { name: 'fpago_p', value: this.commisionsForm.get('fpago_p')?.value },
-      { name: 'xreferencia_p', value: this.commisionsForm.get('xreferencia_p')?.value },
-      { name: 'cmoneda_p', value: this.commisionsForm.get('cmoneda_p')?.value }
-    ];
+  //   // Define los controles y sus nombres amigables
+  //   const formControls = [
+  //     { name: 'cbanco_p', value: this.commisionsForm.get('cbanco_p')?.value },
+  //     { name: 'fpago_p', value: this.commisionsForm.get('fpago_p')?.value },
+  //     { name: 'xreferencia_p', value: this.commisionsForm.get('xreferencia_p')?.value },
+  //     { name: 'cmoneda_p', value: this.commisionsForm.get('cmoneda_p')?.value }
+  //   ];
   
-    const friendlyNames: { [key: string]: string } = {
-      cbanco_p: 'Banco',
-      fpago_p: 'Fecha de Pago',
-      xreferencia_p: 'Referencia',
-      cmoneda_p: 'Moneda',
-    };
+  //   const friendlyNames: { [key: string]: string } = {
+  //     cbanco_p: 'Banco',
+  //     fpago_p: 'Fecha de Pago',
+  //     xreferencia_p: 'Referencia',
+  //     cmoneda_p: 'Moneda',
+  //   };
   
-    let camposFaltantes: string[] = [];
+  //   let camposFaltantes: string[] = [];
   
-    // Recorre cada control y verifica si el valor es nulo o vacío
-    formControls.forEach(control => {
-      const formControl = this.commisionsForm.get(control.name);
+  //   // Recorre cada control y verifica si el valor es nulo o vacío
+  //   formControls.forEach(control => {
+  //     const formControl = this.commisionsForm.get(control.name);
   
-      // Verifica si el valor es nulo, vacío, o no está definido
-      if (!control.value || control.value === '') {
-        formControl.setValidators([Validators.required]);
-        formControl.markAsTouched();
-        formControl.markAsDirty();
+  //     // Verifica si el valor es nulo, vacío, o no está definido
+  //     if (!control.value || control.value === '') {
+  //       formControl.setValidators([Validators.required]);
+  //       formControl.markAsTouched();
+  //       formControl.markAsDirty();
   
-        // Agrega el nombre amigable del campo faltante
-        camposFaltantes.push(friendlyNames[control.name] || control.name);
-      } else {
-        formControl.clearValidators();
-      }
-      formControl.updateValueAndValidity({ onlySelf: true });
-    });
+  //       // Agrega el nombre amigable del campo faltante
+  //       camposFaltantes.push(friendlyNames[control.name] || control.name);
+  //     } else {
+  //       formControl.clearValidators();
+  //     }
+  //     formControl.updateValueAndValidity({ onlySelf: true });
+  //   });
   
-    // Si hay campos faltantes, mostrar alerta
-    if (camposFaltantes.length > 0) {
-      Swal.fire({
-        title: "Por favor, complete campos requeridos.",
-        html: `
-          <p>Estimado Usuario, para realizar el pago a ${productores[0].xproductor} se requieren:</p>
-          <ul><li>${camposFaltantes.join('</li><li>')}</li></ul>`,
-        icon: "warning",
-        confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#5d87ff",
-      });
-    } else {
-      // Si no hay campos faltantes, procesar los datos
-      Swal.fire({
-        icon: "question",
-        title: "¿Deseas realizar este Pago al Productor?",
-        showCancelButton: true,
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: "#5e72e4",
-        cancelButtonText: "Cancelar",
-        showLoaderOnConfirm: true,
-        allowOutsideClick: false,
-        preConfirm: async () => {
-          // Cerramos el modal original para proceder con la lógica
-          Swal.close();
+  //   // Si hay campos faltantes, mostrar alerta
+  //   if (camposFaltantes.length > 0) {
+  //     Swal.fire({
+  //       title: "Por favor, complete campos requeridos.",
+  //       html: `
+  //         <p>Estimado Usuario, para realizar el pago a ${productores[0].xproductor} se requieren:</p>
+  //         <ul><li>${camposFaltantes.join('</li><li>')}</li></ul>`,
+  //       icon: "warning",
+  //       confirmButtonText: "<strong>Aceptar</strong>",
+  //       confirmButtonColor: "#5d87ff",
+  //     });
+  //   } else {
+  //     // Si no hay campos faltantes, procesar los datos
+  //     Swal.fire({
+  //       title: "Adjunte el comprobante",
+  //       html: `
+  //         <div style="text-align: center;">
+  //           <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+  //           <label for="fileInput" style="cursor: pointer;">
+  //             <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+  //               Arrastra o haz clic para adjuntar la imagen
+  //             </div>
+  //           </label>
+  //         </div>
+  //       `,
+  //       showCancelButton: true,
+  //       confirmButtonText: "Aceptar",
+  //       confirmButtonColor: "#5e72e4",
+  //       cancelButtonText: "Cancelar",
+  //       showLoaderOnConfirm: true,
+  //       allowOutsideClick: false,
+  //       preConfirm: async () => {
+  //         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  //         let rutaCapture = null;
       
-          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-          Swal.fire({
-            title: 'Espere por favor...',
-            text: 'Procesando su solicitud',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
+  //         if (fileInput.files && fileInput.files[0]) {
+  //           const file = fileInput.files[0];
+  //           const fileName = fileInput.files[0].name;
       
-          try {
-            let data = {
-              productores: productores
-            }
+  //           // Crear FormData para el archivo
+  //           const formData = new FormData();
+  //           formData.append('file', file, fileName);
+  //           formData.append('fileName', fileName);
+      
+  //           // Subir la imagen
+  //           const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+      
+  //           // Esperar la respuesta de la imagen antes de continuar
+  //           await responseImg.toPromise().then((data: any) => {
+  //             rutaCapture = environment.apiUrl + data['data']['url'];
+
+  //             productores.forEach(item => {
+  //               item.xruta_p = rutaCapture;
+  //             });
+  //           }).catch(() => {
+  //             Swal.fire({
+  //               icon: 'error',
+  //               title: 'Error',
+  //               text: 'No se pudo subir el archivo.',
+  //             });
+  //           });
+  //         }
+      
+  //         try {
+  //           let data = {
+  //             productores: productores
+  //           }
   
-            this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentProductor`, data).subscribe((response: any) => {
-              if (response.status) {
-                Swal.close();
-                Swal.fire({
-                  icon: "success",
-                  title: `Se ha registrado el Pago al Productor exitosamente`,
-                  showConfirmButton: false,
-                  timer: 4000
-                }).then((result) => {
-                  location.reload()
-                });
-              }
-            },(err)=>{
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `No se pudo realizar el abono`,
-              });
-            });
-          } catch (error) {
-            // Mostrar un mensaje de error si algo falla
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: `Request failed: ${error.message}`,
-            });
-          }
-        },
-      });
-    }
+  //           this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentProductor`, data).subscribe((response: any) => {
+  //             if (response.status) {
+  //               Swal.close();
+  //               Swal.fire({
+  //                 icon: "success",
+  //                 title: `Se ha registrado el Pago al Productor exitosamente`,
+  //                 showConfirmButton: false,
+  //                 timer: 4000
+  //               }).then((result) => {
+  //                 location.reload()
+  //               });
+  //             }
+  //           },(err)=>{
+  //             Swal.fire({
+  //               icon: 'error',
+  //               title: 'Error',
+  //               text: `No se pudo realizar el abono`,
+  //             });
+  //           });
+  //         } catch (error) {
+  //           // Mostrar un mensaje de error si algo falla
+  //           Swal.fire({
+  //             icon: 'error',
+  //             title: 'Error',
+  //             text: `Request failed: ${error.message}`,
+  //           });
+  //         }
+  //       },
+  //     });
+  //         // Añadir funcionalidad para mostrar la previsualización de la imagen seleccionada
+  //   const loadFile = (event: any) => {
+  //     const preview = document.getElementById('filePreview');
+  //     if (preview && event.target.files && event.target.files[0]) {
+  //       const reader = new FileReader();
+  //       reader.onload = (e: any) => {
+  //         preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+  //       };
+  //       reader.readAsDataURL(event.target.files[0]);
+  //     }
+  //   };
   
-    // Actualiza la validez general del formulario
-    this.commisionsForm.updateValueAndValidity();
-  }
+  //   // Manejar el evento de arrastrar y soltar
+  //   const filePreview = document.getElementById('filePreview');
+  //   if (filePreview) {
+  //     // Cuando se arrastra algo sobre el área de previsualización
+  //     filePreview.addEventListener('dragover', (e: DragEvent) => {
+  //       e.preventDefault();
+  //       filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+  //     });
+  
+  //     // Cuando el usuario suelta el archivo sobre el área de previsualización
+  //     filePreview.addEventListener('drop', (e: DragEvent) => {
+  //       e.preventDefault();
+  //       filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+  //       const files = e.dataTransfer?.files;
+  //       if (files && files[0]) {
+  //         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  //         fileInput.files = files; // Asignar el archivo arrastrado al input
+  //         loadFile({ target: { files } }); // Mostrar la previsualización
+  //       }
+  //     });
+  
+  //     // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+  //     filePreview.addEventListener('dragleave', () => {
+  //       filePreview.style.borderColor = '#ccc';
+  //     });
+  //   }
+  
+  //   // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+  //   window['loadFile'] = loadFile;
+  //   }
+  
+  //   // Actualiza la validez general del formulario
+  //   this.commisionsForm.updateValueAndValidity();
+  // }
   
   verDetallesEjecutivo(cejecutivo: string) {
     const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
     this.detalleEjecutivos = ejecutivo
+
+    console.log(this.detalleEjecutivos)
 
     this.dialogRef = this.dialog.open(this.DetalleEjecutivo, {
       width: '90%', // Ancho del diálogo
@@ -1517,8 +1648,17 @@ export class AdministratorComponent implements OnInit {
     } else {
       // Si no hay campos faltantes, procesar los datos
       Swal.fire({
-        icon: "question",
-        title: "¿Deseas realizar este Pago al Ejecutivo?",
+        title: "Adjunte el comprobante",
+        html: `
+          <div style="text-align: center;">
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+            <label for="fileInput" style="cursor: pointer;">
+              <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+                Arrastra o haz clic para adjuntar la imagen
+              </div>
+            </label>
+          </div>
+        `,
         showCancelButton: true,
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#5e72e4",
@@ -1526,18 +1666,36 @@ export class AdministratorComponent implements OnInit {
         showLoaderOnConfirm: true,
         allowOutsideClick: false,
         preConfirm: async () => {
-          // Cerramos el modal original para proceder con la lógica
-          Swal.close();
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          let rutaCapture = null;
       
-          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-          Swal.fire({
-            title: 'Espere por favor...',
-            text: 'Procesando su solicitud',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
+          if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const fileName = fileInput.files[0].name;
+      
+            // Crear FormData para el archivo
+            const formData = new FormData();
+            formData.append('file', file, fileName);
+            formData.append('fileName', fileName);
+      
+            // Subir la imagen
+            const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+      
+            // Esperar la respuesta de la imagen antes de continuar
+            await responseImg.toPromise().then((data: any) => {
+              rutaCapture = environment.apiUrl + data['data']['url'];
+
+              ejecutivos.forEach(item => {
+                item.xruta_e = rutaCapture;
+              });
+            }).catch(() => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo subir el archivo.',
+              });
+            });
+          }
       
           try {
             let data = {
@@ -1573,8 +1731,51 @@ export class AdministratorComponent implements OnInit {
           }
         },
       });
+
+      
     }
-  
+          // Añadir funcionalidad para mostrar la previsualización de la imagen seleccionada
+          const loadFile = (event: any) => {
+            const preview = document.getElementById('filePreview');
+            if (preview && event.target.files && event.target.files[0]) {
+              const reader = new FileReader();
+              reader.onload = (e: any) => {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+              };
+              reader.readAsDataURL(event.target.files[0]);
+            }
+          };
+        
+          // Manejar el evento de arrastrar y soltar
+          const filePreview = document.getElementById('filePreview');
+          if (filePreview) {
+            // Cuando se arrastra algo sobre el área de previsualización
+            filePreview.addEventListener('dragover', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+            });
+        
+            // Cuando el usuario suelta el archivo sobre el área de previsualización
+            filePreview.addEventListener('drop', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+        
+              const files = e.dataTransfer?.files;
+              if (files && files[0]) {
+                const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+                fileInput.files = files; // Asignar el archivo arrastrado al input
+                loadFile({ target: { files } }); // Mostrar la previsualización
+              }
+            });
+        
+            // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+            filePreview.addEventListener('dragleave', () => {
+              filePreview.style.borderColor = '#ccc';
+            });
+          }
+        
+          // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+          window['loadFile'] = loadFile;
     // Actualiza la validez general del formulario
     this.commisionsForm.updateValueAndValidity();
   }
@@ -1663,8 +1864,17 @@ export class AdministratorComponent implements OnInit {
     } else {
       // Si no hay campos faltantes, procesar los datos
       Swal.fire({
-        icon: "question",
-        title: "¿Deseas realizar este Pago al Ejecutivo?",
+        title: "Adjunte el comprobante",
+        html: `
+          <div style="text-align: center;">
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
+            <label for="fileInput" style="cursor: pointer;">
+              <div id="filePreview" style="border: 2px dashed #ccc; padding: 20px; width: 450px; height: 200px;">
+                Arrastra o haz clic para adjuntar la imagen
+              </div>
+            </label>
+          </div>
+        `,
         showCancelButton: true,
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#5e72e4",
@@ -1672,18 +1882,49 @@ export class AdministratorComponent implements OnInit {
         showLoaderOnConfirm: true,
         allowOutsideClick: false,
         preConfirm: async () => {
-          // Cerramos el modal original para proceder con la lógica
-          Swal.close();
+          // // Cerramos el modal original para proceder con la lógica
+          // Swal.close();
       
-          // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
-          Swal.fire({
-            title: 'Espere por favor...',
-            text: 'Procesando su solicitud',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
+          // // Muestra un modal de "Espere por favor..." mientras se realiza la consulta a la API
+          // Swal.fire({
+          //   title: 'Espere por favor...',
+          //   text: 'Procesando su solicitud',
+          //   allowOutsideClick: false,
+          //   didOpen: () => {
+          //     Swal.showLoading();
+          //   }
+          // });
+
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          let rutaCapture = null;
+      
+          if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const fileName = fileInput.files[0].name;
+      
+            // Crear FormData para el archivo
+            const formData = new FormData();
+            formData.append('file', file, fileName);
+            formData.append('fileName', fileName);
+      
+            // Subir la imagen
+            const responseImg = this.http.post(environment.apiUrl + '/api/upload/document/emission', formData);
+      
+            // Esperar la respuesta de la imagen antes de continuar
+            await responseImg.toPromise().then((data: any) => {
+              rutaCapture = environment.apiUrl + data['data']['url'];
+
+              agentes.forEach(item => {
+                item.xruta_a = rutaCapture;
+              });
+            }).catch(() => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo subir el archivo.',
+              });
+            });
+          }
       
           try {
             let data = {
@@ -1720,7 +1961,48 @@ export class AdministratorComponent implements OnInit {
         },
       });
     }
-  
+          // Añadir funcionalidad para mostrar la previsualización de la imagen seleccionada
+          const loadFile = (event: any) => {
+            const preview = document.getElementById('filePreview');
+            if (preview && event.target.files && event.target.files[0]) {
+              const reader = new FileReader();
+              reader.onload = (e: any) => {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+              };
+              reader.readAsDataURL(event.target.files[0]);
+            }
+          };
+        
+          // Manejar el evento de arrastrar y soltar
+          const filePreview = document.getElementById('filePreview');
+          if (filePreview) {
+            // Cuando se arrastra algo sobre el área de previsualización
+            filePreview.addEventListener('dragover', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+            });
+        
+            // Cuando el usuario suelta el archivo sobre el área de previsualización
+            filePreview.addEventListener('drop', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+        
+              const files = e.dataTransfer?.files;
+              if (files && files[0]) {
+                const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+                fileInput.files = files; // Asignar el archivo arrastrado al input
+                loadFile({ target: { files } }); // Mostrar la previsualización
+              }
+            });
+        
+            // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+            filePreview.addEventListener('dragleave', () => {
+              filePreview.style.borderColor = '#ccc';
+            });
+          }
+        
+          // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+          window['loadFile'] = loadFile;
     // Actualiza la validez general del formulario
     this.commisionsForm.updateValueAndValidity();
   }
