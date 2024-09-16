@@ -721,7 +721,12 @@ export class AdministratorComponent implements OnInit {
 
 
   searchComplement(element: any) {
-    this.http.post(environment.apiUrl + `/api/v1/emission/search-complement/${element.id_poliza}`, null).subscribe((response: any) => {
+    let data = {
+      id_poliza: element.id_poliza,
+      crecibo: element.crecibo,
+
+    }
+    this.http.post(environment.apiUrl + `/api/v1/emission/search-complement`, data).subscribe((response: any) => {
       if (response.complement) {
         const formattedComplement = response.complement.map((complement: any) => {
           return {
