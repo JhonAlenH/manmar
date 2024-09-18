@@ -126,7 +126,7 @@
                                 <th>Asegurado</th>
                                 <th>Fecha Desde</th>
                                 <th>Fecha Hasta</th>
-                                <th>Monto Neto</th>
+                                <th>Monto Neto $</th>
                                 <th>Monto Neto Bs.</th>
                                 <th>Abono</th>
                                 <th>
@@ -496,17 +496,26 @@
         <div class="col-md-12 ">
           <form [formGroup]="administrativeForm">
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <h5 class="text-center"><strong>Fecha Complemento</strong></h5>
                 <div>
                   <input type="date" formControlName="fcomplemento" class="custom-input">
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <h5 class="text-center"><strong>Moneda</strong></h5>
+                <mat-form-field class="example-full-width">
+                  <mat-select formControlName="cmoneda_comp">
+                    <mat-option *ngFor="let coin of coinsList" [value]="coin.id">{{coin.value}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-md-4">
                 <h5 class="text-center"><strong>Monto del Complemento</strong></h5>
                 <mat-form-field class="example-full-width">
-                  <input matInput formControlName="mcomplemento" type="text" (input)="formatPrima($event)">
+                  <input matInput formControlName="mcomplemento" type="text" (input)="formatPrima($event)" (change)="changeTasaComplemento()">
                 </mat-form-field>
+                <h5 *ngIf="this.montoTransformado > 0">Monto en {{simbolo}}: {{montoTransformado}}</h5>
               </div>
             </div>
 

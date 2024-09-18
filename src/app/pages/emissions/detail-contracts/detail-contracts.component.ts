@@ -253,8 +253,8 @@ export class DetailContractsComponent implements OnInit {
         this.receiptList = [];
         this.receiptList = response.receipt.map((item: any) => ({
           nrecibo: item.nrecibo,
-          fdesde_rec: this.dateUtilService.formatDate(new Date(item.fdesde_rec)),
-          fhasta_rec: this.dateUtilService.formatDate(new Date(item.fhasta_rec)),
+          fdesde_rec: this.dateUtilService.formatDateDate(new Date(item.fdesde_rec)),
+          fhasta_rec: this.dateUtilService.formatDateDate(new Date(item.fhasta_rec)),
           fcobrorec: item.fcobrorec ? this.dateUtilService.formatDate(new Date(item.fcobrorec)) : '',  // Si no hay valor, dejar en blanco
           fcobrorectext: item.fcobrorec,
           iestadorec: item.iestadorec,

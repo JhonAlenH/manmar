@@ -80,6 +80,7 @@ export class AdministratorComponent implements OnInit {
   monedaDebanco: any;
   neto: any;
 
+  montoTransformado: any;
   cedentsList: any[] = [];
   tradeList: any[] = [];
   bankList: any[] = [];
@@ -136,6 +137,7 @@ export class AdministratorComponent implements OnInit {
     cmoneda: [''],
     fcomplemento: [''],
     mcomplemento: [''],
+    cmoneda_comp: [''],
   });
 
   commisionsForm = this._formBuilder.group({
@@ -746,6 +748,7 @@ export class AdministratorComponent implements OnInit {
     this.administrativeForm.get('fcomplemento')?.setValue('');
     this.administrativeForm.get('mcomplemento')?.setValue('');
     this.parametros = element;
+    this.getCoins()
   
     // Asegúrate de inicializar los complementos para el registro actual si no existen
     if (!this.currentRecordComplements[element.id]) {
@@ -754,9 +757,26 @@ export class AdministratorComponent implements OnInit {
   
     this.dialogRef = this.dialog.open(this.Complemento, {
       width: '90%',
-      height: '45%',
+      height: '50%',
       maxWidth: '800px'
     });
+  }
+
+  changeTasaComplemento(){
+    const moneda = parseFloat(this.administrativeForm.get('cmoneda_comp')?.value) || 0
+
+    let mcomplementoValue = parseFloat(this.administrativeForm.get('mcomplemento')?.value) || 0;
+
+    if (moneda == 1) {
+      this.simbolo = 'Dólares';
+      let montoConvertido = mcomplementoValue / this.bcv;
+      this.montoTransformado = montoConvertido;
+    } else if (moneda == 2) { 
+      this.simbolo = 'Bolívares';
+      let montoConvertido = mcomplementoValue * this.bcv;
+      this.montoTransformado = montoConvertido;
+    }
+    this.montoTransformado = this.montoTransformado.toFixed(2);
   }
 
   validateComplement() {
@@ -768,18 +788,80 @@ export class AdministratorComponent implements OnInit {
     if (!this.currentRecordComplements[this.parametros.id]) {
       this.currentRecordComplements[this.parametros.id] = [];
     }
-  
-    this.currentRecordComplements[this.parametros.id].push({
-      id_poliza: this.parametros.id_poliza,
-      crecibo: this.parametros.crecibo,
-      itipomov: 'C',
-      fmovimiento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
-      mpagado: this.administrativeForm.get('mcomplemento')?.value,
-    });
-  
+
+    this.http.post(environment.apiUrl + `/api/v1/emission/tarifas/${this.parametros.id_poliza}`, null).subscribe((response: any) => {
+      if(response.status){
+        const moneda = parseFloat(this.administrativeForm.get('cmoneda_comp')?.value) || 0
+
+        if(moneda == 1){
+          const ptasa_p = response.ptasa_p;
+          const ptasa_e = response.ptasa_e;
+          const ptasa_a = response.ptasa_a;
+          const mcomplementoValue = parseFloat(this.administrativeForm.get('mcomplemento')?.value) || 0;
+
+          //Esta comisión es en Bolívares
+          const mcomision_p = mcomplementoValue * ptasa_p / 100
+          const mcomision_e = mcomplementoValue * ptasa_e / 100
+          const mcomision_a = mcomplementoValue * ptasa_a / 100
+
+          //Se lleva en Dólares
+          const mcomision_pext = mcomision_p / this.bcv
+          const mcomision_eext = mcomision_e / this.bcv
+          const mcomision_aext = mcomision_a / this.bcv
+          const montoConvertido = mcomplementoValue / this.bcv;
+
+          this.currentRecordComplements[this.parametros.id].push({
+            id_poliza: this.parametros.id_poliza,
+            crecibo: this.parametros.crecibo,
+            itipomov: 'C',
+            fmovimiento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
+            mpagado: mcomplementoValue,
+            mpagado_ext: montoConvertido,
+            mcomision_pext: mcomision_pext,
+            mcomision_eext: mcomision_eext,
+            mcomision_aext: mcomision_aext
+          });
+        }else{
+          const ptasa_p = response.ptasa_p;
+          const ptasa_e = response.ptasa_e;
+          const ptasa_a = response.ptasa_a;
+        
+          // Obtener el valor de 'mcomplemento' del formulario y convertirlo a número, o usar 0 si está vacío
+          const mcomplementoValue = parseFloat(this.administrativeForm.get('mcomplemento')?.value) || 0;
+        
+          // Calcular mcomplementoValue en bolívares y asegurarse de que tenga dos decimales
+          const mcomplementoValueBs = parseFloat((mcomplementoValue * this.bcv).toFixed(2));
+        
+          // Calcular comisiones en bolívares
+          const mcomision_p = parseFloat((mcomplementoValueBs * ptasa_p / 100).toFixed(2));
+          const mcomision_e = parseFloat((mcomplementoValueBs * ptasa_e / 100).toFixed(2));
+          const mcomision_a = parseFloat((mcomplementoValueBs * ptasa_a / 100).toFixed(2));
+        
+          // Calcular comisiones en dólares (o cualquier otra moneda) multiplicando por la tasa BCV
+          const mcomision_pext = parseFloat((mcomision_p / this.bcv).toFixed(2));
+          const mcomision_eext = parseFloat((mcomision_e / this.bcv).toFixed(2));
+          const mcomision_aext = parseFloat((mcomision_a / this.bcv).toFixed(2));
+        
+          this.currentRecordComplements[this.parametros.id].push({
+            id_poliza: this.parametros.id_poliza,
+            crecibo: this.parametros.crecibo,
+            itipomov: 'C',
+            fmovimiento: this.administrativeForm.get('fcomplemento')?.value || new Date(),
+            mpagado: mcomplementoValueBs,
+            mpagado_ext: mcomplementoValue,
+            mcomision_pext: mcomision_pext,
+            mcomision_eext: mcomision_eext,
+            mcomision_aext: mcomision_aext
+          });
+        }    
+
     this.newComplementAdded = true;
   
     this.dialogRef.close();
+      }
+    })
+  
+
   }
 
   abonar(item: any){
@@ -1265,7 +1347,7 @@ export class AdministratorComponent implements OnInit {
     };
     this.http.post(environment.apiUrl + '/api/v1/emission/search-distribution', data).subscribe((response: any) => {
       this.distributionList = response.distribucion;
-  
+      console.log(this.distributionList)
       // Agrupar por productor y sumar comisiones
       this.productores = this.distributionList.reduce((acc: any[], item: any) => {
         // Solo agregamos productores que no tienen un valor en 'fpago_p'
@@ -1291,6 +1373,7 @@ export class AdministratorComponent implements OnInit {
       this.ejecutivos = this.distributionList.reduce((acc: any[], item: any) => {
 
         if (!item.fpago_e) {
+          console.log('holaaaaa')
           let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
       
           if (existingEjecutivo) {

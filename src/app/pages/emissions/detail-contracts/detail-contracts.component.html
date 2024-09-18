@@ -161,7 +161,7 @@
                         <td style="white-space: nowrap">{{ item.nrecibo }}</td>
                         <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
                         <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
-                        <td style="white-space: nowrap">{{ item.mprima }}</td>
+                        <td style="white-space: nowrap">{{ item.mprima | currency }}</td>
                         <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                           {{ item.iestadorec_t }}
                         </td>
