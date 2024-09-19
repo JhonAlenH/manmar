@@ -538,47 +538,61 @@
     </div>
     <mat-divider></mat-divider>
     <mat-dialog-content>
-      <table class="table custom-table">
-        <thead>
-          <tr>
-            <th>Fecha de Abono</th>
-            <th>Monto de Abono Bs.</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let abono of abonosList">
-            <td style="padding: 1.4rem;">
-              <!-- Mostrar la fecha formateada como texto -->
-              <span>{{ abono.fmovimiento }}</span>
-            </td>
-            <td style="padding: 1.4rem;">
-              <span>{{ abono.mpagado }}</span>
-            </td>
-            <td style="padding: 1.4rem;">
-              <a *ngIf="abono.xruta_tipomov" [href]="abono.xruta_tipomov" target="_blank">
-                Ver comprobante
-              </a>
-            </td>
-          </tr>
-          <!-- Fila adicional para nuevo abono -->
-          <tr>
-            <td style="padding: 0.4rem;">
-              <input 
-                type="date" 
-                [(ngModel)]="newAbono.fmovimiento" 
-                class="custom-input" />
-            </td>
-            <td style="padding: 0.4rem;">
-              <input 
-                type="text" 
-                [(ngModel)]="newAbono.mpagado" 
-                class="custom-input " 
-                (change)="validarNuevoAbono()"
-                />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <form [formGroup]="administrativeForm">
+        <table class="table custom-table">
+          <thead>
+            <tr>
+              <th>Fecha de Abono</th>
+              <th>Moneda</th>
+              <th>Monto de Abono</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let abono of abonosList">
+              <td style="padding: 1.4rem;">
+                <!-- Mostrar la fecha formateada como texto -->
+                <span>{{ abono.fmovimiento }}</span>
+              </td>
+              <td style="padding: 1.4rem;">
+                <span>{{ abono.moneda }}</span>
+              </td>
+              <td style="padding: 1.4rem;">
+                <span>{{ abono.mpagado }}</span>
+              </td>
+              <td style="padding: 1.4rem;">
+                <a *ngIf="abono.xruta_tipomov" [href]="abono.xruta_tipomov" target="_blank">
+                  Ver comprobante
+                </a>
+              </td>
+            </tr>
+            <!-- Fila adicional para nuevo abono -->
+            <tr>
+              <td style="padding: 0.4rem;">
+                <input 
+                  type="date" 
+                  [(ngModel)]="newAbono.fmovimiento" 
+                  class="custom-input" />
+              </td>
+              <td style="padding: 0.8rem;">
+                <mat-form-field class="example-full-width">
+                  <mat-select formControlName="cmoneda_abono">
+                    <mat-option *ngFor="let coin of coinsList" [value]="coin.id">{{coin.value}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </td>
+              <td style="padding: 0.4rem;">
+                <input 
+                  type="text" 
+                  formControlName="mpagado_abono" 
+                  class="custom-input " 
+                  (change)="validarNuevoAbono()"
+                  />
+                  <h5 *ngIf="this.montoTransformado > 0">Monto en {{simbolo}}: {{montoTransformado}}</h5>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
 
       <div class="text-end w-100">
         <button class="btn btn-primary btn-sm" (click)="calcularAbonoRestante()" *ngIf="abonosList.length > 0">Calcular Restante</button>

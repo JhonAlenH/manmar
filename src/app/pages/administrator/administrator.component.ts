@@ -138,6 +138,8 @@ export class AdministratorComponent implements OnInit {
     fcomplemento: [''],
     mcomplemento: [''],
     cmoneda_comp: [''],
+    cmoneda_abono: [''],
+    mpagado_abono: [''],
   });
 
   commisionsForm = this._formBuilder.group({
@@ -875,6 +877,7 @@ export class AdministratorComponent implements OnInit {
     }
     this.http.post(environment.apiUrl + `/api/v1/emission/search-fertilizers`, data).subscribe((response: any) => {
       if (response.abonos && response.abonos.length > 0) {
+        this.getCoins()
         const correctedAbono = response.abonos.map((contract: any) => {
           // Convertimos la fecha a cadena antes de ajustar
           const dateAsString = new Date(contract.fmovimiento);
@@ -882,6 +885,7 @@ export class AdministratorComponent implements OnInit {
           return contract;
         });
         this.abonosList = correctedAbono;
+        console.log(this.abonosList)
       } else {
         this.abonosList = []; // Lista vacía si no hay abonos existentes
       }
@@ -904,6 +908,62 @@ export class AdministratorComponent implements OnInit {
   validarNuevoAbono() {
     const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
     const maxAbono = this.netoBs + totalAbonos;
+
+    console.log(this.administrativeForm.get('mpagado_abono')?.value)
+    this.http.post(environment.apiUrl + `/api/v1/emission/tarifas/${this.currentPolizaId}`, null).subscribe((response: any) => {
+      const moneda = parseFloat(this.administrativeForm.get('cmoneda_abono')?.value) || 0
+
+      if(moneda == 1){
+        const ptasa_p = response.ptasa_p;
+        const ptasa_e = response.ptasa_e;
+        const ptasa_a = response.ptasa_a;
+        const mabonoValue = parseFloat(this.administrativeForm.get('mpagado_abono')?.value) || 0;
+
+        //Esta comisión es en Bolívares
+        const mcomision_p = mabonoValue * ptasa_p / 100
+        const mcomision_e = mabonoValue * ptasa_e / 100
+        const mcomision_a = mabonoValue * ptasa_a / 100
+
+        //Se lleva en Dólares
+        const mcomision_pext = mcomision_p / this.bcv
+        const mcomision_eext = mcomision_e / this.bcv
+        const mcomision_aext = mcomision_a / this.bcv
+        const montoConvertido = mabonoValue / this.bcv;
+
+        console.log('Monto abono en ds: ', montoConvertido)
+
+        console.log('Monto productor bs: ', mcomision_p)
+        console.log('Monto ejecutivo bs: ', mcomision_e)
+        console.log('Monto agente bs: ', mcomision_a)
+
+        console.log('Monto productor ds: ', mcomision_pext)
+        console.log('Monto ejecutivo ds: ', mcomision_eext)
+        console.log('Monto agente ds: ', mcomision_aext)
+
+      }else{
+        const ptasa_p = response.ptasa_p;
+        const ptasa_e = response.ptasa_e;
+        const ptasa_a = response.ptasa_a;
+      
+        // Obtener el valor de 'mcomplemento' del formulario y convertirlo a número, o usar 0 si está vacío
+        const mcomplementoValue = parseFloat(this.administrativeForm.get('mcomplemento')?.value) || 0;
+      
+        // Calcular mcomplementoValue en bolívares y asegurarse de que tenga dos decimales
+        const mcomplementoValueBs = parseFloat((mcomplementoValue * this.bcv).toFixed(2));
+      
+        // Calcular comisiones en bolívares
+        const mcomision_p = parseFloat((mcomplementoValueBs * ptasa_p / 100).toFixed(2));
+        const mcomision_e = parseFloat((mcomplementoValueBs * ptasa_e / 100).toFixed(2));
+        const mcomision_a = parseFloat((mcomplementoValueBs * ptasa_a / 100).toFixed(2));
+      
+        // Calcular comisiones en dólares (o cualquier otra moneda) multiplicando por la tasa BCV
+        const mcomision_pext = parseFloat((mcomision_p / this.bcv).toFixed(2));
+        const mcomision_eext = parseFloat((mcomision_e / this.bcv).toFixed(2));
+        const mcomision_aext = parseFloat((mcomision_a / this.bcv).toFixed(2));
+      
+      }   
+    })
+
   }
 
   guardarNuevoAbono() {
