@@ -95,6 +95,7 @@ export class AdministratorComponent implements OnInit {
   abonosList: any[] = [];
   distributionList: any[] = [];
   newAbono: any = { fmovimiento: '', mpagado: null };
+  abonoObject: any = {};
 
   //Aqui separamos listas por productor y ejecutivos
   productores: any[] = [];
@@ -138,6 +139,7 @@ export class AdministratorComponent implements OnInit {
     fcomplemento: [''],
     mcomplemento: [''],
     cmoneda_comp: [''],
+    fabono: [''],
     cmoneda_abono: [''],
     mpagado_abono: [''],
   });
@@ -877,7 +879,7 @@ export class AdministratorComponent implements OnInit {
     }
     this.http.post(environment.apiUrl + `/api/v1/emission/search-fertilizers`, data).subscribe((response: any) => {
       if (response.abonos && response.abonos.length > 0) {
-        this.getCoins()
+        this.getCoins();
         const correctedAbono = response.abonos.map((contract: any) => {
           // Convertimos la fecha a cadena antes de ajustar
           const dateAsString = new Date(contract.fmovimiento);
@@ -887,6 +889,7 @@ export class AdministratorComponent implements OnInit {
         this.abonosList = correctedAbono;
         console.log(this.abonosList)
       } else {
+        this.getCoins();
         this.abonosList = []; // Lista vacía si no hay abonos existentes
       }
     });
@@ -909,7 +912,6 @@ export class AdministratorComponent implements OnInit {
     const totalAbonos = this.abonosList.reduce((sum, abono) => sum + (abono.mpagado || 0), 0);
     const maxAbono = this.netoBs + totalAbonos;
 
-    console.log(this.administrativeForm.get('mpagado_abono')?.value)
     this.http.post(environment.apiUrl + `/api/v1/emission/tarifas/${this.currentPolizaId}`, null).subscribe((response: any) => {
       const moneda = parseFloat(this.administrativeForm.get('cmoneda_abono')?.value) || 0
 
@@ -930,15 +932,20 @@ export class AdministratorComponent implements OnInit {
         const mcomision_aext = mcomision_a / this.bcv
         const montoConvertido = mabonoValue / this.bcv;
 
-        console.log('Monto abono en ds: ', montoConvertido)
+        this.abonoObject = {
+          fmovimiento: this.administrativeForm.get('fabono')?.value,
+          mpagado: mabonoValue,
+          mpagado_ext: montoConvertido,
+          id_poliza: this.currentPolizaId,
+          crecibo: this.currentRecibo,
+          itipomov: 'A',
+          mcomision_pext: mcomision_pext, 
+          mcomision_eext: mcomision_eext, 
+          mcomision_aext: mcomision_aext, 
+        }
 
-        console.log('Monto productor bs: ', mcomision_p)
-        console.log('Monto ejecutivo bs: ', mcomision_e)
-        console.log('Monto agente bs: ', mcomision_a)
-
-        console.log('Monto productor ds: ', mcomision_pext)
-        console.log('Monto ejecutivo ds: ', mcomision_eext)
-        console.log('Monto agente ds: ', mcomision_aext)
+        this.montoTransformado = montoConvertido.toFixed(2);
+        this.simbolo = 'Dólares';
 
       }else{
         const ptasa_p = response.ptasa_p;
@@ -946,20 +953,35 @@ export class AdministratorComponent implements OnInit {
         const ptasa_a = response.ptasa_a;
       
         // Obtener el valor de 'mcomplemento' del formulario y convertirlo a número, o usar 0 si está vacío
-        const mcomplementoValue = parseFloat(this.administrativeForm.get('mcomplemento')?.value) || 0;
+        const mabonoValue = parseFloat(this.administrativeForm.get('mpagado_abono')?.value) || 0;
       
-        // Calcular mcomplementoValue en bolívares y asegurarse de que tenga dos decimales
-        const mcomplementoValueBs = parseFloat((mcomplementoValue * this.bcv).toFixed(2));
+        // Calcular mabonoValue en bolívares y asegurarse de que tenga dos decimales
+        const mabonoValueBs = parseFloat((mabonoValue * this.bcv).toFixed(2));
       
         // Calcular comisiones en bolívares
-        const mcomision_p = parseFloat((mcomplementoValueBs * ptasa_p / 100).toFixed(2));
-        const mcomision_e = parseFloat((mcomplementoValueBs * ptasa_e / 100).toFixed(2));
-        const mcomision_a = parseFloat((mcomplementoValueBs * ptasa_a / 100).toFixed(2));
+        const mcomision_p = parseFloat((mabonoValueBs * ptasa_p / 100).toFixed(2));
+        const mcomision_e = parseFloat((mabonoValueBs * ptasa_e / 100).toFixed(2));
+        const mcomision_a = parseFloat((mabonoValueBs * ptasa_a / 100).toFixed(2));
       
         // Calcular comisiones en dólares (o cualquier otra moneda) multiplicando por la tasa BCV
         const mcomision_pext = parseFloat((mcomision_p / this.bcv).toFixed(2));
         const mcomision_eext = parseFloat((mcomision_e / this.bcv).toFixed(2));
         const mcomision_aext = parseFloat((mcomision_a / this.bcv).toFixed(2));
+
+        this.abonoObject = {
+          fmovimiento: this.administrativeForm.get('fabono')?.value,
+          mpagado: mabonoValueBs,
+          mpagado_ext: mabonoValue,
+          id_poliza: this.currentPolizaId,
+          crecibo: this.currentRecibo,
+          itipomov: 'A',
+          mcomision_pext: mcomision_pext, 
+          mcomision_eext: mcomision_eext, 
+          mcomision_aext: mcomision_aext, 
+        }
+
+        this.montoTransformado = mabonoValueBs.toFixed(2);
+        this.simbolo = 'Bolívares';
       
       }   
     })
@@ -1013,19 +1035,12 @@ export class AdministratorComponent implements OnInit {
             throw new Error('Error al subir el archivo');
           }
         }
-  
+
+        this.abonoObject.xruta_tipomov = rutaCapture;
         // Registrar el abono, con o sin comprobante
         try {
-          const data = {
-            fmovimiento: this.newAbono.fmovimiento,
-            mpagado: this.newAbono.mpagado,
-            id_poliza: this.currentPolizaId,
-            crecibo: this.currentRecibo,
-            itipomov: 'A',
-            xruta_tipomov: rutaCapture // Asignar la ruta del comprobante solo si existe
-          };
-  
-          const response = await this.http.post(environment.apiUrl + `/api/v1/emission/add-abono`, data).toPromise();
+
+          const response = await this.http.post(environment.apiUrl + `/api/v1/emission/add-abono`, this.abonoObject).toPromise();
           
           if (response) {
             Swal.close();
@@ -1415,14 +1430,18 @@ export class AdministratorComponent implements OnInit {
           
         if (existingProductor) {
           // Si ya existe el productor, sumamos la comisión y redondeamos a dos decimales
-          const comisionActual = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
-          existingProductor.mcomision_p = parseFloat((comisionActual + (item.mcomision_p || 0)).toFixed(2));
+          const comisionActual = existingProductor.mcomision_pext || 0; // Asegura que no sea null/undefined
+          existingProductor.mcomision_pext = parseFloat((comisionActual + (item.mcomision_pext || 0)).toFixed(2));
+
+          const comisionActualBs = existingProductor.mcomision_p || 0; // Asegura que no sea null/undefined
+          existingProductor.mcomision_p = parseFloat((comisionActualBs + (item.mcomision_p || 0)).toFixed(2));
         } else {
           // Si no existe, lo agregamos al array con toda su información
           acc.push({
             cproductor: item.cproductor,
             xproductor: item.xproductor,
-            mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)) // Inicializamos con el valor redondeado
+            mcomision_p: parseFloat((item.mcomision_p || 0).toFixed(2)), // Inicializamos con el valor redondeado
+            mcomision_pext: parseFloat((item.mcomision_pext || 0).toFixed(2)),
           });
         }
       
@@ -1437,15 +1456,16 @@ export class AdministratorComponent implements OnInit {
           let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
       
           if (existingEjecutivo) {
-            const comisionActual = existingEjecutivo.mcomision_e || 0;
-            existingEjecutivo.mcomision_e = parseFloat((comisionActual + (item.mcomision_e || 0)).toFixed(2));
+            const comisionActual = existingEjecutivo.mcomision_eext || 0;
+            existingEjecutivo.mcomision_eext = parseFloat((comisionActual + (item.mcomision_eext || 0)).toFixed(2));
           } else {
             // Si no existe, lo agregamos al array solo si 'fpago_e' no tiene valor o si 'fpago_a' es null
             if (!item.fpago_e || item.fpago_a === null) {
               acc.push({
                 cejecutivo: item.cejecutivo,
                 xejecutivo: item.xejecutivo,
-                mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)) // Inicializamos con el valor redondeado
+                mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)),
+                mcomision_eext: parseFloat((item.mcomision_eext || 0).toFixed(2)),
               });
             }
           }
@@ -1461,14 +1481,15 @@ export class AdministratorComponent implements OnInit {
       
           if (existingAgente) {
             // Si el agente ya existe en el array, sumamos la comisión
-            const comisionActual = existingAgente.mcomision_a || 0; // Asegura que no sea null/undefined
-            existingAgente.mcomision_a = parseFloat((comisionActual + (item.mcomision_a || 0)).toFixed(2));
+            const comisionActual = existingAgente.mcomision_aext || 0; // Asegura que no sea null/undefined
+            existingAgente.mcomision_aext = parseFloat((comisionActual + (item.mcomision_aext || 0)).toFixed(2));
           } else {
             // Si no existe, lo agregamos con la información y la comisión inicial
             acc.push({
               cagente: item.cagente,
               xagente: item.xagente,
-              mcomision_a: parseFloat((item.mcomision_a || 0).toFixed(2)) // Iniciar con la comisión actual
+              mcomision_a: parseFloat((item.mcomision_a || 0).toFixed(2)), // Iniciar con la comisión actual
+              mcomision_aext: parseFloat((item.mcomision_aext || 0).toFixed(2)),
             });
           }      
         }

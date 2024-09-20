@@ -98,22 +98,39 @@ export class DetailContractsComponent implements OnInit {
                   this.fdesde = this.router.getCurrentNavigation().extras.state.fdesde_pol;  
                 }
                 dateAdapter.setLocale('es');
-                
+
+                fetch('https://ve.dolarapi.com/v1/dolares')
+                .then((response) => response.json())
+                .then(data => {
+                  data.forEach((item: any) => {
+                    if (item.fuente === 'oficial') {
+                      this.bcv = item.promedio;
+                    }
+                  });
+                })
+                .catch(error => {
+                  console.error('Error al obtener la tasa del BCV:', error);
+                  // Continuar con el valor predeterminado de `this.bcv`
+                })
                }
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
 
-    fetch('https://ve.dolarapi.com/v1/dolares')
-    .then((response) => response.json())
-    .then(data => {
-      const banco = data.map((item: any) => {
-        if(item.fuente == 'oficial'){
-          this.bcv = item.promedio
-        }
+    if (!this.bcv) {
+      fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
+      .then((response) => response.json())
+      .then(data => {
+        data.data.forEach((item: any) => {
+          if (item.cmoneda === '$') {
+            this.bcv = item.ptasamon;
+          }
+        });
       })
-    });
+      .catch(error => {
+      });
+    }
   
     if (this.id && this.currentUser) {
       this.values();

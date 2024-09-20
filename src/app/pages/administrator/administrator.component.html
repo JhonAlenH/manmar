@@ -309,7 +309,7 @@
 
                         <h3 *ngIf="this.productores.length > 0">
                           <strong *ngFor="let productor of productores">
-                            {{productor.xproductor}} - Total Comisión: {{productor.mcomision_p}} Bs.
+                            {{productor.xproductor}} - Total Comisión: {{productor.mcomision_pext | currency}} | {{productor.mcomision_p}} Bs.
                           </strong>
                         </h3>
 
@@ -333,7 +333,7 @@
                             <mat-expansion-panel>
                               <mat-expansion-panel-header>
                                 <mat-panel-title>
-                                  {{ejecutivo.xejecutivo}} - Total Comisión: {{ejecutivo.mcomision_e}} Bs.
+                                  {{ejecutivo.xejecutivo}} - Total Comisión: {{ejecutivo.mcomision_eext | currency}}
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
                     
@@ -383,7 +383,7 @@
                             <mat-expansion-panel>
                               <mat-expansion-panel-header>
                                 <mat-panel-title>
-                                  {{agente.xagente}} - Total Comisión: {{agente.mcomision_a}} Bs.
+                                  {{agente.xagente}} - Total Comisión: {{agente.mcomision_aext | currency}}
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
                     
@@ -570,7 +570,7 @@
               <td style="padding: 0.4rem;">
                 <input 
                   type="date" 
-                  [(ngModel)]="newAbono.fmovimiento" 
+                  formControlName="fabono"
                   class="custom-input" />
               </td>
               <td style="padding: 0.8rem;">
@@ -678,16 +678,24 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Agente</th>
-            <th>Comisión</th>
+            <th>Cedente</th>
+            <th>Tomador</th>
+            <th>Póliza</th>
+            <th>N° Recibo</th>
+            <th>Comisión Bs.</th>
+            <th>Comisión $.</th>
             <th>Tipo Movimiento</th>
             <th>Fecha Movimiento</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of detalleAgentes">
-            <td>{{item.xagente}}</td>
+            <td>{{item.xcedente}}</td>
+            <td>{{item.xtomador}}</td>
+            <td>{{item.xpoliza}}</td>
+            <td>{{item.crecibo}}</td>
             <td>{{item.mcomision_a}} Bs.</td>
+            <td>{{item.mcomision_aext}} $.</td>
             <td>{{getTipoMovimiento(item.itipomov)}}</td>
             <td>{{item.fmovimiento | date}}</td>
           </tr>
