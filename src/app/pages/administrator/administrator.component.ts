@@ -44,7 +44,7 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('PagarAgente') PagarAgente!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  columnsToDisplay: string[] = [ 'xpoliza', 'xnombre', 'fcobro', 'mingreso', 'mcomisionext'];
+  columnsToDisplay: string[] = [ 'xpoliza', 'xnombre', 'fcobro', 'mcomision', 'mcomisionext'];
   columnsName: string[] = ['Póliza', 'Asegurado', 'Fecha Cobro', 'Monto Cobrado Bs.', 'Monto Cobrado $'];
   columnsToDisplayWithExpand: string[] = [...this.columnsToDisplay, 'expand'];
   columnsNameDetail: string[] = ['Fecha de Complemento', 'Monto de Complemento'];
@@ -79,6 +79,10 @@ export class AdministratorComponent implements OnInit {
   netoBs: any;
   monedaDebanco: any;
   neto: any;
+  mcomision_e: any;
+  mcomision_eext: any;
+  mcomision_a: any;
+  mcomision_aext: any;
 
   montoTransformado: any;
   cedentsList: any[] = [];
@@ -155,12 +159,12 @@ export class AdministratorComponent implements OnInit {
     fpago_e: [''],
     cbanco_e: [''],
     xreferencia_e: [''],
-    mmonto_e: [{ value: '', disabled: true }],
+    mmonto_e: [{ value: '', disabled: false }],
     cmoneda_e: [''],
     fpago_a: [''],
     cbanco_a: [''],
     xreferencia_a: [''],
-    mmonto_a: [{ value: '', disabled: true }],
+    mmonto_a: [{ value: '', disabled: false }],
     cmoneda_a: [''],
   });
 
@@ -336,29 +340,42 @@ export class AdministratorComponent implements OnInit {
   }
 
   coinSelectEjecutivo(coinId: string) {
-    // Actualiza el valor del control de formulario
     this.commisionsForm.get('cmoneda_e')?.setValue(coinId);
-    
-    // Busca la moneda seleccionada en la lista
-    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
-    
-    // Actualiza la moneda seleccionada para mostrarla en el botón
-    if (selectedCoin) {
-      this.moneda = selectedCoin.value;
-    }
+
+    setTimeout(() => {
+      const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+      // Actualiza la moneda seleccionada para mostrarla en el botón
+      if (selectedCoin) {
+        this.moneda = selectedCoin.value;
+        if(parseInt(this.commisionsForm.get('cmoneda_e')?.value) == 1){
+          this.commisionsForm.get('mmonto_e')?.setValue(this.mcomision_e);
+        }else{
+          this.commisionsForm.get('mmonto_e')?.setValue(this.mcomision_eext)
+        }
+      }
+      this.commisionsForm.get('fpago_e')?.setValue(this.dateUtilService.formatDateYMD(new Date()));
+    }, 100);
+
   }
 
   coinSelectAgente(coinId: string) {
     // Actualiza el valor del control de formulario
     this.commisionsForm.get('cmoneda_a')?.setValue(coinId);
-    
-    // Busca la moneda seleccionada en la lista
-    const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
-    
-    // Actualiza la moneda seleccionada para mostrarla en el botón
-    if (selectedCoin) {
-      this.moneda = selectedCoin.value;
-    }
+    setTimeout(() => {
+      // Busca la moneda seleccionada en la lista
+      const selectedCoin = this.coinsList.find(coin => coin.id === coinId);
+      
+      // Actualiza la moneda seleccionada para mostrarla en el botón
+      if (selectedCoin) {
+        this.moneda = selectedCoin.value;
+        if(parseInt(this.commisionsForm.get('cmoneda_a')?.value) == 1){
+          this.commisionsForm.get('mmonto_a')?.setValue(this.mcomision_a);
+        }else{
+          this.commisionsForm.get('mmonto_a')?.setValue(this.mcomision_aext)
+        }
+      }
+      this.commisionsForm.get('fpago_a')?.setValue(this.dateUtilService.formatDateYMD(new Date()));
+    }, 100)
   }
 
 
@@ -435,12 +452,14 @@ export class AdministratorComponent implements OnInit {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
     this.commisionsForm.get('cbanco_e')?.setValue(selectedbank.id);
     this.getCoins();
+    this.coinSelectEjecutivo(selectedbank.coin)
   }
 
   onBankSelectionAgente(event: any) {
     const selectedbank = this.bankList.find(bank => bank.value === event.option.value);
     this.commisionsForm.get('cbanco_a')?.setValue(selectedbank.id);
     this.getCoins();
+    this.coinSelectAgente(selectedbank.coin)
   }
 
   searchDueReceipt() {
@@ -562,6 +581,7 @@ export class AdministratorComponent implements OnInit {
   onPanelOpen2(cedenteId: number): void {
     // Filtrar primero por ccedente
     let filteredFee = this.feeChargedList.filter((item: any) => item.ccedente === cedenteId);
+    console.log(filteredFee)
     
     this.fee = filteredFee;
     this.dataSource.data = this.fee
@@ -1734,9 +1754,6 @@ export class AdministratorComponent implements OnInit {
   verDetallesEjecutivo(cejecutivo: string) {
     const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
     this.detalleEjecutivos = ejecutivo
-
-    console.log(this.detalleEjecutivos)
-
     this.dialogRef = this.dialog.open(this.DetalleEjecutivo, {
       width: '90%', // Ancho del diálogo
       height: '90%', // Alto del diálogo
@@ -1745,8 +1762,10 @@ export class AdministratorComponent implements OnInit {
     });
   }
   
-  pagarEjecutivo(cejecutivo: string, mcomision_e: any) {
+  pagarEjecutivo(cejecutivo: string, mcomision_e: any, mcomision_eext: any) {
     this.parametros = cejecutivo
+    this.mcomision_e = mcomision_e
+    this.mcomision_eext = mcomision_eext
     this.commisionsForm.get('mmonto_e')?.setValue('  ' + mcomision_e)
     this.dialogRef = this.dialog.open(this.PagarEjecutivo, {
       width: '60%', // Ancho del diálogo
@@ -1870,7 +1889,6 @@ export class AdministratorComponent implements OnInit {
             let data = {
               ejecutivos: ejecutivos
             }
-  
             this.http.post(environment.apiUrl + `/api/v1/emission/add-paymentEjecutivo`, data).subscribe((response: any) => {
               if (response.status) {
                 Swal.close();
@@ -1961,9 +1979,11 @@ export class AdministratorComponent implements OnInit {
     });
   }
   
-  pagarAgente(cagente: string, mcomision_a: any) {
+  pagarAgente(cagente: string, mcomision_a: any, mcomision_aext: any) {
     this.parametros = cagente
-    this.commisionsForm.get('mmonto_a')?.setValue('  ' + mcomision_a)
+    this.mcomision_a = mcomision_a
+    this.mcomision_aext = mcomision_aext
+    this.commisionsForm.get('mmonto_a')?.setValue('    ' + mcomision_a)
     this.dialogRef = this.dialog.open(this.PagarAgente, {
       width: '60%', // Ancho del diálogo
       height: '60%', // Alto del diálogo

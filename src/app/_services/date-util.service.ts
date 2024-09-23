@@ -49,4 +49,11 @@ export class DateUtilService {
     date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
     return date.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
   }
+
+  formatDateYMD(date: Date): string {
+    const day = ('0' + date.getDate()).slice(-2); // Asegurar dos dígitos para el día
+    const month = ('0' + (date.getMonth() + 1)).slice(-2); // Asegurar dos dígitos para el mes
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`; // Formato requerido por input type="date"
+  }
 }
