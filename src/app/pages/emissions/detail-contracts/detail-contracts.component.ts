@@ -272,7 +272,7 @@ export class DetailContractsComponent implements OnInit {
           nrecibo: item.nrecibo,
           fdesde_rec: this.dateUtilService.formatDateDate(new Date(item.fdesde_rec)),
           fhasta_rec: this.dateUtilService.formatDateDate(new Date(item.fhasta_rec)),
-          fcobrorec: item.fcobrorec ? this.dateUtilService.formatDate(new Date(item.fcobrorec)) : '',  // Si no hay valor, dejar en blanco
+          fcobrorec: item.fcobrorec ? this.dateUtilService.formatDateToday(new Date(item.fcobrorec)) : '',  // Si no hay valor, dejar en blanco
           fcobrorectext: item.fcobrorec,
           iestadorec: item.iestadorec,
           iestadorec_t: item.iestadorec === 'P' ? 'Pendiente' : item.iestadorec === 'C' ? 'Cobrado' : '',
