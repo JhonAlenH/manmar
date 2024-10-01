@@ -170,3 +170,8 @@ input, textarea {
   min-height: 64px;
   position: relative;
 }
+
+.yellow-snackbar {
+  background-color: rgb(6, 97, 158) !important; /* Color de fondo amarillo */
+  color: rgb(255, 255, 255); /* Color del texto */
+}

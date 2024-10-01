@@ -10,6 +10,8 @@ import { SearchContractsComponent } from '../../pages/emissions/search-contracts
 import { DetailContractsComponent } from '../../pages/emissions/detail-contracts/detail-contracts.component';
 import { AdministratorComponent } from '../../pages/administrator/administrator.component';
 import { MaestrosComponent } from 'src/app/components/maestros/maestros.component';
+import { RenovationsComponent } from '../../pages/renovations/renovations.component';
+import { DetailRenovationComponent } from '../../pages/renovations/detail-renovation/detail-renovation.component';
 
 export const AdminLayoutRoutes: Routes = [
     { path: 'dashboard',      component: DashboardComponent },
@@ -21,6 +23,8 @@ export const AdminLayoutRoutes: Routes = [
     { path: 'detail-contract',      component: DetailContractsComponent },
     { path: 'emissions',      component: EmissionsComponent },
     { path: 'administrator',      component: AdministratorComponent },
+    { path: 'renovations',      component: RenovationsComponent },
+    { path: 'detail-renovation',      component: DetailRenovationComponent },
     { path: 'user-profile',   component: UserProfileComponent },
     { path: 'tables',         component: TablesComponent },
     { path: 'icons',          component: IconsComponent },
