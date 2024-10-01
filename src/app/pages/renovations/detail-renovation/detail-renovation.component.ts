@@ -39,6 +39,9 @@ export class DetailRenovationComponent implements OnInit {
   fdesdeAnt!: any;
   fhastaAnt!: any;
   fecha!: any;
+  xproductor!: any;
+  xejecutivo!: any;
+  xagente!: any;
 
   methodOfPaymentList: any[] = [];
   receiptList: any[] = [];
@@ -54,6 +57,12 @@ export class DetailRenovationComponent implements OnInit {
     msuma_aseg: [{ value: '', disabled: false }],
     mprima: [{ value: '', disabled: false }],
     cmetodologiapago: [{ value: '', disabled: false }],
+    pcomision_p: [{ value: '', disabled: false }],
+    pcomision_e: [{ value: '', disabled: false }],
+    pcomision_a: [{ value: '', disabled: false }],
+    mcomision_pext: [{ value: '', disabled: false }],
+    mcomision_eext: [{ value: '', disabled: false }],
+    mcomision_aext: [{ value: '', disabled: false }],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -123,7 +132,7 @@ export class DetailRenovationComponent implements OnInit {
       this.cedente = response.data.xcedente
       this.moneda = response.data.xmoneda
       this.poliza = response.data.xpoliza
-      this.fdesdeAnt = this.dateUtilService.formatDateDate(new Date(response.data.fdesde_pol))
+      this.fdesdeAnt = this.dateUtilService.formatDate(new Date(response.data.fdesde_pol))
       this.fecha = response.data.fdesde_pol
 
       this.renovFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(response.data.fhasta_pol))
@@ -139,6 +148,7 @@ export class DetailRenovationComponent implements OnInit {
 
       this.calcularFechaHasta();
       this.updateReceiptData();
+      this.searchDistribution();
     })
   }
 
@@ -162,6 +172,8 @@ export class DetailRenovationComponent implements OnInit {
     const fechaHastaISOA = fechaHastaA.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
 
     this.fhastaAnt = this.dateUtilService.formatDate(fechaHastaA)
+
+    this.updateReceiptData()
   }
 
   formatWithSeparator(event: any) {
@@ -244,10 +256,10 @@ export class DetailRenovationComponent implements OnInit {
     let dataCompleta = {
       fdesde: this.renovFormGroup.get('fdesde')?.value,
       fhasta: this.renovFormGroup.get('fhasta')?.value,
-      mprima: this.cleanNumber(this.renovFormGroup.get('mprima')?.value),
+      mprima: this.renovFormGroup.get('mprima')?.value,
       cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
     }
-    this.http.post(environment.apiUrl + '/api/v1/emission/receipt', dataCompleta).subscribe((response: any) => {
+    this.http.post(environment.apiUrl + '/api/v1/renovations/receipt', dataCompleta).subscribe((response: any) => {
       if(response.status){
         this.receiptList = [];
         this.receiptList = response.data.receipt.map((state: any) => ({
@@ -258,13 +270,21 @@ export class DetailRenovationComponent implements OnInit {
       }
     })
   }
-
-  cleanNumber(value: string): number {
-    // Elimina todos los caracteres que no sean números o el punto decimal
-    let cleanValue = value.replace(/[^0-9.]/g, '');
   
-    // Convertir a número y retornarlo
-    return parseFloat(cleanValue);
+  searchDistribution(){
+    this.http.post(environment.apiUrl + `/api/v1/renovations/distribution/${this.id}`, {}).subscribe((response: any) => {
+      this.xproductor = response.distribution.xproductor;
+      this.xejecutivo = response.distribution.xejecutivo;
+      this.xagente = response.distribution.xagente;
+
+      this.renovFormGroup.get('pcomision_p')?.setValue(response.distribution.pcomision_p);
+      this.renovFormGroup.get('pcomision_e')?.setValue(response.distribution.pcomision_e);
+      this.renovFormGroup.get('pcomision_a')?.setValue(response.distribution.pcomision_a);
+
+      this.renovFormGroup.get('mcomision_pext')?.setValue(response.distribution.mcomision_pext);
+      this.renovFormGroup.get('mcomision_eext')?.setValue(response.distribution.mcomision_eext);
+      this.renovFormGroup.get('mcomision_aext')?.setValue(response.distribution.mcomision_aext);
+    })
   }
 
   onSubmit(){

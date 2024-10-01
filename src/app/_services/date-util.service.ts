@@ -11,16 +11,34 @@ export class DateUtilService {
     if (!(date instanceof Date)) {
       throw new Error('El parámetro debe ser un objeto Date.');
     }
-
-    // Obtiene el día, mes y año de la fecha
-    const day = date.getDate() + 1;
-    const month = date.getMonth() + 1; // Se suma 1 ya que los meses van de 0 a 11
-    const year = date.getFullYear();
-
+  
+    // Obtén el día, mes y año en UTC
+    const day = date.getUTCDate();  // Usar UTC
+    const month = date.getUTCMonth() + 1;  // Usar UTC y sumar 1 porque los meses empiezan en 0
+    const year = date.getUTCFullYear();  // Usar UTC
+  
     // Formatea el día y el mes para asegurarse de que tengan dos dígitos
     const formattedDay = String(day).padStart(2, '0');
     const formattedMonth = String(month).padStart(2, '0');
+  
+    // Retorna la fecha formateada
+    return `${formattedDay}/${formattedMonth}/${year}`;
+  }
 
+  dateSinUnDua(date: any): string {
+    if (!(date instanceof Date)) {
+      throw new Error('El parámetro debe ser un objeto Date.');
+    }
+  
+    // Obtén el día, mes y año en UTC
+    const day = date.getUTCDate();  // Usar UTC
+    const month = date.getUTCMonth() + 1;  // Usar UTC y sumar 1 porque los meses empiezan en 0
+    const year = date.getUTCFullYear();  // Usar UTC
+  
+    // Formatea el día y el mes para asegurarse de que tengan dos dígitos
+    const formattedDay = String(day).padStart(2, '0');
+    const formattedMonth = String(month).padStart(2, '0');
+  
     // Retorna la fecha formateada
     return `${formattedDay}/${formattedMonth}/${year}`;
   }
