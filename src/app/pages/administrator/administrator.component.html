@@ -357,6 +357,13 @@
                                           (click)="pagarEjecutivo(ejecutivo.cejecutivo, ejecutivo.mcomision_e, ejecutivo.mcomision_eext)">
                                     <i class="fi fi-ss-expense"></i>
                                   </button>
+
+                                  <!-- Botón Cambio Comision -->
+                                  <button *ngIf="ejecutivo.distributeComision" type="button" class="btn btn-secondary btn-sm custom-small-button" 
+                                          matTooltip="Distribuir Comision" 
+                                          (click)="listarComisiones(ejecutivo.cejecutivo)">
+                                    <i class="fi fi-rr-balance-scale-right"></i>
+                                  </button>
                                 </div>
                               </div>
                             </mat-expansion-panel>
@@ -666,6 +673,111 @@
           </tr>
         </tbody>
       </table>
+    </mat-dialog-content>
+  </ng-template>
+  <ng-template #ListarComisiones let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Selección de Poliza</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <h4>Selecciona la poliza que desee redistribuir la comisión</h4>
+    <mat-dialog-content>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Póliza</th>
+            <th>Porcentaje Ejecutivo</th>
+            <th>Porcentaje Productor</th>
+            <th>Porcentaje Agente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of detalleEjecutivos" (click)="selectPoliza(item)">
+            <td>{{item.xpoliza}}</td>
+            <td>{{item.pcomision_e}} %</td>
+            <td>{{item.pcomision_p}} %</td>
+            <td *ngIf="item.pcomision_a">{{item.pcomision_a}} %</td>
+            <td *ngIf="!item.pcomision_a">0 %</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-dialog-content>
+  </ng-template>
+  <ng-template #CambiarComision let-dialogRef="dialogRef">
+    <div mat-dialog-title class="d-flex justify-content-between align-items-center">
+      <h2 style="font-weight: 500;">Redistribuir Comisiones</h2>
+    </div>
+    <mat-divider class="my-3"></mat-divider>
+    <mat-dialog-content>
+      <h4>Póliza: {{polizaACambiar.xpoliza}}</h4>
+      <form [formGroup]="genericFormGroup">
+        <div class="container">
+          <!-- Primer grupo -->
+          <div class="group" style="margin-top: 25px;">
+        
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Comisión Productor</mat-label>
+                <input matInput formControlName="pcomision_p" (change)="commissionSumValidator2()">
+              </mat-form-field>
+            </div>
+        
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Monto Prima por Comisión</mat-label>
+                <input matInput formControlName="mcomision_p">
+              </mat-form-field>
+              <div class="small-text">
+                <h5>Monto en Bs: {{mcomision_p_bs}}</h5>
+              </div>
+            </div>
+          </div> 
+        
+          <!-- Segundo grupo -->
+          <div class="group">
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Comisión Ejecutivo</mat-label>
+                <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
+              </mat-form-field>
+            </div>
+        
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Monto Prima por Comisión</mat-label>
+                <input matInput formControlName="mcomision_e">
+              </mat-form-field>
+              <div class="small-text">
+                <h5>Monto en Bs: {{mcomision_e_bs}}</h5>
+              </div>
+            </div>
+          </div>
+        
+          <!-- Tercer grupo -->
+          <div class="group" *ngIf="">
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Comisión Agente</mat-label>
+                <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
+              </mat-form-field>
+            </div>
+        
+            <div class="field">
+              <mat-form-field class="example-full-width">
+                <mat-label>Monto Prima por Comisión</mat-label>
+                <input matInput formControlName="mcomision_a">
+              </mat-form-field>
+              <div class="small-text">
+                <h5>Monto en Bs: {{mcomision_a_bs}}</h5>
+              </div>
+            </div>
+            <i class="fi fi-rs-trash icon-trash" 
+                *ngIf="activaEliminarAgente"
+                (click)="removeRecord('agente')"></i>
+          </div>
+          
+        </div>
+      </form>
     </mat-dialog-content>
   </ng-template>
 

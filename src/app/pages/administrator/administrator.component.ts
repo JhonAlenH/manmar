@@ -41,6 +41,8 @@ export class AdministratorComponent implements OnInit {
   @ViewChild('DetalleAgente') DetalleAgente!: TemplateRef<any>;
   @ViewChild('PagarProductor') PagarProductor!: TemplateRef<any>;
   @ViewChild('PagarEjecutivo') PagarEjecutivo!: TemplateRef<any>;
+  @ViewChild('ListarComisiones') ListarComisiones!: TemplateRef<any>;
+  @ViewChild('CambiarComision') CambiarComision!: TemplateRef<any>;
   @ViewChild('PagarAgente') PagarAgente!: TemplateRef<any>;
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
@@ -79,6 +81,7 @@ export class AdministratorComponent implements OnInit {
   netoBs: any;
   monedaDebanco: any;
   neto: any;
+  polizaACambiar: any;
   mcomision_e: any;
   mcomision_eext: any;
   mcomision_a: any;
@@ -167,6 +170,18 @@ export class AdministratorComponent implements OnInit {
     mmonto_a: [{ value: '', disabled: false }],
     cmoneda_a: [''],
   });
+
+  genericFormGroup = this._formBuilder.group({
+    pcomision_e: [{ value: '', disabled: false }],
+    mcomision_e: [{ value: '', disabled: true }],
+    pcomision_a: [{ value: '', disabled: false }],
+    mcomision_a: [{ value: '', disabled: true }],
+    pcomision_p: [{ value: '', disabled: false }],
+    mcomision_p: [{ value: '', disabled: true }],
+  });
+  mcomision_p_bs: any;
+  mcomision_e_bs: any;
+  mcomision_a_bs: any;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -1470,15 +1485,15 @@ export class AdministratorComponent implements OnInit {
       
       // Agrupar por ejecutivo y sumar comisiones con dos decimales
       this.ejecutivos = this.distributionList.reduce((acc: any[], item: any) => {
-
+        
         if (!item.fpago_e) {
-          console.log('holaaaaa')
           let existingEjecutivo = acc.find(e => e.cejecutivo === item.cejecutivo);
       
           if (existingEjecutivo) {
             const comisionActual = existingEjecutivo.mcomision_eext || 0;
             existingEjecutivo.mcomision_eext = parseFloat((comisionActual + (item.mcomision_eext || 0)).toFixed(2));
           } else {
+            
             // Si no existe, lo agregamos al array solo si 'fpago_e' no tiene valor o si 'fpago_a' es null
             if (!item.fpago_e || item.fpago_a === null) {
               acc.push({
@@ -1486,6 +1501,7 @@ export class AdministratorComponent implements OnInit {
                 xejecutivo: item.xejecutivo,
                 mcomision_e: parseFloat((item.mcomision_e || 0).toFixed(2)),
                 mcomision_eext: parseFloat((item.mcomision_eext || 0).toFixed(2)),
+                distributeComision: true
               });
             }
           }
@@ -1493,6 +1509,18 @@ export class AdministratorComponent implements OnInit {
 
         return acc;
       }, [])
+
+      this.ejecutivos.forEach(element => {
+        let existingEjecutivo = this.distributionList.find(e => {
+          if(e.cejecutivo === element.cejecutivo && e.fpago_e) {
+            return e
+          }
+        });
+        if(existingEjecutivo) {
+          element.distributeComision = false
+        }
+        
+      });
 
       this.agentes = this.distributionList.reduce((acc: any[], item: any) => {
 
@@ -1517,7 +1545,6 @@ export class AdministratorComponent implements OnInit {
         return acc;
       }, []);
 
-      console.log(this.agentes);
       
 
     });
@@ -1752,9 +1779,38 @@ export class AdministratorComponent implements OnInit {
   // }
   
   verDetallesEjecutivo(cejecutivo: string) {
-    const ejecutivo = this.distributionList.filter(item => item.cejecutivo === cejecutivo);
+    this.detalleEjecutivos = []
+    const ejecutivo = this.distributionList.filter(item => {
+      if(item.cejecutivo === cejecutivo && !item.fpago_e) {
+        return item
+      }
+    });
     this.detalleEjecutivos = ejecutivo
     this.dialogRef = this.dialog.open(this.DetalleEjecutivo, {
+      width: '90%', // Ancho del diálogo
+      height: '90%', // Alto del diálogo
+      maxWidth: '1200px',
+      maxHeight: '1200px'
+    });
+  }
+  listarComisiones(cejecutivo: string) {
+    this.detalleEjecutivos = []
+    this.http.post(environment.apiUrl + `/api/v1/emission/searchContracts/${cejecutivo}`, {}).subscribe((data:any) => {
+      console.log(data);
+      const ejecutivo = data.data
+      this.detalleEjecutivos = ejecutivo
+      this.dialogRef = this.dialog.open(this.ListarComisiones, {
+        width: '90%', // Ancho del diálogo
+        height: '90%', // Alto del diálogo
+        maxWidth: '1200px',
+        maxHeight: '1200px'
+      });
+    })
+  }
+  selectPoliza(poliza) {
+    this.polizaACambiar = poliza
+    // this.genericFormGroup.get('mcomision_p')?.setValue()
+    this.dialogRef = this.dialog.open(this.CambiarComision, {
       width: '90%', // Ancho del diálogo
       height: '90%', // Alto del diálogo
       maxWidth: '1200px',
