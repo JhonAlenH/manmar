@@ -42,6 +42,8 @@ export class DetailRenovationComponent implements OnInit {
   xproductor!: any;
   xejecutivo!: any;
   xagente!: any;
+  cramo!: any;
+  comisionRamo: any;
 
   methodOfPaymentList: any[] = [];
   receiptList: any[] = [];
@@ -122,6 +124,7 @@ export class DetailRenovationComponent implements OnInit {
 
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
+      this.cramo = response.data.cramo;
       this.ramo = response.data.xramo;
       this.asegurado = response.data.xnombre;
       this.tomador = response.data.xtomador;
@@ -149,6 +152,7 @@ export class DetailRenovationComponent implements OnInit {
       this.calcularFechaHasta();
       this.updateReceiptData();
       this.searchDistribution();
+      this.getTariffs();
     })
   }
 
@@ -284,6 +288,33 @@ export class DetailRenovationComponent implements OnInit {
       this.renovFormGroup.get('mcomision_pext')?.setValue(response.distribution.mcomision_pext);
       this.renovFormGroup.get('mcomision_eext')?.setValue(response.distribution.mcomision_eext);
       this.renovFormGroup.get('mcomision_aext')?.setValue(response.distribution.mcomision_aext);
+    })
+  }
+
+  getTariffs(){
+    let data = {
+      ccedente: this.renovFormGroup.get('ccedente')?.value,
+      cramo: this.cramo
+    }
+    this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
+      if(response.status){
+        this.comisionRamo = response.pcomision;
+        if(!this.comisionRamo){
+          Swal.fire({
+            icon: "error",
+            title: "Ha ocurrido un Error",
+            text: "Estimado usuario, no exite arancel por el ramo y por la cedente, por ende no se puede calcular las comisiones.",
+            confirmButtonText: "<strong>Aceptar</strong>",
+            confirmButtonColor: "#5e72e4",
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+              }
+          });
+        }
+      }
+    },(err) => {
+
     })
   }
 
