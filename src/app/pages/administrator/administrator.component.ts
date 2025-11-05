@@ -492,7 +492,7 @@ export class AdministratorComponent implements OnInit {
   
         // Asegurarse de que el monto neto sea positivo y redondearlo a dos decimales
         item.mneto = item.mneto < 0 ? -item.mneto : item.mneto;
-        item.mneto = parseFloat(item.mneto.toFixed(2));
+        item.mneto = parseFloat(item.mneto?.toFixed(2) || 0);
         item.mnetobs = parseFloat((item.mcomisionext * this.bcv).toFixed(2));
       });
       this.uniqueCedentes = response.cedents;

@@ -423,7 +423,7 @@ export class EmissionsComponent implements OnInit {
         for (let i = 0; i < response.data.takers.length; i++) {
           this.takersList.push({
             id: response.data.takers[i].ctomador,
-            value: response.data.takers[i].xtomador,
+            value: response.data.takers[i].xtomador || 'N/A',
             itipo: response.data.takers[i].icedula,
             xdocu: response.data.takers[i].xcedula,
           });

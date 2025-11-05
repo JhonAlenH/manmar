@@ -108,6 +108,7 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    console.log(changes)
     if (changes.receiptData) {
       this.updateReceiptData(changes.receiptData.currentValue);
     }
