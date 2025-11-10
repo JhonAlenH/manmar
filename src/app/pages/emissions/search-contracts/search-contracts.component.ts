@@ -42,17 +42,18 @@ export class SearchContractsComponent implements OnInit {
   });
 
   constructor( private _formBuilder: FormBuilder,
-              private http: HttpClient,
-              private dateUtilService: DateUtilService,
-              private modalService: NgbModal,
-              private snackBar: MatSnackBar,
-              private route: ActivatedRoute,
-              private router: Router,
-              ) {}
+    private http: HttpClient,
+    private dateUtilService: DateUtilService,
+    private modalService: NgbModal,
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
-    this.currentUser = JSON.parse(storedSession);
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
 
     if(this.currentUser){
       this.getCedents();
@@ -79,7 +80,7 @@ export class SearchContractsComponent implements OnInit {
         for (let i = 0; i < response.data.cedents.length; i++) {
           this.cedentsList.push({
             id: response.data.cedents[i].ccedente,
-            value: response.data.cedents[i].xcedente,
+            value: response.data.cedents[i].persona.xnombre,
           });
         }
         this.cedentsList.sort((a, b) => a.value > b.value ? 1 : -1)
@@ -137,6 +138,8 @@ export class SearchContractsComponent implements OnInit {
     let data = {
       ccedente: this.searchFormGroup.get('ccedente')?.value,
       cramo: this.searchFormGroup.get('cramo')?.value,
+      cusuario: this.currentUser.cusuario,
+      crol: this.currentUser.crol,
     }
 
     this.http.post(environment.apiUrl + '/api/v1/emission/search', data).subscribe((response: any) => {

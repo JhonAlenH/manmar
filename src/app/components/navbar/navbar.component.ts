@@ -10,7 +10,6 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent implements OnInit {
   currentUser!: any
-  User!: any
   public focus;
   public listTitles: any[];
   public location: Location;
@@ -20,8 +19,9 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     const storedSession = localStorage.getItem('user');
-    this.currentUser = JSON.parse(storedSession);
-    this.User = this.currentUser.data.xusuario
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
+    console.log(this.currentUser)
     this.listTitles = ROUTES.filter(listTitle => listTitle);
   }
   getTitle(){

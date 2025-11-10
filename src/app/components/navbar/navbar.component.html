@@ -20,7 +20,7 @@
         <a class="nav-link pr-0" role="button" ngbDropdownToggle>
           <div class="media align-items-center">
             <div class="media-body ml-2 d-none d-lg-block">
-              <span class="mb-0 text-sm  font-weight-bold">{{User}}</span>
+              <span class="mb-0 text-sm  font-weight-bold">{{currentUser?.persona?.xnombre.toUpperCase()}} {{currentUser?.persona?.xapellido?.toUpperCase()}} - ({{currentUser?.intermediario?.productor?.tipo_productor?.xtipo?.toUpperCase() || currentUser?.intermediario?.tipo_intermediario?.xtipo?.toUpperCase()}})</span>
             </div>
           </div>
         </a>

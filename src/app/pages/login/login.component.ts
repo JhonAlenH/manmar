@@ -9,8 +9,8 @@ import { first } from 'rxjs';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  xlogin: string = ''; // Declare empty strings for email and password
-  xcontrasena: string = '';
+  username: string = ''; // Declare empty strings for email and password
+  password: string = '';
 
   constructor(private authenticationService: AuthenticationService,
     private router: Router,
@@ -19,14 +19,14 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     // Access form data using template reference variables
-    const emailInput = document.getElementById('xlogin') as HTMLInputElement;
-    const passwordInput = document.getElementById('xcontrasena') as HTMLInputElement;
+    const usernameInput = document.getElementById('username') as HTMLInputElement;
+    const passwordInput = document.getElementById('password') as HTMLInputElement;
 
-    this.xlogin = emailInput.value;
-    this.xcontrasena = passwordInput.value;
+    this.username = usernameInput.value;
+    this.password = passwordInput.value;
 
 
-    this.authenticationService.login(this.xlogin, this.xcontrasena)
+    this.authenticationService.login(this.username, this.password)
     .pipe(first())
     .subscribe({
         next: () => {
