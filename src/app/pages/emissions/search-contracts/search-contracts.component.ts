@@ -138,7 +138,7 @@ export class SearchContractsComponent implements OnInit {
     let data = {
       ccedente: this.searchFormGroup.get('ccedente')?.value,
       cramo: this.searchFormGroup.get('cramo')?.value,
-      cusuario: this.currentUser.cusuario,
+      cprod_rel: this.currentUser.intermediario?.cprod_rel || null,
       crol: this.currentUser.crol,
     }
 

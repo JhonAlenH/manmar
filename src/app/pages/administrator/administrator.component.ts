@@ -210,7 +210,8 @@ export class AdministratorComponent implements OnInit {
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
-    this.currentUser = JSON.parse(storedSession);
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -226,7 +227,7 @@ export class AdministratorComponent implements OnInit {
           if (this.currentUser) {
             this.getCedents();
             this.getTrades();
-            this.getBank();
+            this.getProductorBank();
             this.searchDueReceipt();
             this.feeCharged();
           }
@@ -237,7 +238,7 @@ export class AdministratorComponent implements OnInit {
           if (this.currentUser) {
             this.getCedents();
             this.getTrades();
-            this.getBank();
+            this.getProductorBank();
             this.searchDueReceipt();
             this.feeCharged();
           }
@@ -247,7 +248,7 @@ export class AdministratorComponent implements OnInit {
       if (this.currentUser) {
         this.getCedents();
         this.getTrades();
-        this.getBank();
+        this.getProductorBank();
         this.searchDueReceipt();
         this.feeCharged();
       }
@@ -421,8 +422,10 @@ export class AdministratorComponent implements OnInit {
     this.administrativeForm.get('cramo')?.setValue(selectedTrade.id);
   }
 
-  getBank() {
-    this.http.post(environment.apiUrl + '/api/v1/valrep/bank-manmar', null).subscribe((response: any) => {
+  getProductorBank() {
+    this.http.post(environment.apiUrl + '/api/v1/valrep/bank-manmar', {
+      cintermediario: this.currentUser?.productor?.cintermediario
+    }).subscribe((response: any) => {
       if (response.data.bank) {
         this.bankList = response.data.bank.map((banco: any) => ({
           id: banco.cbanco,

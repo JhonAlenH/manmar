@@ -89,17 +89,17 @@
                       
                       <ng-container matColumnDef="xcedente">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Cedente </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xcedente }} </td>
+                        <td mat-cell *matCellDef="let element">{{ element?.cedente?.persona?.xnombre }} {{ element?.cedente?.persona?.xapellido }}</td>
                       </ng-container>
             
                       <ng-container matColumnDef="xramo">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Ramo </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xramo }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element?.ramo?.xramo }} </td>
                       </ng-container>
             
                       <ng-container matColumnDef="xasegurado">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Asegurado </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xasegurado }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element?.asegurado?.persona?.xnombre }} {{ element?.asegurado?.persona?.xapellido }} </td>
                       </ng-container>
 
                       <ng-container matColumnDef="fdesde_pol">
