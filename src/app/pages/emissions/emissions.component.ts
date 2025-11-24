@@ -154,7 +154,8 @@ export class EmissionsComponent implements OnInit {
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
-    this.currentUser = JSON.parse(storedSession);
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -198,12 +199,15 @@ export class EmissionsComponent implements OnInit {
   }
 
   getCedents(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', null).subscribe((response: any) => {
+    console.log(this.currentUser)
+    this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', {
+      cproductor: this.currentUser?.productor?.cproductor
+    }).subscribe((response: any) => {
       if (response.data.cedents) {
         for (let i = 0; i < response.data.cedents.length; i++) {
           this.cedentsList.push({
             id: response.data.cedents[i].ccedente,
-            value: response.data.cedents[i].xcedente,
+            value: `${response.data.cedents[i].persona?.xnombre} ${response.data.cedents[i].persona?.xapellido || ''}`.trim(),
           });
         }
         const selectedCedents = this.cedentsList.find(cedents => cedents.id === 73);
@@ -377,9 +381,8 @@ export class EmissionsComponent implements OnInit {
         for (let i = 0; i < response.data.insurance.length; i++) {
           this.insuranceList.push({
             id: response.data.insurance[i].casegurado,
-            value: response.data.insurance[i].xnombre,
-            itipo: response.data.insurance[i].itipodoc,
-            xdocu: response.data.insurance[i].xcedula
+            value: `${response.data.insurance[i].xnombre} ${response.data.insurance[i].xapellido || ''}`.trim(),
+            xdocu: response.data.insurance[i].cci_rif
           });
         }
         this.insuranceList.sort((a, b) => a.value > b.value ? 1 : -1)
@@ -423,9 +426,8 @@ export class EmissionsComponent implements OnInit {
         for (let i = 0; i < response.data.takers.length; i++) {
           this.takersList.push({
             id: response.data.takers[i].ctomador,
-            value: response.data.takers[i].xtomador || 'N/A',
-            itipo: response.data.takers[i].icedula,
-            xdocu: response.data.takers[i].xcedula,
+            value: `${response.data.takers[i].xnombre} ${response.data.takers[i].xnombre|| ''}`.trim(),
+            xdocu: response.data.takers[i].cci_rif,
           });
         }
         this.takersList.sort((a, b) => a.value > b.value ? 1 : -1)
@@ -575,7 +577,7 @@ export class EmissionsComponent implements OnInit {
 
   getCity(){
     let data = {
-      cpais: 58,
+      // cpais: 58,
       cestado: this.emissionsFormGroup.get('cestado')?.value
     };
     this.http.post(environment.apiUrl + '/api/v1/valrep/city', data).subscribe((response: any) => {
