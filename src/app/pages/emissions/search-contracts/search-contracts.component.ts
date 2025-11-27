@@ -57,8 +57,6 @@ export class SearchContractsComponent implements OnInit {
     if(this.currentUser){
       this.getCedents();
       this.getTrades();
-
-      this.searchContracts();
     }
   }
 

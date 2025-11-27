@@ -321,7 +321,7 @@ export class EmissionsComponent implements OnInit {
 
   searchPolicy(){
     const poliza = this.emissionsFormGroup.get('xpoliza')?.value
-    this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, null).subscribe((response: any) => {
+    this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, {ccedente: this.emissionsFormGroup.get('ccedente')?.value}).subscribe((response: any) => {
       if(response.status){
         if(response.xpoliza){
           Swal.fire({
@@ -362,6 +362,14 @@ export class EmissionsComponent implements OnInit {
         );
       }
     });
+  }
+  onCoinSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedCoin = this.coinsList.find(coin => coin.value === selectedValue);
+    if (selectedCoin) {
+      this.emissionsFormGroup.get('cmoneda')?.setValue(selectedCoin.id);
+      this.emissionsFormGroup.get('xmoneda')?.setValue(selectedCoin.value);
+    }
   }
 
   private _filterCoins(value: string): string[] {
@@ -413,7 +421,7 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('xasegurado')?.setValue(selectedinsurance.value);
       this.emissionsFormGroup.get('itipodoc')?.setValue(selectedinsurance.itipo);
       this.emissionsFormGroup.get('xcedula')?.setValue(selectedinsurance.xdocu);
-      this.searchTakers()
+      // this.searchTakers()
     }
   }
 
@@ -616,9 +624,13 @@ export class EmissionsComponent implements OnInit {
 
   SumBs() {
     const mprima = parseFloat(this.emissionsFormGroup.get('mprima')?.value);
-    
-    const msuma_aseg_bs = this.msuma_aseg * this.bcv;
-    const mprima_bs = mprima * this.bcv;
+    let msuma_aseg_bs = this.msuma_aseg
+    let mprima_bs = mprima
+    console.log(this.emissionsFormGroup.get('cmoneda')?.value)
+    if(this.emissionsFormGroup.get('cmoneda')?.value != '1') {
+      msuma_aseg_bs = this.msuma_aseg * this.bcv;
+      mprima_bs = mprima * this.bcv;
+    }
 
     const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
       minimumFractionDigits: 2,

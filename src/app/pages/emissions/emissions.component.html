@@ -68,7 +68,7 @@
                            [matAutocomplete]="coins"
                            formControlName="xmoneda"
                            required>
-                    <mat-autocomplete #coins="matAutocomplete">
+                    <mat-autocomplete #coins="matAutocomplete" (optionSelected)="onCoinSelection($event)">
                       <mat-option *ngFor="let coin of filteredCoins | async" [value]="coin">
                         {{ coin }} <!-- Mostrar el valor de la moneda -->
                       </mat-option>
@@ -81,7 +81,7 @@
                 <div class="col-md-4">
                   <mat-form-field class="example-full-width">
                     <mat-label>Fecha Desde</mat-label>
-                    <input matInput [matDatepicker]="picker" formControlName="fdesde" (dateChange)="calcularFechaHasta($event)">
+                    <input matInput [matDatepicker]="picker" formControlName="fdesde" (dateChange)="calcularFechaHasta($event)" readonly>
                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                     <mat-datepicker #picker></mat-datepicker>
                   </mat-form-field>
@@ -89,7 +89,7 @@
                 <div class="col-md-4">
                   <mat-form-field class="example-full-width">
                     <mat-label>Fecha Hasta</mat-label>
-                    <input matInput [matDatepicker]="fhastaP" formControlName="fhasta">
+                    <input matInput [matDatepicker]="fhastaP" formControlName="fhasta" readonly>
                     <mat-datepicker-toggle matSuffix [for]="fhastaP"></mat-datepicker-toggle>
                     <mat-datepicker #fhastaP></mat-datepicker>
                   </mat-form-field>

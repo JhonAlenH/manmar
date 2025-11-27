@@ -26,7 +26,7 @@
                 </button>
 
                 <div class="row py-3">
-                    <div class="col-sm-12">
+                    <div class="col-sm-11">
                       <mat-accordion class="example-headers-align expansion_notificacion" multi>
                         <mat-expansion-panel>
                           <mat-expansion-panel-header style="background-color: #6f86e3;">
@@ -48,7 +48,7 @@
                                        [matAutocomplete]="cedents"
                                        formControlName="xcedente"
                                        required>
-                                       <mat-autocomplete #cedents="matAutocomplete">
+                                       <mat-autocomplete #cedents="matAutocomplete" (optionSelected)="onCedentsSelection($event)">
                                         <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
                                           {{ cedents }}
                                         </mat-option>
@@ -77,7 +77,12 @@
                         </mat-expansion-panel>
                       </mat-accordion>
                     </div>
-                  </div>
+                    <div class="col-sm-1">
+                      <button mat-button mat-raised-button (click)="searchContracts()" color="primary">
+                        <mat-icon>search</mat-icon>
+                      </button>
+                    </div>
+                </div>
 
             </form>
 
