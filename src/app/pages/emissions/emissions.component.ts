@@ -199,7 +199,6 @@ export class EmissionsComponent implements OnInit {
   }
 
   getCedents(){
-    console.log(this.currentUser)
     this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', {
       cproductor: this.currentUser?.productor?.cproductor
     }).subscribe((response: any) => {
