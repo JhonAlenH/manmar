@@ -1,12 +1,4 @@
-<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
-    <div class="container-fluid">
-      <div class="header-body">
-        <div class="row">
-          
-        </div>
-      </div>
-    </div>
-  </div>
+
 <div class="container-fluid ">
   <div class="row">
     <div class="col-md-12">
@@ -22,8 +14,10 @@
                 <label>{{field.fieldName}}</label>
                 <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email') && (field.binding_change_field)" (change)="setOtherValue($event, field.binding_change_field)" [value]="field.defaultValue">
 
+                <!-- DATE, TEXT, NUMBER types -->
                 <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(!field.binding_change_field) && (field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')" [value]="field.defaultValue" (change)="checkIfComplete()">
 
+                <!-- SELECT type -->
                 <select (change)="setOtherValue($event, field.binding_change_field)" class="form-control text-capitalize" [disabled]="disabledInputs || field.disabledField" [attr.name]="field.key" *ngIf="(field.binding_change_field) &&(field.type == 'select' || field.type == 'simple-select')">
                   <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                     {{option.text}}
@@ -36,7 +30,7 @@
                   </option>
                 </select>
 
-                <i class="fa-solid fa-caret-down arrow-down" *ngIf="field.type == 'select' || field.type == 'simple-select'"></i>
+                <i class="fa-solid fa-caret-down arrow-down select-item" *ngIf="field.type == 'select' || field.type == 'simple-select'"></i>
 
                 <div class="form-control form-multiple col-md-12 m-s-form" *ngIf="field.type == 'multiple-select'">
                   <input hidden value="" type="text" [attr.name]="field.key_form" [id]="field.key" [disabled]="disabledInputs || field.disabledField" (change)="checkIfComplete()">
@@ -125,14 +119,11 @@
                 </div>
               </div>
             </div>
-            <button matTooltip="Crear" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab style="background: #d6af00;"  *ngIf="mode == 'create'" id="submit_{{ formId }}" [disabled]="loading || disabled">
-              <mat-icon *ngIf="!loading">add</mat-icon>
+            <button matTooltip="Crear" matTooltipPosition="left" class="btn" mat-raised-button mat-button color="primary" id="submit_{{ formId }}" [disabled]="loading || disabled">
+              <span *ngIf="!loading">Guardar</span>
               <div *ngIf="loading" class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-            </button>
-            <button matTooltip="Guardar" matTooltipPosition="left" class="btn-flotante btn-flotante-3" mat-fab color="primary"  *ngIf="mode == 'edit'" id="submit_{{ formId }}" [disabled]="loading">
-              <mat-icon>save</mat-icon>
             </button>
           </form>
         </div>

@@ -21,6 +21,7 @@ import { DetailRenovationComponent } from '../../pages/renovations/detail-renova
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
 import { ContainerGenericComponent } from '../../_containers/container-generic/container-generic.component';
+import { ComponentsModule } from "src/app/components/components.module";
 // import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
@@ -33,8 +34,8 @@ import { ContainerGenericComponent } from '../../_containers/container-generic/c
     NgbModule,
     ClipboardModule,
     ReactiveFormsModule,
-
-  ],
+    ComponentsModule
+],
   declarations: [
     DashboardComponent,
     UserProfileComponent,

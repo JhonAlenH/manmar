@@ -44,6 +44,13 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
+            fieldName: 'Identificacion', class: 'col-md-1',
+            type: 'simple-select',
+            values: [{text: 'V', value: 'V'}, {text: 'E', value: 'E'}, {text: 'J', value: 'J'}, {text: 'P', value: 'P'}], 
+            key: 'itipodoc',
+            bdType: 'text'
+          },
+          {
             type: 'text',
             fieldName: 'Cedula', class: 'col-md-2',
             key: 'xcedula',

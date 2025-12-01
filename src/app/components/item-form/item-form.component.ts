@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 // import { ItemFormService } from './item-form.service';
@@ -10,14 +10,16 @@ import { HttpClient } from '@angular/common/http';
 
 
 @Component({
-  selector: 'app-user-profile',
+  selector: 'app-item-form',
   templateUrl: './item-form.component.html',
   styleUrls: ['./item-form.component.css']
 })
 export class ItemFormComponent implements OnInit {
 
+  @Input() dataComponent:any
 
   mode = ''
+  internMode:any = null
   itemData = {}
   mainUrl = ''
   itemId:any = ''
@@ -57,7 +59,25 @@ export class ItemFormComponent implements OnInit {
     // this.openSnackBarLoading()
     // this.ccompania = localStorage.getItem("ccompania");
     this.ccompania = 1;
-    this.sub = this.route.data.subscribe(v => {
+    console.log(this.dataComponent)
+    if(this.dataComponent){
+      const v = this.dataComponent
+      this.mode = v.mode
+        this.title = v.title
+        this.mainUrl = v.mainUrl
+        this.fields = v.fields
+        this.formId = v.formId
+        if(this.mode == 'create') {
+          this.createUrl = v.createUrl
+        } else {
+          this.disabledInputs = true
+        }
+        if(this.mode == 'info') {
+          this.editUrl = v.editUrl
+          this.disableUrl = v.disableUrl
+        }
+    } else {
+      this.sub = this.route.data.subscribe(v => {
         this.mode = v.mode
         this.title = v.title
         this.mainUrl = v.mainUrl
@@ -73,6 +93,7 @@ export class ItemFormComponent implements OnInit {
           this.disableUrl = v.disableUrl
         }
       });
+    }
 
     if(this.mode == 'info') {
       this.route.url.subscribe( v => {

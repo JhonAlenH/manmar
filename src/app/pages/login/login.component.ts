@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthenticationService } from '../../../app/_services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { first } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -26,9 +25,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.xcontrasena = passwordInput.value;
 
 
-    this.authenticationService.login(this.xlogin, this.xcontrasena)
-    .pipe(first())
-    .subscribe({
+    this.authenticationService.login(this.xlogin, this.xcontrasena).subscribe({
         next: () => {
             const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
             this.router.navigate([returnUrl]);

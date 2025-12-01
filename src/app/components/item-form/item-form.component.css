@@ -40,3 +40,9 @@
     font-weight: 700;
   }
   
+
+  .select-item {
+    position: absolute;
+    right: 30px;
+    top: 60%;
+  }

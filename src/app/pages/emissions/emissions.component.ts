@@ -48,6 +48,9 @@ export class EmissionsComponent implements OnInit {
   cityList: any[] = [];
   insuranceList: any[] = [];
 
+  newAsegurado:boolean = false
+  newTomador:boolean = false
+
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
   coinsControl = new FormControl('');
@@ -84,6 +87,77 @@ export class EmissionsComponent implements OnInit {
   msuma_aseg: any;
   msuma_aseg_bs: any;
   comisionRamo: any;
+
+  aseguradoDataComponent = {
+    title: 'Crear Nuevo Asegurado',
+    mode: 'create',
+    mainUrl: '/api/v1/maestros/asegurados/get/',
+    createUrl: '/api/v1/maestros/asegurados/create', 
+    formId: 'create_asegurados',
+    fields: [      
+      {
+        type: 'text',
+        fieldName: 'Nombre', class: 'col-md-6',
+        key: 'xnombre',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Apellido', class: 'col-md-6',
+        key: 'xapellido',
+        bdType: 'text'
+      },
+      {
+        fieldName: 'Identificacion', class: 'col-md-1',
+        type: 'simple-select',
+        values: [{text: 'V', value: 'V'}, {text: 'E', value: 'E'}, {text: 'J', value: 'J'}, {text: 'P', value: 'P'}], 
+        key: 'itipodoc',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Cedula', class: 'col-md-2',
+        key: 'xcedula',
+        bdType: 'text'
+      },
+      {
+        type: 'date',
+        fieldName: 'Fecha Nacimiento', class: 'col-md-3',
+        key: 'fnacimiento',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Estado Civil', class: 'col-md-1',
+        key: 'iestado_civil',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Teléfono 1', class: 'col-md-3',
+        key: 'xtelefono1',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Teléfono 2', class: 'col-md-3',
+        key: 'xtelefono2',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Direccion', class: 'col-md-12',
+        key: 'xdireccion',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'eMail', class: 'col-md-6',
+        key: 'xcorreo',
+        bdType: 'text'
+      }     
+    ]
+  } 
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],
@@ -128,29 +202,29 @@ export class EmissionsComponent implements OnInit {
   });
 
   constructor( private _formBuilder: FormBuilder,
-                private http: HttpClient,
-                private dateUtilService: DateUtilService,
-                private modalService: NgbModal,
-                private snackBar: MatSnackBar,
-                private route: ActivatedRoute,
-                private router: Router,
-                private dateAdapter: DateAdapter<Date>,
-                ) {
-                  dateAdapter.setLocale('es');
-                  fetch('https://ve.dolarapi.com/v1/dolares')
-                  .then((response) => response.json())
-                  .then(data => {
-                    data.forEach((item: any) => {
-                      if (item.fuente === 'oficial') {
-                        this.bcv = item.promedio;
-                      }
-                    });
-                  })
-                  .catch(error => {
-                    console.error('Error al obtener la tasa del BCV:', error);
-                    // Continuar con el valor predeterminado de `this.bcv`
-                  })
-                }
+    private http: HttpClient,
+    private dateUtilService: DateUtilService,
+    private modalService: NgbModal,
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private router: Router,
+    private dateAdapter: DateAdapter<Date>,
+  ) {
+    dateAdapter.setLocale('es');
+    fetch('https://ve.dolarapi.com/v1/dolares')
+    .then((response) => response.json())
+    .then(data => {
+      data.forEach((item: any) => {
+        if (item.fuente === 'oficial') {
+          this.bcv = item.promedio;
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error al obtener la tasa del BCV:', error);
+      // Continuar con el valor predeterminado de `this.bcv`
+    })
+  }
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
@@ -178,6 +252,13 @@ export class EmissionsComponent implements OnInit {
       this.getMethodOfPayment()
       this.getState();
       this.getInsurance();
+    }
+  }
+
+  checkClickOutside(event:any, item:any) {
+    if (event.srcElement.id == 'item-create') {
+      console.log(event.srcElement.id)
+      this[item] = false
     }
   }
 
