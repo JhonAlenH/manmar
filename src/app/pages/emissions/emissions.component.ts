@@ -159,7 +159,7 @@ export class EmissionsComponent implements OnInit {
     mainUrl: '/api/v1/maestros/tomadores/get/',
     createUrl: '/api/v1/maestros/tomadores/create', 
     formId: 'create_tomadores',
-    fields: [      
+    fields: [
       {
         type: 'text',
         fieldName: 'Activo', class: 'col-md-0',

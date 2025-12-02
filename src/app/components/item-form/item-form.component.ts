@@ -268,9 +268,11 @@ export class ItemFormComponent implements OnInit {
           field.addedValues = []
         }
       } else {
-        // added default value to inputs to the info mode
-        if(typeof this.itemData[field.key] == 'string' || typeof this.itemData[field.key] == 'number') {
-          field.defaultValue = this.itemData[field.key]
+        if(this.mode == 'info'){
+          // added default value to inputs to the info mode
+          if(typeof this.itemData[field.key] == 'string' || typeof this.itemData[field.key] == 'number') {
+            field.defaultValue = this.itemData[field.key]
+          }
         }
       } 
       if(this.mode == 'create'){
