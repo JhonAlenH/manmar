@@ -4,127 +4,198 @@
     <div class="col-md-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between">
-          <h5 class="title">{{ title }}</h5>
+          <h5 class="title title-item">{{ title }}</h5>
           <button *ngIf="mode == 'info'" class="btn btn-primary m-0" (click)="mode ='edit'; disabledInputs = false">Editar</button>
         </div>
         <div class="card-body">
           <form id="{{ formId }}">
             <div class="row" *ngIf="fields">
-              <div [class]="'form-group ' + field.class" *ngFor="let field of fields">
-                <label>{{field.fieldName}}</label>
-                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email') && (field.binding_change_field)" (change)="setOtherValue($event, field.binding_change_field)" [value]="field.defaultValue">
+              <div [style]="'display:'+ field.display" [class]="'form-group ' + field.class" *ngFor="let field of fields">
+                <label *ngIf="field.type != 'multiple-select'">{{field.fieldName}}</label>
+                <textarea class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'textarea') && (field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue" rows="1"></textarea>
+                <textarea class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'textarea') && (!field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue" rows="1"></textarea>
 
-                <!-- DATE, TEXT, NUMBER types -->
-                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(!field.binding_change_field) && (field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')" [value]="field.defaultValue" (change)="checkIfComplete()">
+                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email') && (field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue">
 
-                <!-- SELECT type -->
-                <select (change)="setOtherValue($event, field.binding_change_field)" class="form-control text-capitalize" [disabled]="disabledInputs || field.disabledField" [attr.name]="field.key" *ngIf="(field.binding_change_field) &&(field.type == 'select' || field.type == 'simple-select')">
+                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(!field.binding_change_fields) && (field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')" [value]="field.defaultValue" (change)="checkIfComplete()">
+
+                <select (change)="setOtherValue($event, field.binding_change_fields)" class="form-control text-capitalize" [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField" [id]="field.key" [attr.name]="field.key" *ngIf="(field.binding_change_fields) &&(field.type == 'select' || field.type == 'simple-select')">
                   <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                     {{option.text}}
                   </option>
                 </select>
 
-                <select (change)="checkOtherValue($event, field.key)" class="form-control text-capitalize" [disabled]="disabledInputs || field.disabledField" [attr.name]="field.key" *ngIf="(!field.binding_change_field) &&(field.type == 'select' || field.type == 'simple-select')">
-                  <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
+                <select (change)="checkOtherValue($event, field.key)" class="form-control text-capitalize" [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField" [id]="field.key" [attr.name]="field.key" *ngIf="(!field.binding_change_fields) &&(field.type == 'select' || field.type == 'simple-select')">
+                  <option *ngFor="let option of field.options" [value]="option.value">
                     {{option.text}}
                   </option>
                 </select>
 
-                <i class="fa-solid fa-caret-down arrow-down select-item" *ngIf="field.type == 'select' || field.type == 'simple-select'"></i>
+                <i class="fa-solid fa-caret-down arrow-down select-item" [attr.for]="field.key" *ngIf="field.type == 'select' || field.type == 'simple-select'"></i>
 
-                <div class="form-control form-multiple col-md-12 m-s-form" *ngIf="field.type == 'multiple-select'">
-                  <input hidden value="" type="text" [attr.name]="field.key_form" [id]="field.key" [disabled]="disabledInputs || field.disabledField" (change)="checkIfComplete()">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <form (submit)="noSend($event)" [id]="'search-available-form'+field.key" class="d-flex search-form-control justify-content-between align-items-end">
-                        <label style="margin-bottom: 10px;">Disponible</label>
-                        <label [for]="'search-available-'+field.key" class="search-form-input">
-                          <input (change)="searchOcurrences($event)" class="form-control search-input" type="text" [id]="'search-available-'+field.key">
-                          <span class="icon-search">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                          </span>
-                        </label>
-                      </form>
-                      <div [attr.search-id]="'search-available-'+field.key" [id]="'available_'+field.key" class="mul-container py3">
-                      <div class="m-s-items-container" *ngFor="let item of field.options">
-                        <button
-                          *ngIf="item.values"
-                          type="button"
-                          data-bs-toggle="collapse"
-                          [attr.data-bs-target]="'#collapseItem-' + item.value"
-                          aria-expanded="false" [attr.aria-controls]="'#collapseItem-' + item.value"
-                          [id]="'collapsebutton-' + item.value"
-                          mat-raised-button
-                          [attr.ms-button-data-id]="field.key" type="button"
-                          [value]="item.value"
-                          class="m-s-items"
-                        >
-                          {{ item.text }}
-                          
-                        </button>
-                        <div class="collapse" [id]="'collapseItem-' + item.value">
-                          <div [id]="'card-added-' + item.value" class="card card-body w-full" style="margin-top: 20px;">
-                            <span class="d-flex sub-item" *ngFor="let value of item.values">
-                              <small style="flex-basis: 90%;">
-                                - {{value.text}}
-                              </small>
-                              <button
-                              class="btn btn-toogle-collapse"
-                              style="flex-basis: 10%;"
-                              [attr.ms-button-data-id-parent]="'card-added-' + item.value"
-                              [attr.ms-button-data-id]="field.key"
-                              type="button"
-                              [value]="value.value"
-                              [disabled]="disabledInputs || field.disabledField"
-                              (click)="changeItemTo($event, field, value)">
-                                <i class="fa-solid fa-plus"></i>
-                                <i class="fa-solid fa-minus"></i>
-                              </button>
+                
+              </div>
+              <mat-stepper orientation="vertical" #multipleStepper *ngIf="multipleValuesFields">
+                <mat-step *ngFor="let field of multipleValuesFields">
+                  <ng-template matStepLabel>{{field.fieldName}}</ng-template>
+                  <div class="w-100">
+                    <input hidden *ngIf="field.key_form" [attr.value]="field.defaultValue" type="text" [attr.name]="field.key_form" [id]="field.key" [disabled]="disabledInputs || field.disabledField" (change)="checkIfComplete()">
+                    <input hidden *ngIf="!field.key_form" [attr.value]="field.defaultValue" type="text" [attr.name]="field.key" [id]="field.key" [disabled]="disabledInputs || field.disabledField" (change)="checkIfComplete()">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <form (submit)="noSend($event)" [id]="'search-available-form'+field.key" class="d-flex search-form-control justify-content-between align-items-end">
+                          <label style="margin-bottom: 10px;">Disponible</label>
+                          <label [for]="'search-available-'+field.key" class="search-form-input">
+                            <input (change)="searchOcurrences($event)" class="form-control search-input" type="text" [id]="'search-available-'+field.key">
+                            <span class="icon-search">
+                              <i class="fa-solid fa-magnifying-glass"></i>
                             </span>
+                          </label>
+                        </form>
+                        <div [attr.search-id]="'search-available-'+field.key" [id]="'available_'+field.key" class="mul-container py3">
+                        <div class="m-s-items-container" *ngFor="let item of field.options">
+                          <button
+                            *ngIf="item.values"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            [attr.data-bs-target]="'#collapseItemAv-' + item.value"
+                            aria-expanded="false" [attr.aria-controls]="'#collapseItemAv-' + item.value"
+                            [id]="'collapsebutton-' + item.value"
+                            mat-raised-button
+                            [attr.ms-button-data-id]="field.key" type="button"
+                            [value]="item.value"
+                            class="m-s-items"
+                          >
+                            {{ item.text }}
+                            
+                          </button>
+                          <div class="collapse" [id]="'collapseItemAv-' + item.value" *ngIf="field.key_form">
+                            <div [id]="'card-added-' + item.value" class="card card-body w-full" style="margin-top: 20px;">
+                              <span class="d-flex sub-item" *ngFor="let value of item.values">
+                                <small style="flex-basis: 90%;">
+                                  - {{value.text}}
+                                </small>
+                                <button
+                                class="btn btn-toogle-collapse"
+                                style="flex-basis: 10%;"
+                                [attr.ms-button-data-id]="field.key"
+                                type="button"
+                                [value]="value.value"
+                                [disabled]="disabledInputs || field.disabledField"
+                                (click)="changeItemTo($event, field, value)">
+                                  <i class="fa-solid fa-plus"></i>
+                                  <i class="fa-solid fa-minus"></i>
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            *ngIf="!item.values"
+                            type="button"
+                            (click)="changeItemTo($event, field, item)"
+                            [id]="'collapsebutton-' + item.value"
+                            mat-raised-button
+                            [disabled]="disabledInputs || field.disabledField"
+                            [attr.ms-button-data-id]="field.key" type="button"
+                            [value]="item.value"
+                            class="m-s-items"
+                          >
+                            {{ item.text }}
+                            
+                          </button>
+                        </div>
+                        </div>
+                      </div>
+                      <div  class="col-md-6">
+                        <form (submit)="noSend($event)" [id]="'search-added-form'+field.key" class="d-flex search-form-control justify-content-between align-items-end">
+                          <label style="margin-bottom: 10px;">Añadido</label>
+                          <label [for]="'search-added-'+field.key" class="search-form-input">
+                            <input (change)="searchOcurrences($event)" class="form-control search-input" type="text" [id]="'search-added-'+field.key">
+                            <span class="icon-search">
+                              <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                          </label>
+                        </form>
+                        <div [attr.search-id]="'search-added-'+field.key" [id]="'added_'+field.key" class="mul-container py3">
+                          <div class="m-s-items-container" *ngFor="let item2 of field.addedValues; index as i1">
+                            <button class="d-flex sub-item ng-star-inserted m-s-added m-s-items mat-focus-indicator mat-raised-button mat-button-base"
+                            [disabled]="disabledInputs || field.disabledField"
+                            *ngIf="field.other_info"
+                            type="button"
+                            [attr.ms-button-data-id]="field.key"
+                            [value]="item2.value"
+                            (click)="changeItemTo($event, field, item2)"
+                            >
+                              <small style="flex-basis: 90%;">{{item2.text}}</small>
+                              <button
+                              type="button"
+                              [disabled]="disabledInputs || field.disabledField"
+                              class="btn btn-toogle-collapse-added px-2"
+                              style="flex-basis: 10%;"
+                              [attr.data-bs-target]="'#modalItemAd-' + item2.value"
+                              (click)="stopPropagation($event)"
+                              data-bs-toggle="modal"
+                              aria-expanded="false" [attr.aria-controls]="'#modalItemAd-' + item2.value"
+                              >
+                                <i class="fa-solid fa-caret-down"></i>
+                                <!-- <i class="fa-solid fa-caret-down"></i> -->
+                              </button>
+                            </button>
+                            <div *ngIf="field.other_info" class="modal fade" [attr.aria-labelledby]="'modalItemLabel'+item2.value" [id]="'modalItemAd-' + item2.value" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5 mb-0" [id]="'modalItemLabel'+ item2.value">
+                                      {{field.modalTitle}} (N° {{item2.value}})
+                                    </h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form [id]="'card-available-' + item2.value" style="margin-top: 20px; gap: 15px;">
+                                      <div class="row">
+                                        <div style="margin-bottom: 0px !important;" [class]="'form-group ' + other.class" *ngFor="let other of item2.other_values; index as i2">
+                                          <label class="w-100"><b>{{other.text}}</b></label>
+                                          <input min="0" *ngIf="other.type != 'select'" class="form-control" [disabled]="disabledInputs" [type]="other.type" [attr.name]="other.key" [id]="other.key+'-'+item2.value" [value]="other.value" (change)="setParentValue(field, other.key+'-'+item2.value, i1, i2)">
+                                          <select (change)="setParentValue(field, other.key+'-'+item2.value, i1, i2)" class="form-control text-capitalize" [value]="other.value" [disabled]="disabledInputs" [id]="other.key +'-'+item2.value" [attr.name]="other.key" *ngIf="(other.type == 'select' || other.type == 'simple-select')">
+                                            <option *ngFor="let option2 of other.options" [value]="option2.value" [attr.selected]="option2.selected">
+                                              {{option2.text}}
+                                            </option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                    </form>                        
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <button class="d-flex sub-item ng-star-inserted m-s-added m-s-items mat-focus-indicator mat-raised-button mat-button-base"
+                            [disabled]="disabledInputs || field.disabledField"
+                            [attr.ms-button-data-id]="field.key"
+                            *ngIf="!field.other_info"
+                            type="button"
+                            (click)="changeItemTo($event, field, item2)"
+                            >
+                              <small style="flex-basis: 90%;">{{item2.text}}</small>
+                            </button>
                           </div>
                         </div>
                       </div>
-                      </div>
-                    </div>
-                    <div  class="col-md-6">
-                      <form (submit)="noSend($event)" [id]="'search-added-form'+field.key" class="d-flex search-form-control justify-content-between align-items-end">
-                        <label style="margin-bottom: 10px;">Añadido</label>
-                        <label [for]="'search-added-'+field.key" class="search-form-input">
-                          <input (change)="searchOcurrences($event)" class="form-control search-input" type="text" [id]="'search-added-'+field.key">
-                          <span class="icon-search">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                          </span>
-                        </label>
-                      </form>
-                      <div [attr.search-id]="'search-added-'+field.key" [id]="'added_'+field.key" class="mul-container py3">
-                        <span class="d-flex sub-item ng-star-inserted m-s-added m-s-items m-s-items-container mat-focus-indicator mat-raised-button mat-button-base" *ngFor="let item2 of field.addedValues">
-                          <small style="flex-basis: 90%;">{{item2.text}}</small>
-                          <button
-                          [disabled]="disabledInputs || field.disabledField"
-                          type="button"
-                          class="btn btn-toogle-collapse"
-                          style="flex-basis: 10%;"
-                          [attr.ms-button-data-id-parent]="'card-added-' + item2.value"
-                          [attr.ms-button-data-id]="field.key"
-                          [value]="item2.value"
-                          (click)="changeItemTo($event, field, item2)"
-                          >
-                            <i class="fa-solid fa-plus"></i>
-                            <i class="fa-solid fa-minus"></i>
-                          </button>
-                        </span>
-                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </mat-step>
+              </mat-stepper>
             </div>
-            <button matTooltip="Crear" matTooltipPosition="left" class="btn" mat-raised-button mat-button color="primary" id="submit_{{ formId }}" [disabled]="loading || disabled">
-              <span *ngIf="!loading">Guardar</span>
-              <div *ngIf="loading" class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </button>
+            <div class="d-flex justify-content-end">
+              <button matTooltip="Crear" matTooltipPosition="left" class="btn" mat-raised-button mat-button color="primary" id="submit_{{ formId }}" [disabled]="loading || disabled">
+                <span *ngIf="!loading">Guardar</span>
+                <div *ngIf="loading" class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </button>
+            </div>
           </form>
         </div>
       </div>

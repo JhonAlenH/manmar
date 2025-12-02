@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 // import { ItemFormService } from './item-form.service';
@@ -17,6 +17,7 @@ import { HttpClient } from '@angular/common/http';
 export class ItemFormComponent implements OnInit {
 
   @Input() dataComponent:any
+  @Output() created = new EventEmitter<any>();
 
   mode = ''
   internMode:any = null
@@ -34,6 +35,8 @@ export class ItemFormComponent implements OnInit {
   ccompania: any = ''
   loading: boolean = false
   disabled: boolean = true
+  multipleValuesFields: any = null
+  searchFieldIndex:any  = 0
 
   sub = new Subscription()
   constructor(
@@ -184,6 +187,10 @@ export class ItemFormComponent implements OnInit {
           console.log(data)
         //   this.openSnackBar(data['message'])
           this.loading = false
+          console.log(this.dataComponent)
+          if(this.dataComponent) {
+            this.created.emit();
+          }
         })
       } else if(this.mode == 'edit') {
         this.http.post(environment.apiUrl + this.editUrl, formBody, {
@@ -194,43 +201,66 @@ export class ItemFormComponent implements OnInit {
           console.log(data)
         //   this.openSnackBar(data['message'])
           this.loading = false
+          
         })
       }
     })
   }
   // get info about the fields pased by routing file
+
   async getFieldsData() {
-    
+    this.multipleValuesFields = this.fields.filter(field => field.type == 'multiple-select')
     for(const field of this.fields) {
       // select options added
       if(field.type == 'select' || field.type == 'simple-select' || field.type == 'multiple-select'){
         if(field.url) {
           if(!field.url_id) {
-            this.http.get(environment.apiUrl + field.url, {}).subscribe(async (response) => {
-              field.options = await response['data']
+            this.http.get(environment.apiUrl + field.url, {}).subscribe(async (data:any) => {
+              field.options = await data.data
               if(this.mode == 'create') {
-                field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
+                if(field.defaultValue != '') {
+                  const selected = field.options.find(option => option.value == field.defaultValue)
+                  selected.selected = true
+                  // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+                } else {
+                  // field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
+                }
               } else {
-                field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+                // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
               }
               if(this.mode == 'info') {
                 if(typeof this.itemData[field.key] == 'number'){
                   const optionSelected = field.options.find(option => option.value == this.itemData[field.key])
-                  console.log('esta es la seleccionada',this.itemData[field.key])
-                  field.defaultValue = this.itemData[field.key]
-                  optionSelected.selected = true
+                  if (optionSelected) {
+                    field.defaultValue = this.itemData[field.key]
+                    optionSelected.selected = true
+                  }
                 }
               }
             })
           } else {
-            field.addedValuesIds = this.itemData[field.key]
+            field.defaultValue = ''
+            if(field.type == 'multiple-select'){
+              field.defaultValue = this.itemData[field.key_form]
+              field.addedValuesIds = this.itemData[field.added_data_key]
+            } else {
+              field.defaultValue = this.itemData[field.key]
+            }
           }
         } else {
           field.options = field.values
           if(this.mode == 'create') {
-            field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
+            if(field.defaultValue != '') {
+              const selected = field.options.find(option => option.value == field.defaultValue)
+              if (selected){
+                selected.selected = true
+              }
+              // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+            } else {
+              // field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
+            }
           } else {
-            field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+            // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
           }
           
         }
@@ -238,11 +268,9 @@ export class ItemFormComponent implements OnInit {
           field.addedValues = []
         }
       } else {
-        if(this.mode == 'info'){
-          // added default value to inputs to the info mode
-          if(typeof this.itemData[field.key] == 'string' || typeof this.itemData[field.key] == 'number') {
-            field.defaultValue = this.itemData[field.key]
-          }
+        // added default value to inputs to the info mode
+        if(typeof this.itemData[field.key] == 'string' || typeof this.itemData[field.key] == 'number') {
+          field.defaultValue = this.itemData[field.key]
         }
       } 
       if(this.mode == 'create'){
@@ -251,15 +279,7 @@ export class ItemFormComponent implements OnInit {
         } else {
           field.display = 'block'
         }
-        if (field.key == 'ccompania' || field.key == 'ctipoplan'){
-          if(this.ccompania != '1') {
-            if(this.mode == 'create'){
-
-              field.display = 'none'
-            }
-          }
-          field.defaultValue = this.ccompania
-        } else {
+        if (!field.defaultValue){
           field.defaultValue = ''
         }
       }
@@ -269,30 +289,60 @@ export class ItemFormComponent implements OnInit {
   }
   // change item (adde or available) to multipleSelect field
   changeItemTo(event: any, field: any, value: any) {
+    // console.log(inputHidden.getAttribute('value'));
+    const inputHidden = <HTMLInputElement> document.getElementById(event.currentTarget.getAttribute('ms-button-data-id'))
     
-    const inputHidden = document.getElementById(event.currentTarget.getAttribute('ms-button-data-id'))
-    const inputValue = inputHidden.getAttribute('value').split(',')
-
-    if (event.currentTarget.parentElement.classList.contains('m-s-added')) {
+    const inputValue =  inputHidden.value.split(',')
+    if (event.currentTarget.parentElement.classList.contains('m-s-added') || event.currentTarget.classList.contains('m-s-added')) {
       // add value to availableValues array
       const findedIndex = field.addedValues.findIndex(option => option.value == value.value)
       field.addedValues.splice(findedIndex, 1)
-      const findItem = field.options.find(option => option.value == value.key)
-      findItem.values.push(value)
+      let findItem:any = {}
+      if(value.key){
+        findItem = field.options.find(option => option.value == value.key)
+        findItem.values.push(value)
+      } else {
+        field.options.push(value)
+      }
       // delete value selected to multipleSelect input
       const index = inputValue.findIndex(valueInput => valueInput == value.value)
       inputValue.splice(index,1)
     } else {
+      if(field.other_values) {
+        value.other_values = [...field.other_values]
+      }
       field.addedValues.push(value)
       // add value to addValues array
-      const findItem = field.options.find(option => option.value == value.key)
-      const findedIndex = findItem.values.findIndex( service => service.value == value.value)
-      findItem.values.splice(findedIndex, 1)
+      let findItem:any = {}
+      if(value.key) {
+        findItem = field.options.find(option => option.value == value.key)
+      }
+      
+      
+      if(findItem.values) {
+        const findedIndex = findItem.values.findIndex( service => service.value == value.value)
+        findItem.values.splice(findedIndex, 1)
+      }else {
+        const findedIndex = field.options.findIndex( option => option.value == value.value)
+        field.options.splice(findedIndex, 1)
+      }
       // add value to multipleSelect input
       if (inputValue[0] == '') {
         inputValue.splice(0,1)
       }
-      inputValue.push(value.value + '?' + value.key)
+      let inputValeText = ''
+
+      if(value.key) {
+        inputValeText = value.value + '?' + value.key
+      } else {
+        inputValeText = value.value
+      }
+      if(field.other_values) {
+        for (const subValue of field.other_values) {
+          inputValeText = inputValeText + '?' + subValue.value
+        }
+      }
+      inputValue.push(inputValeText)
     }
 
     inputHidden.setAttribute('value', inputValue.join(','))
@@ -301,36 +351,164 @@ export class ItemFormComponent implements OnInit {
   // add values to multipleselect field when the chageField is changed
   setValue(value: any, fieldBindingKey:any) {
     const searchedField = this.fields.find(field => field.key == fieldBindingKey)
-    searchedField.addedValues = []
-    searchedField.options = []
-    this.http.get(environment.apiUrl + searchedField.url + '/' + value, {}).subscribe((data) => {
-      if(!data['notFinded']) {
-        searchedField.options = data['data']
+    if(searchedField.type == 'multiple-select'){
+      searchedField.addedValues = []
+      if(searchedField.key_form) {
+        searchedField.defaultValue = this.itemData[searchedField.key_form]
+      } else {
+        searchedField.defaultValue = this.itemData[searchedField.key]
+
       }
-      if(this.mode == 'info') {
-        let i = 0
-        searchedField.options.forEach(option => {
-          
-          for (const serviceValue of searchedField.addedValuesIds) {
-            const optionFinded = option.values.find( valueN => valueN.value == serviceValue.cservicio)
-            const optionFindedIndex = option.values.findIndex( valueN => valueN.value == serviceValue.cservicio)
-            if (optionFinded) {
-              searchedField.addedValues.push(optionFinded)
-              option.values.splice(optionFindedIndex, 1)
+    }
+    searchedField.options = []
+    if(searchedField.type == 'select') {
+      // searchedField.options.unshift({text: 'Selecciona una opcion...', value: ''})
+    }
+    if(searchedField.url && value){
+      this.http.get(environment.apiUrl + searchedField.url + '/' + value, {}).subscribe((data:any) => {
+        if(!data.notFinded) {
+          if (data.data.length > 0) {
+            searchedField.options = data.data
+            if(searchedField.type == 'select') {
+              if(searchedField.defaultValue) {
+                const selectedOption = searchedField.options.find(opt => opt.value == searchedField.defaultValue)
+                if (selectedOption) {
+                  selectedOption.selected = true
+                }
+              }
+              // searchedField.options.unshift({text: 'Selecciona una opcion...', value: ''})
+            }
+            if(this.mode == 'create'){
+              if(searchedField.other_values) {
+                for (const field2 of searchedField.other_values) {
+                  if(field2.url) {
+                    field2.options = [] 
+                    if(!field2.url_id) {
+                      this.http.get(environment.apiUrl + field2.url, {}).subscribe((response3:any) => {
+                      // this.ItemFormService.getItemInfoPost(field2.url, {}).subscribe((response3) => {
+                        field2.options = response3.data
+                        if(field2.value != '') {
+                          const selected = field2.options.find(option => option.value == field2.value)
+                          selected.selected = true
+                          // field2.options.unshift({text: 'Selecciona una opcion...', value: ''})
+                        } else {
+                          // field2.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
+                        }
+                      })
+                    }
+                  }
+                }
+              }
+            }
+            if(this.mode == 'info') {
+              if(searchedField.options) {
+                if(searchedField.type == 'multiple-select'){
+                  for(let [index ,option] of searchedField.options.entries()){
+                    for(let subValue of searchedField.addedValuesIds) {
+                      
+                      let optionFinded:any = null
+                      let optionFindedIndex:any = null
+                      if(searchedField.key_form) {
+                        optionFinded = option.values.find( valueN => valueN.value == subValue[searchedField.key_form])
+                        optionFindedIndex = option.values.findIndex( valueN => valueN.value == subValue[searchedField.key_form])
+                      }
+                      if(!searchedField.key_form) {
+                        if(option.value == subValue[searchedField.key]) {
+                          optionFinded = option
+                          optionFindedIndex = index
+                        }
+                      }
+                      if (optionFinded) {
+                        if(searchedField.other_values) {                        
+                          let otherValues:any = null
+                          if(searchedField.key_form){
+                            otherValues = this.itemData[searchedField.added_data_key].find( j => j[searchedField.key_form] == optionFinded.value)
+                          } else {
+                            otherValues = this.itemData[searchedField.added_data_key].find( j => j[searchedField.key] == optionFinded.value)
+  
+                          }
+                          let y = 0
+                          
+                          let valuesTo:any = []
+                          let newObject:any = {}
+                          this.searchFieldIndex++
+                          for (const other of searchedField.other_values) {
+                            let findOther:any = ""
+  
+                            findOther = otherValues.other_values.find(valueO => valueO.key == other.key)
+                            newObject = {...other, value: findOther.value}
+                            valuesTo.push(newObject)
+                            
+                            findOther= ""
+                            newObject= ""
+                            y++
+                          }
+                              
+                          optionFinded.other_values = [...valuesTo]
+                        }
+                        searchedField.addedValues.push(optionFinded)
+                        if(option.values) {
+                          option.values.splice(optionFindedIndex, 1)
+                        } else {
+                          searchedField.options.splice(optionFindedIndex,1)
+                        }
+                      }
+                    }
+                  }
+                  for (const addedValue of searchedField.addedValues) {
+                    if (addedValue.other_values) {
+                      for (const other of addedValue.other_values) {
+                        let otherValuesOptions:any = null
+                        if(other.url){
+                          this.http.get(environment.apiUrl + other.url + '/' + value, {}).subscribe((response4:any) => {
+                          // this.ItemFormService.getItemInfoPost(other.url, {}).subscribe(async (response4) => {
+                            otherValuesOptions = response4.data
+                            // otherValuesOptions.unshift({text: 'Seleccione una Opcion...', value: ''})
+                            const optionSelectedIndex = otherValuesOptions.findIndex( ittem => ittem.value == other.value)
+                            otherValuesOptions[optionSelectedIndex].selected = 'true'
+                            other.options = otherValuesOptions
+                            
+                          })
+                        }
+                      }
+  
+                    }
+                  }
+                }                  
+              }
             }
           }
-        });
-      }
-    //   this.openSnackBar(data['message'])
-    })
+        }
+        
+        // this.openSnackBar(data.message)
+        console.log(data.message)
+      })
+    } else {
+      searchedField.options = []
+    }
   }
   // called in the front of mutiple selection
-  setOtherValue(event:any, fieldBindingKey:any) {
-    this.setValue(event.currentTarget.value, fieldBindingKey)
+  setOtherValue(event:any, fieldBindingKeys:any) {
+    for (const fieldBindingKey of fieldBindingKeys) {
+      
+      const field = this.fields.find(fieldT => fieldT.key == fieldBindingKey)
+      this.setValue(event.currentTarget.value, fieldBindingKey)
+      if(field.change_fields) {
+        for (const fieldChange of field.change_fields) {
+          const gettedField = this.fields.find(fieldA => fieldA.key == fieldChange)
+          if(this.mode != 'info') {
+            gettedField.defaultValue = ''
+          }
+          gettedField.options = []
+          // gettedField.options.unshift({text: 'Selecciona una opcion...', value: ''})
+        }
+      }
+    }
     this.checkIfComplete()
   }
   checkOtherValue(event:any, fieldKey: any) {
     const searchedField = this.fields.find(field => field.key == fieldKey)
+
     if(searchedField.form_control_value) {
       const searchedFieldToChange = this.fields.find(field => field.key == searchedField.form_control_value.key)
       if(event.currentTarget.value == searchedField.form_control_value.value) {
@@ -339,7 +517,7 @@ export class ItemFormComponent implements OnInit {
         const itemField = <HTMLInputElement>document.getElementsByName(searchedFieldToChange.key)[0]
         itemField.value = this.ccompania
         searchedFieldToChange.display = 'none'
-        this.setValue(itemField.value, searchedFieldToChange.binding_change_field)
+        this.setValue(itemField.value, searchedFieldToChange.binding_change_fields)
       }
     }
     this.checkIfComplete()
@@ -403,6 +581,28 @@ export class ItemFormComponent implements OnInit {
         }
       })
     }
+  }
+  setParentValue(field:any, valueId:any, indexItem:any, indexValue:any) {
+    
+    let valueInput: any = {}
+    valueInput = <HTMLInputElement> document.getElementById(valueId)
+    const inputHidden = <HTMLInputElement> document.getElementById(field.key)
+    console.log(valueInput);
+    console.log(inputHidden);
+    const inputValueSplit = inputHidden.value.split(',')
+    
+    const splitedItem = inputValueSplit[indexItem].split('?')
+    if(field.key_form){
+      splitedItem[indexValue+2] = valueInput.value
+    } else {
+      splitedItem[indexValue+1] = valueInput.value
+
+    }
+    const joined = splitedItem.join('?')
+    inputValueSplit[indexItem] = joined
+    const finalInputJoined = inputValueSplit.join(',')
+    field.defaultValue = finalInputJoined
+    inputHidden.setAttribute('value',finalInputJoined)
   }
   noSend(event: any) {
     event.preventDefault()

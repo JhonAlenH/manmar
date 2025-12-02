@@ -110,7 +110,7 @@ export class EmissionsComponent implements OnInit {
       {
         fieldName: 'Identificacion', class: 'col-md-1',
         type: 'simple-select',
-        values: [{text: 'V', value: 'V'}, {text: 'E', value: 'E'}, {text: 'J', value: 'J'}, {text: 'P', value: 'P'}], 
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
         key: 'itipodoc',
         bdType: 'text'
       },
@@ -127,21 +127,22 @@ export class EmissionsComponent implements OnInit {
         bdType: 'text'
       },
       {
-        type: 'text',
-        fieldName: 'Estado Civil', class: 'col-md-1',
+        type: 'simple-select',
+        fieldName: 'Estado Civil', class: 'col-md-2',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
         key: 'iestado_civil',
         bdType: 'text'
       },
       {
         type: 'text',
-        fieldName: 'Teléfono 1', class: 'col-md-3',
+        fieldName: 'Teléfono', class: 'col-md-2',
         key: 'xtelefono1',
         bdType: 'text'
       },
       {
-        type: 'text',
-        fieldName: 'Teléfono 2', class: 'col-md-3',
-        key: 'xtelefono2',
+        type: 'email',
+        fieldName: 'Correo', class: 'col-md-2',
+        key: 'xcorreo',
         bdType: 'text'
       },
       {
@@ -149,13 +150,100 @@ export class EmissionsComponent implements OnInit {
         fieldName: 'Direccion', class: 'col-md-12',
         key: 'xdireccion',
         bdType: 'text'
+      },    
+    ]
+  } 
+  tomadorDataComponent = {
+    title: 'Crear Nuevo Tomador',
+    mode: 'create',
+    mainUrl: '/api/v1/maestros/tomadores/get/',
+    createUrl: '/api/v1/maestros/tomadores/create', 
+    formId: 'create_tomadores',
+    fields: [      
+      {
+        type: 'text',
+        fieldName: 'Activo', class: 'col-md-0',
+        defaultValue: 1,
+        form_control: true,
+        key: 'bactivo',
+        bdType: 'number'
       },
       {
         type: 'text',
-        fieldName: 'eMail', class: 'col-md-6',
+        fieldName: 'Tomador', class: 'col-md-8',
+        key: 'xtomador',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Profesion', class: 'col-md-4',
+        key: 'xprofesion',
+        bdType: 'text'
+      },
+      {
+        fieldName: 'Identificacion', class: 'col-md-1',
+        type: 'simple-select',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+        key: 'icedula',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Cedula', class: 'col-md-2',
+        key: 'xcedula',
+        bdType: 'text'
+      },
+      { 
+        type: 'select',
+        fieldName: 'País', class: 'col-md-2',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezuela', value: '58'}], 
+        binding_change_fields: ['cestado'],
+        change_fields: ['cestado', 'cciudad'],
+        key: 'cpais',
+        bdType: 'number'
+      },
+      {
+        fieldName: 'Estado', class: 'col-md-2',
+        type: 'select',
+        key: 'cestado',
+        url_id: 'cpais',
+        binding_change_fields: ['cciudad'],
+        change_fields: ['cciudad'],
+        url: '/api/v1/maestros/estados',
+        bdType: 'number'
+      },
+      {
+        fieldName: 'Ciudad', class: 'col-md-2',
+        type: 'select',
+        key: 'cciudad',
+        url_id: 'cestado',
+        url: '/api/v1/maestros/ciudades',
+        bdType: 'number'
+      },
+      {
+        type: 'text',
+        fieldName: 'Teléfono', class: 'col-md-2',
+        key: 'xtelefono',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Zona Postal', class: 'col-md-1',
+        key: 'xzona_postal',
+        bdType: 'text'
+      },
+      {
+        type: 'email',
+        fieldName: 'Correo', class: 'col-md-2',
         key: 'xcorreo',
         bdType: 'text'
-      }     
+      },
+      {
+        type: 'text',
+        fieldName: 'Direccion', class: 'col-md-10',
+        key: 'xdireccion',
+        bdType: 'text'
+      },    
     ]
   } 
 
@@ -229,6 +317,12 @@ export class EmissionsComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
+
+    this.emissionsFormGroup.get('itipodoc')?.disable();
+    this.emissionsFormGroup.get('xcedula')?.disable();
+
+    this.emissionsFormGroup.get('itipodoc_t')?.disable();
+    this.emissionsFormGroup.get('xdoc_identificacion_t')?.disable();
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -462,11 +556,12 @@ export class EmissionsComponent implements OnInit {
 
   getInsurance(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/insurance', null).subscribe((response: any) => {
+      this.insuranceList = []
       if (response.data.insurance) {
         for (let i = 0; i < response.data.insurance.length; i++) {
           this.insuranceList.push({
             id: response.data.insurance[i].casegurado,
-            value: response.data.insurance[i].xnombre,
+            value: `${response.data.insurance[i].xnombre} ${response.data.insurance[i].xapellido ? response.data.insurance[i].xapellido : ''}`.trim(),
             itipo: response.data.insurance[i].itipodoc,
             xdocu: response.data.insurance[i].xcedula
           });
@@ -508,6 +603,7 @@ export class EmissionsComponent implements OnInit {
 
   getTakers(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/takers', null).subscribe((response: any) => {
+      this.takersList = []
       if (response.data.takers) {
         for (let i = 0; i < response.data.takers.length; i++) {
           this.takersList.push({

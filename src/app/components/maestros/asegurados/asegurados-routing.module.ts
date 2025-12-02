@@ -44,9 +44,9 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            fieldName: 'Identificacion', class: 'col-md-1',
             type: 'simple-select',
-            values: [{text: 'V', value: 'V'}, {text: 'E', value: 'E'}, {text: 'J', value: 'J'}, {text: 'P', value: 'P'}], 
+            fieldName: 'Identificacion', class: 'col-md-1',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'V', value: 'V'}, {text: 'E', value: 'E'}, {text: 'J', value: 'J'}, {text: 'P', value: 'P'}], 
             key: 'itipodoc',
             bdType: 'text'
           },
@@ -57,15 +57,16 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            type: 'text',
+            type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
             key: 'fnacimiento',
             bdType: 'text'
           },
           {
-            type: 'text',
+            type: 'simple-select',
             fieldName: 'Estado Civil', class: 'col-md-1',
-            key: 'iestado_civil',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
+            key: 'itipodoc',
             bdType: 'text'
           },
           {

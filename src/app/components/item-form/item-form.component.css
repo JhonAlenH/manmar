@@ -46,3 +46,11 @@
     right: 30px;
     top: 60%;
   }
+  .title-item {
+    background-color: #334fbd4b;
+    /* color: white; */
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px;
+    border-radius: 5px;
+  }
