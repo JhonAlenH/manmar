@@ -27,6 +27,7 @@ export class RenovationsComponent implements OnInit {
 
   currentUser!: any
 
+  searchOn:boolean = false;
   cedentsList: any[] = [];
   tradeList: any[] = [];
   months: { name: string, value: number }[] = [
@@ -78,7 +79,7 @@ export class RenovationsComponent implements OnInit {
       this.getCedents();
       this.getTrades();
 
-      this.searchRenovations();
+      // this.searchRenovations();
     }
   }
 
@@ -121,7 +122,7 @@ export class RenovationsComponent implements OnInit {
   onCedentsSelection(event: any){
     const selectedCedents = this.cedentsList.find(cedents => cedents.value === event.option.value);
     this.renoFormGroup.get('ccedente')?.setValue(selectedCedents.id);
-    this.searchRenovations();
+    // this.searchRenovations();
   }
 
   getTrades(){
@@ -152,7 +153,7 @@ export class RenovationsComponent implements OnInit {
   onTradeSelection(event: any) {
     const selectedTrade = this.tradeList.find(trade => trade.value === event.option.value);
     this.renoFormGroup.get('cramo')?.setValue(selectedTrade.id);
-    this.searchRenovations();
+    // this.searchRenovations();
   }
 
   searchRenovations(){
@@ -172,6 +173,8 @@ export class RenovationsComponent implements OnInit {
         });
   
         this.dataSource.data = correctedRenovations;
+        this.dataSource.sort = this.sort;
+        this.dataSource.paginator = this.paginator;
       }
     })
   }

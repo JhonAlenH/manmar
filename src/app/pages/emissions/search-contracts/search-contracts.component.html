@@ -67,7 +67,7 @@
                       </mat-accordion>
                     </div>
                     <div class="col-sm-1">
-                      <button mat-button mat-raised-button (click)="searchContracts()" color="primary">
+                      <button mat-button mat-raised-button (click)="searchContracts(); this.searchOn = true" color="primary">
                         <mat-icon>search</mat-icon>
                       </button>
                     </div>
@@ -75,7 +75,7 @@
 
             </form>
 
-            <div class="table-responsive py-3" style="position: relative; z-index: 1000;">
+            <div *ngIf="searchOn" class="table-responsive py-3" style="position: relative; z-index: 1000;">
                 <form>
                     <mat-form-field class="w-100">
                       <mat-label>Buscar</mat-label>

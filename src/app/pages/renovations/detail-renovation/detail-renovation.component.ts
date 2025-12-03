@@ -19,6 +19,7 @@ import Swal from 'sweetalert2'
 export class DetailRenovationComponent implements OnInit {
 
   paginatedList: any[] = [];
+  data: any = null
   currentUser!: any
   ramo!: any;
   asegurado!: any;
@@ -59,12 +60,12 @@ export class DetailRenovationComponent implements OnInit {
     msuma_aseg: [{ value: '', disabled: false }],
     mprima: [{ value: '', disabled: false }],
     cmetodologiapago: [{ value: '', disabled: false }],
-    pcomision_p: [{ value: '', disabled: false }],
-    pcomision_e: [{ value: '', disabled: false }],
-    pcomision_a: [{ value: '', disabled: false }],
-    mcomision_pext: [{ value: '', disabled: false }],
-    mcomision_eext: [{ value: '', disabled: false }],
-    mcomision_aext: [{ value: '', disabled: false }],
+    pcomision_p: [{ value: 0, disabled: false }],
+    pcomision_e: [{ value: 0, disabled: false }],
+    pcomision_a: [{ value: 0, disabled: false }],
+    mcomision_pext: [{ value: 0, disabled: false }],
+    mcomision_eext: [{ value: 0, disabled: false }],
+    mcomision_aext: [{ value: 0, disabled: false }],
   });
 
   constructor( private _formBuilder: FormBuilder,
@@ -109,7 +110,10 @@ export class DetailRenovationComponent implements OnInit {
         .then(data => {
           data.data.forEach((item: any) => {
           if (item.cmoneda === '$') {
-          this.bcv = item.ptasamon;
+            this.bcv = item.ptasamon;
+            if (this.id && this.currentUser) {
+              this.values();
+            } 
           }
         });
       })
@@ -117,19 +121,17 @@ export class DetailRenovationComponent implements OnInit {
       });
     }
 
-    if (this.id && this.currentUser) {
-      this.values();
-    } 
+    
   }
 
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
+      this.data = response.data
       this.cramo = response.data.cramo;
       this.ramo = response.data.xramo;
       this.asegurado = response.data.xnombre;
       this.tomador = response.data.xtomador;
-      this.msuma_aseg_bs = parseFloat(response.data.msuma);
-      this.mprima_bs = response.data.mprima;
+
       this.metodologia = response.data.xmetodologiapago
       this.cmetodologia = response.data.cmetodologia
       this.cedente = response.data.xcedente
@@ -146,13 +148,18 @@ export class DetailRenovationComponent implements OnInit {
       this.renovFormGroup.get('xpoliza')?.setValue(response.data.xpoliza)
       this.renovFormGroup.get('cmetodologiapago')?.setValue(response.data.cmetodologiapago)
       this.getMethod();
-      this.renovFormGroup.get('msuma_aseg')?.setValue(this.formatNumber(response.data.msumaext));
-      this.renovFormGroup.get('mprima')?.setValue(this.formatNumber(response.data.mprimaext));
+      this.renovFormGroup.get('msuma_aseg')?.setValue((response.data.msumaext).toFixed(2));
+      this.renovFormGroup.get('mprima')?.setValue((response.data.mprimaext).toFixed(2));
 
       this.calcularFechaHasta();
-      this.updateReceiptData();
       this.searchDistribution();
       this.getTariffs();
+
+      this.format('mprima')
+      this.format('msuma_aseg')
+
+      this.updateReceiptData()
+
     })
   }
 
@@ -176,54 +183,29 @@ export class DetailRenovationComponent implements OnInit {
     const fechaHastaISOA = fechaHastaA.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
 
     this.fhastaAnt = this.dateUtilService.formatDate(fechaHastaA)
-
-    this.updateReceiptData()
   }
 
-  formatWithSeparator(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    event.target.value = value;
-
-    const numericValue = Number(value.replace(/\./g, ''));
-    this.msuma_aseg = numericValue;
+  formatWithSeparator(formControl:any) {
+    let value:any = Number(formControl?.value);
+    if(!value) {
+      value = 0
+    }
+    value = (value).toFixed(2);
+    formControl?.setValue(value)
   }
 
-  formatPrima(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2);
-    event.target.value = value;
-    this.renovFormGroup.get('mprima')?.setValue(event.target.value)
+  format(formControlName:any){
+    const formControl = this.renovFormGroup.get(formControlName)
+    this.formatWithSeparator(formControl)
+
+    const monto = Number(formControl?.value)
+    const name = formControlName + '_bs'
+    console.log(formControlName)
+
+    this[name] = Number((monto * this.bcv).toFixed(2));
+    this.calculateComisionMonto()
   }
 
-  SumBs(){
-    const msuma_aseg_bs = this.msuma_aseg * this.bcv;
-
-    const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(msuma_aseg_bs);
-
-    this.msuma_aseg_bs = formattedMsumaAsegBs;
-    this.msuma_aseg_bs = this.convertStringToNumber(this.msuma_aseg_bs)
-  }
-
-  PrimaBs(){
-    const mprima = parseFloat(this.renovFormGroup.get('mprima')?.value);
-    
-    const mprima_bs = mprima * this.bcv;
-
-    const formattedPriBs = new Intl.NumberFormat('de-DE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
-    }).format(mprima_bs);
-
-    this.mprima_bs = formattedPriBs;
-    this.mprima_bs = this.convertStringToNumber(this.mprima_bs)
-    this.primaAlterada = true;
-
-    this.updateReceiptData();
-  }
 
   convertStringToNumber(str: any): number {
     if (str == null) {
@@ -263,9 +245,10 @@ export class DetailRenovationComponent implements OnInit {
       mprima: this.renovFormGroup.get('mprima')?.value,
       cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
     }
+    this.receiptList = [];
+    console.log('data',dataCompleta)
     this.http.post(environment.apiUrl + '/api/v1/renovations/receipt', dataCompleta).subscribe((response: any) => {
       if(response.status){
-        this.receiptList = [];
         this.receiptList = response.data.receipt.map((state: any) => ({
           fdesde_rec: this.dateUtilService.formatDate(new Date(state.fdesde_rec)),
           fhasta_rec: this.dateUtilService.formatDate(new Date(state.fhasta_rec)),
@@ -278,17 +261,17 @@ export class DetailRenovationComponent implements OnInit {
   searchDistribution(){
     this.http.post(environment.apiUrl + `/api/v1/renovations/distribution/${this.id}`, {}).subscribe((response: any) => {
       this.xproductor = response.distribution.xproductor;
-      this.xejecutivo = response.distribution.xejecutivo;
-      this.xagente = response.distribution.xagente;
-
-      this.renovFormGroup.get('pcomision_p')?.setValue(response.distribution.pcomision_p);
-      this.renovFormGroup.get('pcomision_e')?.setValue(response.distribution.pcomision_e);
-      this.renovFormGroup.get('pcomision_a')?.setValue(response.distribution.pcomision_a);
-
-      this.renovFormGroup.get('mcomision_pext')?.setValue(response.distribution.mcomision_pext);
-      this.renovFormGroup.get('mcomision_eext')?.setValue(response.distribution.mcomision_eext);
-      this.renovFormGroup.get('mcomision_aext')?.setValue(response.distribution.mcomision_aext);
     })
+  }
+  calculateComisionMonto() {
+    const mcomision = Number(((Number(this.renovFormGroup.get('pcomision_p')?.value) /100) * Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
+    this.renovFormGroup.get('mcomision_pext')?.setValue(mcomision);
+    this.formatWithSeparator(this.renovFormGroup.get('mcomision_pext'))
+  }
+  calculateComisionPorcentaje() {
+    const pcomision =  Number(((Number(this.renovFormGroup.get('mcomision_pext')?.value) * 100) / Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
+    this.renovFormGroup.get('pcomision_p')?.setValue(pcomision);
+    this.formatWithSeparator(this.renovFormGroup.get('mcomision_pext'))
   }
 
   getTariffs(){
@@ -299,6 +282,8 @@ export class DetailRenovationComponent implements OnInit {
     this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
       if(response.status){
         this.comisionRamo = response.pcomision;
+        this.renovFormGroup.get('pcomision_p')?.setValue(this.comisionRamo);
+        this.calculateComisionMonto()
         if(!this.comisionRamo){
           Swal.fire({
             icon: "error",
@@ -319,7 +304,57 @@ export class DetailRenovationComponent implements OnInit {
   }
 
   onSubmit(){
-
+    console.log(this.renovFormGroup.getRawValue())
+    console.log(this.data)
+    const data = {
+      ccedente: this.renovFormGroup.get('ccedente')?.value,
+      casegurado: this.data.icedula_asegurado,
+    }
+    
+    // {
+    //   "ccedente": 73,
+    //   "icedula_asegurado": "V",
+    //   "xcedula_asegurado": "26666666",
+    //   "xnombre_asegurado": "ANDRESITO EL QUE TAL",
+    //   "xcorreo_asegurado": null,
+    //   "xtelefono_asegurado": "",
+    //   "icedula_tomador": "J",
+    //   "xcedula_tomador": "31098567-7",
+    //   "xnombre_tomador": "     IMPERMEABILIZADORA GRAN CARACAS,C.A \r\n",
+    //   "xdireccion_tomador": null,
+    //   "xprofesion_tomador": null,
+    //   "cestado_tomador": 1,
+    //   "cciudad_tomador": "",
+    //   "xrif_tomador": "",
+    //   "xdomicilio_tomador": null,
+    //   "xzona_postal_tomador": "",
+    //   "xcorreo_tomador": null,
+    //   "cmoneda": 2,
+    //   "cramo": 7,
+    //   "xpoliza": "185465",
+    //   "ccobertura": "",
+    //   "fdesde_pol": "2025-12-03",
+    //   "fhasta_pol": "2026-12-04",
+    //   "femision": "2025-12-03T13:59:42.701Z",
+//   "cmetodologiapago": 4,
+    //   "ptasa_cambio": 249.1989,
+    //   "msuma": 373798.35,
+    //   "msumaext": 1500,
+    //   "mprima": 37384.82,
+    //   "mprimaext": 150.02,
+    //   "pcomision": 15,
+    //   "mcomision": 5607.72,
+    //   "mcomisionext": 22.5,
+    //   "cproductor": 1,
+    //   "pcomision_p": 15,
+    //   "cejecutivo": "",
+    //   "pcomision_e": 0,
+    //   "cagente": "",
+    //   "pcomision_a": "",
+    //   "cusuario": 2,
+    //   "documentos": []
+    // }
   }
+
 
 }

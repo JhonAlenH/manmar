@@ -844,7 +844,7 @@ export class EmissionsComponent implements OnInit {
       xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
       xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
       mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
-    } = this.emissionsFormGroup.value;
+    } = this.emissionsFormGroup.getRawValue();
 
     const mprimaNumeric = Number(mprima);
     const montoDistribucion = mprimaNumeric * this.comisionRamo / 100;
