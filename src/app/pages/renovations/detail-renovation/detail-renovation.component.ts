@@ -308,7 +308,9 @@ export class DetailRenovationComponent implements OnInit {
     console.log(this.data)
     const data = {
       ccedente: this.renovFormGroup.get('ccedente')?.value,
-      casegurado: this.data.icedula_asegurado,
+      casegurado: this.data.casegurado,
+      ctomador: this.data.ctomador,
+      cmoneda: this.renovFormGroup.get('cmoneda')?.value,
     }
     
     // {
