@@ -62,7 +62,6 @@ export class ItemFormComponent implements OnInit {
     // this.openSnackBarLoading()
     // this.ccompania = localStorage.getItem("ccompania");
     this.ccompania = 1;
-    console.log(this.dataComponent)
     if(this.dataComponent){
       const v = this.dataComponent
       this.mode = v.mode
@@ -113,7 +112,6 @@ export class ItemFormComponent implements OnInit {
     if(this.mode == 'info') {
         this.http.get(environment.apiUrl + this.mainUrl+this.itemId, {}).subscribe(async (data) => {
         this.itemData = data['data'].result
-        console.log('data', this.itemData);
         await this.getFieldsData()
         // this.closeSnackBar()
       })
@@ -126,27 +124,17 @@ export class ItemFormComponent implements OnInit {
 
     
     window.addEventListener('load', async (e) => {
-      for (const field of await this.fields) {
-        if(this.ccompania != '1') {
-          if(field.key == 'ccompania') {
-            const fieldItem = <HTMLInputElement>document.getElementsByName(field.key)[0]
-            fieldItem.value = this.ccompania
-            this.setValue(this.ccompania, field.binding_change_field)
-          }
-        }
-      }
     })
     for (const field of await this.fields) {
       if (field.url_id){
         setTimeout(() => {
           const fieldTo = this.fields.find(item => item.key == field.url_id)
-          this.setValue(fieldTo.defaultValue, field.key)
+          this.setValue(field.key, fieldTo.defaultValue)
 
         }, 2000);
       }
     }
 
-    
     const formIdContainer = document.forms[this.formId]
     // send item form container
     formIdContainer.addEventListener('submit', (e)=> {
@@ -184,10 +172,8 @@ export class ItemFormComponent implements OnInit {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             }
         }).subscribe((data) => {
-          console.log(data)
         //   this.openSnackBar(data['message'])
           this.loading = false
-          console.log(this.dataComponent)
           if(this.dataComponent) {
             this.created.emit();
           }
@@ -198,7 +184,6 @@ export class ItemFormComponent implements OnInit {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             }
         }).subscribe((data) => {
-          console.log(data)
         //   this.openSnackBar(data['message'])
           this.loading = false
           
@@ -212,16 +197,15 @@ export class ItemFormComponent implements OnInit {
     this.multipleValuesFields = this.fields.filter(field => field.type == 'multiple-select')
     for(const field of this.fields) {
       // select options added
-      if(field.type == 'select' || field.type == 'simple-select' || field.type == 'multiple-select'){
+      if(field.type.includes('select')){
         if(field.url) {
-          if(!field.url_id) {
-            this.http.get(environment.apiUrl + field.url, {}).subscribe(async (data:any) => {
+          if(!field.url_id && !field.url_ids) {
+            this.http.get(environment.apiUrl + field.url).subscribe(async (data:any) => {
               field.options = await data.data
               if(this.mode == 'create') {
                 if(field.defaultValue != '') {
                   const selected = field.options.find(option => option.value == field.defaultValue)
                   selected.selected = true
-                  // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
                 } else {
                   // field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
                 }
@@ -245,6 +229,9 @@ export class ItemFormComponent implements OnInit {
               field.addedValuesIds = this.itemData[field.added_data_key]
             } else {
               field.defaultValue = this.itemData[field.key]
+            }
+            if(field.type == 'auto-select') {
+              field.options.unshift({text: 'Selecciona una opcion...', value: ''})
             }
           }
         } else {
@@ -287,11 +274,9 @@ export class ItemFormComponent implements OnInit {
       }
       
     }
-    console.log('reviso',this.fields)
   }
   // change item (adde or available) to multipleSelect field
   changeItemTo(event: any, field: any, value: any) {
-    // console.log(inputHidden.getAttribute('value'));
     const inputHidden = <HTMLInputElement> document.getElementById(event.currentTarget.getAttribute('ms-button-data-id'))
     
     const inputValue =  inputHidden.value.split(',')
@@ -351,7 +336,7 @@ export class ItemFormComponent implements OnInit {
     this.checkIfComplete()
   }
   // add values to multipleselect field when the chageField is changed
-  setValue(value: any, fieldBindingKey:any) {
+  setValue(fieldBindingKey:any, value?: any) {
     const searchedField = this.fields.find(field => field.key == fieldBindingKey)
     if(searchedField.type == 'multiple-select'){
       searchedField.addedValues = []
@@ -362,12 +347,24 @@ export class ItemFormComponent implements OnInit {
 
       }
     }
-    searchedField.options = []
-    if(searchedField.type == 'select') {
-      // searchedField.options.unshift({text: 'Selecciona una opcion...', value: ''})
-    }
-    if(searchedField.url && value){
-      this.http.get(environment.apiUrl + searchedField.url + '/' + value, {}).subscribe((data:any) => {
+    if(searchedField.url){
+      searchedField.options = []
+      let extraParam = ''
+      if(value) {
+        extraParam = '/' + value
+      } else {
+        if(searchedField.url_ids) {
+          for (const id of searchedField.url_ids) {
+            const fieldToGet = this.fields.find(item => item.key == id)
+            if(fieldToGet) {
+              extraParam += '/' + fieldToGet.defaultValue
+            }
+          }
+        } else {
+          extraParam = '/' + searchedField.url_id
+        }
+      }
+      this.http.get(environment.apiUrl + searchedField.url + extraParam).subscribe((data:any) => {
         if(!data.notFinded) {
           if (data.data.length > 0) {
             searchedField.options = data.data
@@ -481,30 +478,38 @@ export class ItemFormComponent implements OnInit {
             }
           }
         }
-        
         // this.openSnackBar(data.message)
         console.log(data.message)
       })
-    } else {
-      searchedField.options = []
     }
+    this.checkIfComplete()
   }
   // called in the front of mutiple selection
   setOtherValue(event:any, fieldBindingKeys:any) {
     for (const fieldBindingKey of fieldBindingKeys) {
       
       const field = this.fields.find(fieldT => fieldT.key == fieldBindingKey)
-      this.setValue(event.currentTarget.value, fieldBindingKey)
       if(field.change_fields) {
         for (const fieldChange of field.change_fields) {
           const gettedField = this.fields.find(fieldA => fieldA.key == fieldChange)
-          if(this.mode != 'info') {
-            gettedField.defaultValue = ''
+          if(gettedField.reverse) {
+            if(field.defaultValue) {
+              gettedField.display = 'none'
+              gettedField.defaultValue = field.defaultValue
+            } else {
+              gettedField.display = 'block'
+              gettedField.defaultValue = ''
+            }
+          } else {
+            if(this.mode != 'info') {
+              gettedField.defaultValue = ''
+            }
+            gettedField.options = []
           }
-          gettedField.options = []
           // gettedField.options.unshift({text: 'Selecciona una opcion...', value: ''})
         }
       }
+      this.setValue(fieldBindingKey)
     }
     this.checkIfComplete()
   }
@@ -519,10 +524,46 @@ export class ItemFormComponent implements OnInit {
         const itemField = <HTMLInputElement>document.getElementsByName(searchedFieldToChange.key)[0]
         itemField.value = this.ccompania
         searchedFieldToChange.display = 'none'
-        this.setValue(itemField.value, searchedFieldToChange.binding_change_fields)
+        this.setValue(searchedFieldToChange.binding_change_fields, itemField.value)
       }
     }
     this.checkIfComplete()
+  }
+  // Auto Selects
+  setText(event:any, fieldKey:any, fieldBindingKeys?:any) {
+    // Asignar valor al campo
+    const findedItem = this.fields.find(field => field.key == fieldKey)
+    findedItem.defaultValue = event.currentTarget.value
+    // Actualizar otros campos cuyo valor dependen de este
+    if(event.currentTarget.value && fieldBindingKeys) {
+      this.setOtherValue(event, fieldBindingKeys)
+    }
+    // Actualizar campos que se ven afectados por un cambio de este campo
+    if(findedItem.change_fields) {
+      for (const field of findedItem.change_fields) {
+        const gettedField = this.fields.find(fieldA => fieldA.key == field)
+        if(gettedField.reverse) {
+          if(event.currentTarget.value) {
+            gettedField.display = 'none'
+            const itemValues = findedItem.options.find((option:any) => option.value == event.currentTarget.value)
+            gettedField.defaultValue = itemValues.text
+          } else {
+            gettedField.display = 'block'
+            gettedField.defaultValue = ''
+            
+          }
+        } else {
+          gettedField.defaultValue = ''
+          gettedField.options = []
+          gettedField.options.push({text: 'Selecciona una opcion...', value: ''})
+          if(gettedField.change_fields) {
+            const eventT:any = {currentTarget: {value: ''}}
+            this.setText(eventT, gettedField.key, gettedField.binding_change_fields)
+          }
+        }
+      }
+    }
+    // this.checkIfComplete()
   }
   searchOcurrences(event: any) {
 
@@ -542,7 +583,6 @@ export class ItemFormComponent implements OnInit {
               if(button.getAttribute('aria-expanded') == 'true') {
                 button.click()
               }
-              console.log('conseguido aqui',spanText);
               getted.classList.remove('d-none')
               getted.classList.add('d-flex')
               getted.classList.add('flex-column')
@@ -554,7 +594,6 @@ export class ItemFormComponent implements OnInit {
                 if(getted2.childNodes.length > 0) {
                   spanText = getted2.children[0].innerHTML.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                   if(spanText.includes(searchvalue)) {
-                    console.log('conseguido aqui',spanText);
                     return item
                   }
                 }
@@ -589,8 +628,6 @@ export class ItemFormComponent implements OnInit {
     let valueInput: any = {}
     valueInput = <HTMLInputElement> document.getElementById(valueId)
     const inputHidden = <HTMLInputElement> document.getElementById(field.key)
-    console.log(valueInput);
-    console.log(inputHidden);
     const inputValueSplit = inputHidden.value.split(',')
     
     const splitedItem = inputValueSplit[indexItem].split('?')
@@ -610,17 +647,16 @@ export class ItemFormComponent implements OnInit {
     event.preventDefault()
   }
   checkIfComplete(){
+    this.disabled = false
     const formIdContainer = document.forms[this.formId]
     const formData = new FormData(formIdContainer)
     for (var p of formData) {
       let name = p[0];
       let value = p[1];
-      
-      if(!value) {
-        this.disabled = true
-      } else {
-        this.disabled = false
-
+      if(name != 'cmarca' && name != 'cmodelo' && name != 'cversion'){
+        if(!value) {
+          this.disabled = true
+        }
       }
     }
   }

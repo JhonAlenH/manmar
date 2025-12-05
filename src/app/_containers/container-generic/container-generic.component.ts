@@ -658,11 +658,11 @@ export class ContainerGenericComponent implements OnInit {
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
       mcomisionext: parseFloat(this.genericFormGroup.get('mcomision_p')?.value),
       cproductor: this.genericFormGroup.get('cproductor')?.value,
-      pcomision_p: this.convertStringToNumber(this.genericFormGroup.get('pcomision_p')?.value),
-      cejecutivo: this.genericFormGroup.get('cejecutivo')?.value,
-      pcomision_e: this.convertStringToNumber(this.genericFormGroup.get('pcomision_e')?.value),
-      cagente: this.genericFormGroup.get('cagente')?.value,
-      pcomision_a: this.genericFormGroup.get('pcomision_a')?.value,
+      pcomision_p: 100,
+      cejecutivo: null,
+      pcomision_e: 0,
+      cagente: null,
+      pcomision_a: 0,
       cusuario: this.currentUser.data.cusuario,
       documentos: this.documentosList
     }

@@ -10,31 +10,110 @@
         <div class="card-body">
           <form id="{{ formId }}">
             <div class="row" *ngIf="fields">
-              <div [style]="'display:'+ field.display" [class]="'form-group ' + field.class" *ngFor="let field of fields">
-                <label *ngIf="field.type != 'multiple-select'">{{field.fieldName}}</label>
-                <textarea class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'textarea') && (field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue" rows="1"></textarea>
-                <textarea class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'textarea') && (!field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue" rows="1"></textarea>
+              <ng-container *ngFor="let field of fields">
+                <div
+                [style]="'display:' + field.display"
+                [class]="'form-group ' + field.class"
+                >
+                  <label *ngIf="field.type != 'multiple-select'">{{field.fieldName}}</label>
+                  <!-- TEXTAREA -->
+                  <textarea
+                    class="form-control"
+                    [disabled]="disabledInputs || field.disabledField"
+                    [type]="field.type"
+                    [attr.name]="field.key"
+                    [id]="field.key"
+                    *ngIf="(field.type == 'textarea')"
+                    [value]="field.defaultValue" rows="1"
+                    (change)="checkIfComplete()"
+                  ></textarea>
 
-                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email') && (field.binding_change_fields)" (change)="setOtherValue($event, field.binding_change_fields)" [value]="field.defaultValue">
+                  <!-- INPUTS -->
+                  <input
+                    class="form-control"
+                    [disabled]="disabledInputs || field.disabledField"
+                    [type]="field.type"
+                    [attr.name]="field.key"
+                    [id]="field.key"
+                    *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')"
+                    [value]="field.defaultValue"
+                    (change)="checkIfComplete()"
+                  >
+  
+                  <!-- SELECTS WITH BINDING -->
+                  <select
+                    class="form-control text-capitalize"
+                    [value]="field.defaultValue"
+                    [disabled]="disabledInputs || field.disabledField"
+                    [id]="field.key"
+                    [attr.name]="field.key"
+                    *ngIf="(field.binding_change_fields) && (field.type == 'select' || field.type == 'simple-select')"
+                    (change)="setOtherValue($event, field.binding_change_fields)"
+                  >
+                    <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
+                      {{option.text}}
+                    </option>
+                  </select>
+  
+                  <!-- SELECT WITHOUT BINDING -->
+                  <select
+                    class="form-control text-capitalize"
+                    [value]="field.defaultValue"
+                    [disabled]="disabledInputs || field.disabledField"
+                    [id]="field.key"
+                    [attr.name]="field.key"
+                    *ngIf="(!field.binding_change_fields) && (field.type == 'select' || field.type == 'simple-select')"
+                    (change)="checkOtherValue($event, field.key)"
+                  >
+                    <option *ngFor="let option of field.options" [value]="option.value">
+                      {{option.text}}
+                    </option>
+                  </select>
 
-                <input class="form-control" [disabled]="disabledInputs || field.disabledField" [type]="field.type" [attr.name]="field.key" *ngIf="(!field.binding_change_fields) && (field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')" [value]="field.defaultValue" (change)="checkIfComplete()">
+                  <!-- AUTOSELECT WITH BINDING -->
+                  <select 
+                    class="form-control text-capitalize"
+                    [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField"
+                    [id]="field.key"
+                    [attr.name]="field.key"
+                    *ngIf="(field.binding_change_fields) && (field.type == 'auto-select')"
+                    (change)="setText($event, field.key, field.binding_change_fields)"
+                  >
+                    <option *ngFor="let option of field.options" [value]="option.value">
+                      {{option.text}}
+                    </option>
+                  </select>
+                  <!-- AUTOSELECT WITHOUT BINDING -->
+                  <select 
+                    class="form-control text-capitalize"
+                    [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField"
+                    [id]="field.key"
+                    [attr.name]="field.key"
+                    *ngIf="(!field.binding_change_fields) && (field.type == 'auto-select')"
+                    (change)="setText($event, field.key)"
+                  >
+                    <option *ngFor="let option of field.options" [value]="option.value">
+                      {{option.text}}
+                    </option>
+                  </select>
 
-                <select (change)="setOtherValue($event, field.binding_change_fields)" class="form-control text-capitalize" [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField" [id]="field.key" [attr.name]="field.key" *ngIf="(field.binding_change_fields) &&(field.type == 'select' || field.type == 'simple-select')">
-                  <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
-                    {{option.text}}
-                  </option>
-                </select>
+                  <i class="fa-solid fa-caret-down arrow-down select-item" *ngIf="field.type.includes('select')"></i>
 
-                <select (change)="checkOtherValue($event, field.key)" class="form-control text-capitalize" [value]="field.defaultValue" [disabled]="disabledInputs || field.disabledField" [id]="field.key" [attr.name]="field.key" *ngIf="(!field.binding_change_fields) &&(field.type == 'select' || field.type == 'simple-select')">
-                  <option *ngFor="let option of field.options" [value]="option.value">
-                    {{option.text}}
-                  </option>
-                </select>
+                  <!-- AUTO TEXT -->
 
-                <i class="fa-solid fa-caret-down arrow-down select-item" [attr.for]="field.key" *ngIf="field.type == 'select' || field.type == 'simple-select'"></i>
-
-                
-              </div>
+                  <input 
+                    class="form-control"
+                    [disabled]="disabledInputs || field.disabledField"
+                    type="text"
+                    [attr.name]="field.key"
+                    [id]="field.key"
+                    *ngIf="(!field.binding_change_fields) && (field.type == 'auto-text')"
+                    [value]="field.defaultValue"
+                    (change)="checkIfComplete()"
+                  >
+                </div>
+              </ng-container>
+              <!-- MULTIPLE SELECT -->
               <mat-stepper orientation="vertical" #multipleStepper *ngIf="multipleValuesFields">
                 <mat-step *ngFor="let field of multipleValuesFields">
                   <ng-template matStepLabel>{{field.fieldName}}</ng-template>

@@ -1,5 +1,5 @@
 import {Component, OnInit } from '@angular/core';
-import {FormBuilder, FormControl} from '@angular/forms';
+import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
@@ -50,23 +50,38 @@ export class DetailRenovationComponent implements OnInit {
   receiptList: any[] = [];
 
   renovFormGroup = this._formBuilder.group({
-    ccedente: [{ value: '', disabled: true }],
-    xcedente: [{ value: '', disabled: true }],
-    cmoneda: [{ value: '', disabled: true }],
-    xmoneda: [{ value: '', disabled: true }],
-    fdesde: [{ value: '', disabled: false }],
-    fhasta: [{ value: '', disabled: false }],
-    xpoliza: [{ value: '', disabled: true }],
-    msuma_aseg: [{ value: '', disabled: false }],
-    mprima: [{ value: '', disabled: false }],
-    cmetodologiapago: [{ value: '', disabled: false }],
-    pcomision_p: [{ value: 0, disabled: false }],
-    pcomision_e: [{ value: 0, disabled: false }],
-    pcomision_a: [{ value: 0, disabled: false }],
-    mcomision_pext: [{ value: 0, disabled: false }],
-    mcomision_eext: [{ value: 0, disabled: false }],
-    mcomision_aext: [{ value: 0, disabled: false }],
+    ccedente: ['', Validators.required],
+    xcedente: ['', Validators.required],
+    cmoneda: ['', Validators.required],
+    xmoneda: ['', Validators.required],
+    fdesde: ['', Validators.required],
+    fhasta: ['', Validators.required],
+    xpoliza: ['', Validators.required],
+    msuma_aseg: ['', Validators.required],
+    mprima: ['', Validators.required],
+    cmetodologiapago: ['', Validators.required],
+    pcomision_p: [0, Validators.required],
+    pcomision_e: [''],
+    pcomision_a: [''],
+    mcomision_pext: [0, Validators.required],
+    mcomision_eext: [''],
+    mcomision_aext: [''],
   });
+
+  renovLabels = [
+    {id: 'ccedente', value:'Código Cedente'},
+    {id: 'xcedente', value:'Cedente'},
+    {id: 'cmoneda', value:'Código Moneda'},
+    {id: 'xmoneda', value:'Moneda'},
+    {id: 'fdesde', value:'Fecha Inicio'},
+    {id: 'fhasta', value:'Fecha Fin'},
+    {id: 'xpoliza', value:'Nº Póliza'},
+    {id: 'msuma_aseg', value:'Suma Asegurada'},
+    {id: 'mprima', value:'Prima'},
+    {id: 'cmetodologiapago', value:'Metodología de Pago'},
+    {id: 'pcomision_p', value:'Porcentaje de Comisión'},
+    {id: 'mcomision_pext', value:'Monto de Comisión'},
+  ]
 
   constructor( private _formBuilder: FormBuilder,
                private http: HttpClient,
@@ -200,7 +215,6 @@ export class DetailRenovationComponent implements OnInit {
 
     const monto = Number(formControl?.value)
     const name = formControlName + '_bs'
-    console.log(formControlName)
 
     this[name] = Number((monto * this.bcv).toFixed(2));
     this.calculateComisionMonto()
@@ -230,7 +244,6 @@ export class DetailRenovationComponent implements OnInit {
 
   getMethod(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/method-of-payment', null).subscribe((response: any) => {
-      console.log(response)
       this.methodOfPaymentList = response.data.payment.map((item: any) => ({
         id: item.cmetodologiapago,
         value: item.xmetodologiapago
@@ -246,7 +259,6 @@ export class DetailRenovationComponent implements OnInit {
       cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
     }
     this.receiptList = [];
-    console.log('data',dataCompleta)
     this.http.post(environment.apiUrl + '/api/v1/renovations/receipt', dataCompleta).subscribe((response: any) => {
       if(response.status){
         this.receiptList = response.data.receipt.map((state: any) => ({
@@ -304,59 +316,89 @@ export class DetailRenovationComponent implements OnInit {
   }
 
   onSubmit(){
-    console.log(this.renovFormGroup.getRawValue())
-    console.log(this.data)
-    const data = {
+    if(this.renovFormGroup.invalid){
+      let errors = []
+      const values = Object.entries(this.renovFormGroup.value)
+      for(const value of values) {
+        if(!value[1]) {
+          if(this.renovFormGroup.get(value[0])?.errors ) {
+            const findedLabel:any = this.renovLabels.find((label:any) => label.id == value[0])
+            if(findedLabel) {
+              errors.push(findedLabel.value)
+            }
+          }
+        }
+      }
+      Swal.fire({
+        title: "Por favor, complete los siguientes campos:",
+        text: `\n${errors.join('\n')}`,
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5e72e4",
+      });
+    }
+    if(this.renovFormGroup.get('pcomision_p')?.value > 100){
+      Swal.fire({
+        title: "Se excedió del 100% de Comisión",
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5e72e4",
+      });
+      return
+    }
+    const dataSubmit = {
       ccedente: this.renovFormGroup.get('ccedente')?.value,
       casegurado: this.data.casegurado,
       ctomador: this.data.ctomador,
       cmoneda: this.renovFormGroup.get('cmoneda')?.value,
+      cramo: this.data.cramo,
+      xpoliza: this.data.xpoliza,
+      fdesde_pol: this.renovFormGroup.get('fdesde')?.value,
+      fhasta_pol: this.renovFormGroup.get('fhasta')?.value,
+      cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
+      ptasa_cambio: this.bcv,
+      msuma: this.msuma_aseg_bs,
+      msumaext: this.renovFormGroup.get('msuma_aseg')?.value,
+      mprima: this.mprima_bs,
+      femision: this.dateUtilService.formatDate(new Date()),
+      mprimaext: this.renovFormGroup.get('mprima')?.value,
+      pcomision: this.renovFormGroup.get('pcomision_p')?.value,
+      mcomision: Number(this.renovFormGroup.get('mcomision_pext')?.value) * this.bcv,
+      mcomisionext: Number(this.renovFormGroup.get('mcomision_pext')?.value),
+      cproductor: this.data.cproductor,
+      pcomision_p: 100,
+      cejecutivo: null,
+      pcomision_e: null,
+      cagente: null,
+      pcomision_a: null,
+      documentos: []
     }
-    
-    // {
-    //   "ccedente": 73,
-    //   "icedula_asegurado": "V",
-    //   "xcedula_asegurado": "26666666",
-    //   "xnombre_asegurado": "ANDRESITO EL QUE TAL",
-    //   "xcorreo_asegurado": null,
-    //   "xtelefono_asegurado": "",
-    //   "icedula_tomador": "J",
-    //   "xcedula_tomador": "31098567-7",
-    //   "xnombre_tomador": "     IMPERMEABILIZADORA GRAN CARACAS,C.A \r\n",
-    //   "xdireccion_tomador": null,
-    //   "xprofesion_tomador": null,
-    //   "cestado_tomador": 1,
-    //   "cciudad_tomador": "",
-    //   "xrif_tomador": "",
-    //   "xdomicilio_tomador": null,
-    //   "xzona_postal_tomador": "",
-    //   "xcorreo_tomador": null,
-    //   "cmoneda": 2,
-    //   "cramo": 7,
-    //   "xpoliza": "185465",
-    //   "ccobertura": "",
-    //   "fdesde_pol": "2025-12-03",
-    //   "fhasta_pol": "2026-12-04",
-    //   "femision": "2025-12-03T13:59:42.701Z",
-//   "cmetodologiapago": 4,
-    //   "ptasa_cambio": 249.1989,
-    //   "msuma": 373798.35,
-    //   "msumaext": 1500,
-    //   "mprima": 37384.82,
-    //   "mprimaext": 150.02,
-    //   "pcomision": 15,
-    //   "mcomision": 5607.72,
-    //   "mcomisionext": 22.5,
-    //   "cproductor": 1,
-    //   "pcomision_p": 15,
-    //   "cejecutivo": "",
-    //   "pcomision_e": 0,
-    //   "cagente": "",
-    //   "pcomision_a": "",
-    //   "cusuario": 2,
-    //   "documentos": []
-    // }
+    this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.data.id}`, dataSubmit).subscribe((response: any) => {
+          if(response.status){
+            Swal.fire({
+              icon: "success",
+              title: `${response.message}`,
+              showConfirmButton: false,
+              timer: 4000
+            }).then((result) => {
+              location.reload()
+            });
+          }
+      },(err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Ha ocurrido un Error",
+          text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
+          confirmButtonText: "<strong>Aceptar</strong>",
+          confirmButtonColor: "#5e72e4",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+            }
+        });
+      })
   }
+
 
 
 }
