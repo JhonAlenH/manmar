@@ -39,7 +39,6 @@ export class ContainerAutomobileComponent implements OnInit {
   receiptList: any[] = [];
   executiveList: any[] = [];
   agentsList: any[] = []; 
-  coverageList: any[] = [];
   documentosList: any = []
 
   brandControl = new FormControl('');
@@ -48,7 +47,6 @@ export class ContainerAutomobileComponent implements OnInit {
   colorControl = new FormControl('');
   executiveControl = new FormControl('');
   agentsControl = new FormControl('');
-  coverageControl = new FormControl('');
 
   filteredBrand!: Observable<string[]>;
   filteredModel!: Observable<string[]>;
@@ -56,7 +54,6 @@ export class ContainerAutomobileComponent implements OnInit {
   filteredColor!: Observable<string[]>;
   filteredExecutive!: Observable<string[]>;
   filteredAgents!: Observable<string[]>;
-  filteredCoverage!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
@@ -71,7 +68,6 @@ export class ContainerAutomobileComponent implements OnInit {
     fano: ['',[ Validators.maxLength(4)]],
     npasajeros: [{ value: '', disabled: true }],
     ccolor: [{ value: '', disabled: true }],
-    ccobertura: [{ value: '', disabled: false }],
     igrua: [false],
     cejecutivo: [{ value: '', disabled: false }],
     xejecutivo: [{ value: '', disabled: false }],
@@ -99,9 +95,8 @@ export class ContainerAutomobileComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
     this.getColor();
-    this.getExecutive();
+    // this.getExecutive();
     this.getProducers();
-    this.getCoverage();
     this.vehicleFormGroup.valueChanges.subscribe(() => {
       this.commissionSumValidator();
     });
@@ -306,38 +301,6 @@ export class ContainerAutomobileComponent implements OnInit {
     const selectedColor = this.colorList.find(color => color.value === selectedValue);
     if (selectedColor) {
       this.vehicleFormGroup.get('ccolor')?.setValue(selectedColor.id);
-    }
-  }
-
-  getCoverage(){
-    this.http.post(environment.apiUrl + `/api/v1/valrep/coverage/${this.receiptData.cramo}`, null).subscribe((response: any) => {
-      if (response.data.coverage) {
-        this.coverageList = [];
-        this.coverageList = response.data.coverage.map((item: any) => ({
-          id: item.ccobertura,
-          value: item.xcobertura, 
-        }))
-        this.coverageList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredCoverage = this.coverageControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCoverage(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCoverage(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.coverageList
-      .map(coverage => coverage.value)
-      .filter(coverage => coverage.toLowerCase().includes(filterValue));
-  }
-
-  onCoverageSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selected = this.coverageList.find(coverage => coverage.value === selectedValue);
-    if (selected) {
-      this.vehicleFormGroup.get('ccobertura')?.setValue(selected.id);
     }
   }
 
@@ -852,11 +815,11 @@ export class ContainerAutomobileComponent implements OnInit {
       xcorreo_tomador: this.receiptData.xcorreo.toUpperCase() || null,
       cmoneda: this.receiptData.cmoneda,
       cramo: this.receiptData.cramo,
+      cproducto: this.receiptData.cproducto,
       xpoliza: this.receiptData.xpoliza,
       fdesde_pol: fdesdeString,
       fhasta_pol: fhastaString,
       femision: new Date(),
-      ccobertura: this.vehicleFormGroup.get('ccobertura')?.value,
       igrua: this.vehicleFormGroup.get('igrua')?.value,
       cmetodologiapago: this.receiptData.cmetodologiapago,
       ptasa_cambio: this.receiptData.bcv,
@@ -864,7 +827,7 @@ export class ContainerAutomobileComponent implements OnInit {
       msumaext: this.receiptData.msumaext,
       mprima: this.convertStringToNumber(this.receiptData.mprima),
       mprimaext: parseFloat(this.receiptData.mprimaext),
-      pcomision: this.receiptData.pcomision,
+      pcomision: this.vehicleFormGroup.get('pcomision_p')?.value,
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
       mcomisionext: parseFloat(this.vehicleFormGroup.get('mcomision_p')?.value),
       cproductor: this.vehicleFormGroup.get('cproductor')?.value,
@@ -883,6 +846,7 @@ export class ContainerAutomobileComponent implements OnInit {
           ccedente: 'Cédente',
           cmoneda: 'Moneda',
           cramo: 'Ramo',
+          cproducto: 'Producto',
           xpoliza: 'Póliza',
           fdesde_pol: 'Fecha Desde',
           fhasta_pol: 'Fecha Hasta',

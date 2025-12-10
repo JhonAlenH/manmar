@@ -40,6 +40,7 @@ export class EmissionsComponent implements OnInit {
 
   cedentsList: any[] = [];
   tradeList: any[] = [];
+  productList: any[] = [];
   coinsList: any[] = [];
   clientsList: any[] = [];
   takersList: any[] = [];
@@ -53,6 +54,7 @@ export class EmissionsComponent implements OnInit {
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
+  productControl = new FormControl('');
   coinsControl = new FormControl('');
   clientsControl = new FormControl('');
   takersControl = new FormControl('');
@@ -63,6 +65,7 @@ export class EmissionsComponent implements OnInit {
 
   filteredCedents!: Observable<string[]>;
   filteredTrade!: Observable<string[]>;
+  filteredProduct!: Observable<string[]>;
   filteredCoins!: Observable<string[]>;
   filteredClients!: Observable<string[]>;
   filteredTakers!: Observable<string[]>;
@@ -86,7 +89,7 @@ export class EmissionsComponent implements OnInit {
   fdesde: any;
   msuma_aseg: any;
   msuma_aseg_bs: any;
-  comisionRamo: any;
+  comisionProducto: any;
 
   aseguradoDataComponent = {
     title: 'Crear Nuevo Asegurado',
@@ -251,6 +254,7 @@ export class EmissionsComponent implements OnInit {
     ccedente: [''],
     xcedente: [''],
     cramo: [''],
+    cproducto: [''],
     cmoneda: [''],
     xmoneda:[''],
     ccliente: [''],
@@ -374,6 +378,7 @@ export class EmissionsComponent implements OnInit {
 
   getCedents(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', null).subscribe((response: any) => {
+      this.cedentsList = []
       if (response.data.cedents) {
         for (let i = 0; i < response.data.cedents.length; i++) {
           this.cedentsList.push({
@@ -424,7 +429,6 @@ export class EmissionsComponent implements OnInit {
           this.emissionsFormGroup.get('itipodoc_t')?.setValue(response.data.icedula);
           this.emissionsFormGroup.get('xdoc_identificacion_t')?.setValue(response.data.xcedula);
         }else{
-          console.log('epaaaa')
         }
 
       }
@@ -433,6 +437,7 @@ export class EmissionsComponent implements OnInit {
 
   getTrades(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/trade', null).subscribe((response: any) => {
+      this.tradeList = []
       if (response.data.trade) {
         for (let i = 0; i < response.data.trade.length; i++) {
           this.tradeList.push({
@@ -461,6 +466,45 @@ export class EmissionsComponent implements OnInit {
     const selectedTrade = this.tradeList.find(trade => trade.value === selectedValue);
     if (selectedTrade) {
       this.emissionsFormGroup.get('cramo')?.setValue(selectedTrade.id);
+      this.getProduct();
+    }
+  }
+
+  getProduct(){
+    let data = {
+      cramo: this.emissionsFormGroup.get('cramo')?.value,
+      ccedente: this.emissionsFormGroup.get('ccedente')?.value,
+    }
+    this.productList = []
+    this.http.post(environment.apiUrl + '/api/v1/valrep/product', data).subscribe((response: any) => {
+      if (response.data.product) {
+        for (let i = 0; i < response.data.product.length; i++) {
+          this.productList.push({
+            id: response.data.product[i].id,
+            value: response.data.product[i].xproducto,
+          });
+        }
+        this.productList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredProduct = this.productControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterProduct(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterProduct(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.productList
+      .map(product => product.value)
+      .filter(product => product.toLowerCase().includes(filterValue));
+  }
+
+  onProductSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedProduct = this.productList.find(product => product.value === selectedValue);
+    if (selectedProduct) {
+      this.emissionsFormGroup.get('cproducto')?.setValue(selectedProduct.id);
     }
 
     this.getTariffs();
@@ -468,14 +512,13 @@ export class EmissionsComponent implements OnInit {
 
   getTariffs(){
     let data = {
-      ccedente: this.emissionsFormGroup.get('ccedente')?.value,
-      cramo: this.emissionsFormGroup.get('cramo')?.value
+      id: this.emissionsFormGroup.get('cproducto')?.value,
     }
     this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
       if(response.status){
-        this.comisionRamo = response.pcomision;
+        this.comisionProducto = response.pcomision;
         
-        if(!this.comisionRamo){
+        if(!this.comisionProducto){
           Swal.fire({
             icon: "error",
             title: "Ha ocurrido un Error",
@@ -518,6 +561,7 @@ export class EmissionsComponent implements OnInit {
 
   getCoins(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/coins', null).subscribe((response: any) => {
+      this.coinsList = []
       if (response.data.coins) {
         for (let i = 0; i < response.data.coins.length; i++) {
           this.coinsList.push({
@@ -679,6 +723,7 @@ export class EmissionsComponent implements OnInit {
 
   getMethodOfPayment(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/method-of-payment', null).subscribe((response: any) => {
+      this.methodOfPaymentList = []
       if (response.data.payment) {
         for (let i = 0; i < response.data.payment.length; i++) {
           this.methodOfPaymentList.push({
@@ -720,6 +765,7 @@ export class EmissionsComponent implements OnInit {
     let data = {
       cpais: 58
     };
+    this.stateList = []
     this.http.post(environment.apiUrl + '/api/v1/valrep/state', data).subscribe((response: any) => {
       if (response.data.state) {
         this.stateList = response.data.state.map((state: any) => ({
@@ -839,7 +885,7 @@ export class EmissionsComponent implements OnInit {
     this.containerAuto = false;
     this.containerGeneric = false;
     const {
-      ccedente, cramo, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
+      ccedente, cramo,  cproducto, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
       xcedula, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
       xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
       xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
@@ -847,7 +893,7 @@ export class EmissionsComponent implements OnInit {
     } = this.emissionsFormGroup.getRawValue();
 
     const mprimaNumeric = Number(mprima);
-    const montoDistribucion = mprimaNumeric * this.comisionRamo / 100;
+    const montoDistribucion = mprimaNumeric * this.comisionProducto / 100;
   
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
       if(Number(cramo) === 20){
@@ -857,6 +903,7 @@ export class EmissionsComponent implements OnInit {
           fhasta: fhasta,
           cmetodologiapago: cmetodologiapago,
           cramo: cramo,
+          cproducto: cproducto,
           ccedente: ccedente,
           cmoneda: cmoneda,
           casegurado: casegurado,
@@ -884,7 +931,7 @@ export class EmissionsComponent implements OnInit {
           msumaext: this.msuma_aseg,
           mprima: mprima_bs,
           mprimaext: mprima,
-          pcomision: this.comisionRamo,
+          pcomision: this.comisionProducto,
           bcv: this.bcv,
           mdistribucion: montoDistribucion
         }
@@ -895,6 +942,7 @@ export class EmissionsComponent implements OnInit {
           fhasta: fhasta,
           cmetodologiapago: cmetodologiapago,
           cramo: cramo,
+          cproducto: cproducto,
           ccedente: ccedente,
           cmoneda: cmoneda,
           casegurado: casegurado,
@@ -922,7 +970,7 @@ export class EmissionsComponent implements OnInit {
           msumaext: this.msuma_aseg,
           mprima: mprima_bs,
           mprimaext: mprima,
-          pcomision: this.comisionRamo,
+          pcomision: this.comisionProducto,
           bcv: this.bcv,
           mdistribucion: montoDistribucion
         }
