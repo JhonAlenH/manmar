@@ -33,6 +33,7 @@ export const MY_FORMATS = {
   ],
 })
 export class EmissionsComponent implements OnInit {
+  clientDifferent = false;
   @ViewChild(MatAccordion) accordion: MatAccordion;
   public copy: string;
   currentUser!: any
@@ -90,6 +91,7 @@ export class EmissionsComponent implements OnInit {
   msuma_aseg: any;
   msuma_aseg_bs: any;
   comisionProducto: any;
+  
 
   aseguradoDataComponent = {
     title: 'Crear Nuevo Asegurado',

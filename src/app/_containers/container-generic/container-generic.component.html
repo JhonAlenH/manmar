@@ -1,32 +1,5 @@
 <div class="row justify-content-center">
     <mat-tab-group mat-align-tabs="center">
-      <mat-tab> 
-        <ng-template mat-tab-label>
-            <mat-icon>checklist</mat-icon>
-               Coberturas
-        </ng-template>
-        <form [formGroup]="genericFormGroup">
-            <div class="d-flex justify-content-center py-3">
-                <div class="col-sm-8">
-                  <mat-form-field class="example-full-width">
-                    <mat-label>Coberturas</mat-label>
-                    <input type="text"
-                          placeholder="Seleccione Coberturas"
-                          aria-label="Seleccione"
-                          matInput
-                          [formControl]="coverageControl"
-                          [matAutocomplete]="coverage"
-                          >
-                          <mat-autocomplete #coverage="matAutocomplete" (optionSelected)="onCoverageSelection($event)">
-                            <mat-option *ngFor="let coverage of filteredCoverage | async" [value]="coverage">
-                              {{ coverage }}
-                            </mat-option>
-                          </mat-autocomplete>
-                  </mat-form-field>
-                </div>
-            </div>
-        </form>
-      </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>
             <mat-icon>receiptlong</mat-icon>

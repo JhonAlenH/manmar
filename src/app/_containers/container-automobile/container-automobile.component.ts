@@ -41,6 +41,95 @@ export class ContainerAutomobileComponent implements OnInit {
   agentsList: any[] = []; 
   documentosList: any = []
 
+  vehiculoDataComponent = {
+    title: 'Crear Vehículo',
+    mode: 'create',
+    mainUrl: '/api/v1/maestros/vehiculos/get/',
+    createUrl: '/api/v1/maestros/vehiculos/create',
+    formId: 'create_vehiculos',
+    fields: [
+      {
+        type: 'text',
+        fieldName: 'Activo', class: 'col-md-0',
+        defaultValue: 1,
+        form_control: true,
+        key: 'bactivo',
+        bdType: 'number'
+      },
+      {
+        type: 'auto-select',
+        fieldName: 'Marca', class: 'col-md-2',
+        classShow: 'col-md-4',
+        url: '/api/v1/maestros/marcas',
+        binding_change_fields: ['cmodelo'],
+        change_fields: ['cmodelo', 'cversion', 'xmarca'],
+        key: 'cmarca',
+        bdType: 'text'
+      },
+      {
+        type: 'auto-text',
+        fieldName: 'Nombre Marca', class: 'col-md-2',
+        key: 'xmarca',
+        reverse: true,
+        bdType: 'text'
+      },
+      {
+        type: 'auto-select',
+        fieldName: 'Modelo', class: 'col-md-2',
+        classShow: 'col-md-4',
+        url: '/api/v1/maestros/modelos',
+        url_ids: ['cmarca'],
+        binding_change_fields: ['cversion'],
+        change_fields: ['cversion', 'xmodelo'],
+        key: 'cmodelo',
+        bdType: 'text'
+      },
+      {
+        type: 'auto-text',
+        fieldName: 'Nombre Modelo', class: 'col-md-2',
+        key: 'xmodelo',
+        reverse: true,
+        bdType: 'text'
+      },
+      {
+        type: 'auto-select',
+        fieldName: 'Versión', class: 'col-md-2',
+        classShow: 'col-md-4',
+        url: '/api/v1/maestros/versiones',
+        url_ids: ['cmarca','cmodelo'],
+        change_fields: ['xversion'],
+        key: 'cversion',
+        bdType: 'text'
+      },
+      {
+        type: 'auto-text',
+        fieldName: 'Nombre Versión', class: 'col-md-2',
+        key: 'xversion',
+        reverse: true,
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Transmisión', class: 'col-md-7',
+        key: 'xtrans',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Motor', class: 'col-md-4',
+        key: 'xmotor',
+        bdType: 'text'
+      },
+      {
+        type: 'number',
+        fieldName: 'Año', class: 'col-md-1',
+        key: 'qano',
+        change_fields: ['cmarca', 'cmodelo', 'cversion'],
+        bdType: 'number'
+      }
+    ]
+  }
+
   brandControl = new FormControl('');
   modelControl = new FormControl('');
   versionControl = new FormControl('');
@@ -60,13 +149,14 @@ export class ContainerAutomobileComponent implements OnInit {
   public pageNotas = 1;
   public pageNotasSize = 5;
 
+  newVehiculo:boolean = false
+
   vehicleFormGroup = this._formBuilder.group({
     xplaca: ['',[Validators.maxLength(7)]],
     xmarca: [{ value: '', disabled: true}],
     xmodelo: [{ value: '', disabled: true}],
     xversion: [{ value: '', disabled: true}],
     fano: ['',[ Validators.maxLength(4)]],
-    npasajeros: [{ value: '', disabled: true }],
     ccolor: [{ value: '', disabled: true }],
     igrua: [false],
     cejecutivo: [{ value: '', disabled: false }],
@@ -103,7 +193,6 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(changes)
     if (changes.receiptData) {
       this.updateReceiptData(changes.receiptData.currentValue);
     }
@@ -139,9 +228,9 @@ export class ContainerAutomobileComponent implements OnInit {
     let data = {
       qano: this.vehicleFormGroup.get('fano')?.value
     };
+    this.brandList = [];
     this.http.post(environment.apiUrl + '/api/v1/valrep/brand', data).subscribe((response: any) => {
       if (response.data.brand) {
-        this.brandList = [];
         for (let i = 0; i < response.data.brand.length; i++) {
           this.brandList.push({
             id: i,
@@ -177,6 +266,13 @@ export class ContainerAutomobileComponent implements OnInit {
       .filter(brand => brand.toLowerCase().includes(filterValue));
   }
 
+  checkClickOutside(event:any, item:any) {
+    if (event.srcElement.id == 'item-create') {
+      console.log(event.srcElement.id)
+      this[item] = false
+    }
+  }
+
   onBrandSelection(event: any) {
     const selectedValue = event.option.value;
     const selectedBrand = this.brandList.find(brand => brand.value === selectedValue);
@@ -191,9 +287,9 @@ export class ContainerAutomobileComponent implements OnInit {
       qano: this.vehicleFormGroup.get('fano')?.value,
       xmarca: this.vehicleFormGroup.get('xmarca')?.value,
     };
+    this.modelList = [];
     this.http.post(environment.apiUrl + '/api/v1/valrep/model', data).subscribe((response: any) => {
       if (response.data.model) {
-        this.modelList = [];
         for (let i = 0; i < response.data.model.length; i++) {
           this.modelList.push({
             id: i,
@@ -234,15 +330,14 @@ export class ContainerAutomobileComponent implements OnInit {
       xmarca: this.vehicleFormGroup.get('xmarca')?.value,
       xmodelo: this.vehicleFormGroup.get('xmodelo')?.value,
     };
+    this.versionList = [];
     this.http.post(environment.apiUrl + '/api/v1/valrep/version', data).subscribe((response: any) => {
       if (response.data.version) {
-        this.versionList = [];
         for (let i = 0; i < response.data.version.length; i++) {
           this.versionList.push({
             id: i,
             value: response.data.version[i].xversion,
             id_inma: response.data.version[i].id,
-            npasajero: response.data.version[i].npasajero,
           });
         }
         this.versionList.sort((a, b) => a.value > b.value ? 1 : -1);
@@ -267,8 +362,14 @@ export class ContainerAutomobileComponent implements OnInit {
     const selectedVersion = this.versionList.find(version => version.value === selectedValue);
     if (selectedVersion) {
       this.vehicleFormGroup.get('xversion')?.setValue(selectedVersion.value);
-      this.vehicleFormGroup.get('npasajeros')?.setValue(selectedVersion.npasajero);
     }
+  }
+
+  clearVehiculo() {
+    this.vehicleFormGroup.get('fano')?.setValue(''),
+    this.vehicleFormGroup.get('xmarca')?.setValue(''),
+    this.vehicleFormGroup.get('xmodelo')?.setValue(''),
+    this.vehicleFormGroup.get('xversion')?.setValue('');
   }
 
   getColor(){
@@ -353,236 +454,6 @@ export class ContainerAutomobileComponent implements OnInit {
     });
   }
 
-  getExecutive(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/executive', null).subscribe((response: any) => {
-      if (response.data.executive) {
-        this.executiveList = [];
-        for (let i = 0; i < response.data.executive.length; i++) {
-          this.executiveList.push({
-            id: response.data.executive[i].cejecutivo,
-            value: response.data.executive[i].xejecutivo,
-            comision: response.data.executive[i].pcomision,
-          });
-        }
-        const selectedMe = this.executiveList.find(executive => executive.id === this.currentUser.data.cejecutivo);
-        if (selectedMe) {
-            this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMe.id);
-            this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMe.value);
-            this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-            this.vehicleFormGroup.get('pcomision_p')?.setValue('');
-            this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-            this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
-
-            this.comisionEjecutivo = selectedMe.comision
-
-            const mprima = this.receiptData.mprimaext;
-            const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-            const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-
-            const primaCalculada_p = mprima * pcomision_p / 100;
-            const primaCalculada_e = mprima * pcomision_e / 100;
-
-            if(pcomision_p != 0){
-              this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-            }
-
-            if(pcomision_p != 0){
-              this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-            }
-            const comision = primaCalculada_p * this.receiptData.bcv;
-            const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-            // Formatear con separadores de miles y decimales
-            this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }).format(comision);
-
-            // Formatear con separadores de miles y decimales
-            this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }).format(comisionE);
-
-            this.Agents = true;
-            this.getAgents();
-            this.commissionSumValidator();
-        }
-        this.executiveList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredExecutive = this.executiveControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterExecutive(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterExecutive(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.executiveList
-      .map(executive => executive.value)
-      .filter(executive => executive.toLowerCase().includes(filterValue));
-  }
-
-  onExecutiveSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedMet = this.executiveList.find(executive => executive.value === selectedValue);
-    if (selectedMet) {
-      this.vehicleFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
-      this.vehicleFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
-
-      this.comisionEjecutivo = selectedMet.comision
-
-      const mprima = this.receiptData.mprimaext;
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-
-      const primaCalculada_p = mprima * pcomision_p / 100;
-      const primaCalculada_e = mprima * pcomision_e / 100;
-
-      if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-      }
-
-      if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      }
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      this.Agents = true;
-      this.activaEliminarEjecutivo = true;
-      this.getAgents();
-      this.commissionSumValidator();
-      // if(this.comisionesDivididas.length > 0){
-      //   this.commisionSumValidatorAgents(); 
-      // }else{
-         
-      // }
-
-    }
-  }
-
-  getAgents(){
-    const ejecutive = this.vehicleFormGroup.get('cejecutivo')?.value;
-    this.http.get(environment.apiUrl + `/api/v1/valrep/agents/${ejecutive}`).subscribe((response: any) => {
-      if (response.data.agents) {
-        this.agentsList = [];
-        this.agentsList = response.data.agents.map((item: any) => ({
-          id: item.cagente,
-          value: item.xagente,
-          pcomision_a: item.pcomision
-        }))
-        this.agentsList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredAgents = this.agentsControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterAgents(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterAgents(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.agentsList
-      .map(agents => agents.value)
-      .filter(agents => agents.toLowerCase().includes(filterValue));
-  }
-
-  onAgentsSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedAgents = this.agentsList.find(agents => agents.value === selectedValue);
-    if (selectedAgents) {
-      this.vehicleFormGroup.get('cagente')?.setValue(selectedAgents.id);
-      this.vehicleFormGroup.get('xagente')?.setValue(selectedAgents.value);
-      this.vehicleFormGroup.get('pcomision_p')?.setValue(this.comisionProductor);
-      this.vehicleFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo);
-      this.vehicleFormGroup.get('pcomision_a')?.setValue(selectedAgents.pcomision_a);
-
-      const mprima = this.receiptData.mprimaext;
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-      const pcomision_a = parseFloat(this.vehicleFormGroup.get('pcomision_a')?.value) || 0;
-
-      const primaCalculada_p = mprima * pcomision_p / 100;
-      const primaCalculada_e = mprima * pcomision_e / 100;
-      const primaCalculada_a = mprima * pcomision_a / 100;
-
-      if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-      }
-
-      if(pcomision_p != 0){
-        this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      }
-
-      if(pcomision_a != 0){
-        this.vehicleFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
-      }
-
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-      const comisionA = primaCalculada_a * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_a_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionA);
-
-      this.activaEliminarAgente = true;
-      this.commissionSumValidator();
-    }
-  }
-
-  // onSelectionChange(event: any) {
-  //   this.selectedAgents = event.value;
-
-  //   this.comisionesDivididas = this.selectedAgents.map((item: any) => ({
-  //     valor: item.value,
-  //     comision: item.pcomision_a / this.selectedAgents.length
-  //   }));
-
-  //   this.vehicleFormGroup.get('pcomision_p')?.setValue(this.comisionProductor)
-  //   this.vehicleFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo)
-  //   this.commisionSumValidatorAgents();
-
-  //   this.cdr.detectChanges();
-  // }
-
-  // onCommissionChange(comision: any, index: number) {
-  //   this.comisionesDivididas[index].comision = comision;
-  //   console.log(comision)
-  // }
-
   commissionSumValidator() {
     const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
     const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
@@ -637,41 +508,6 @@ export class ContainerAutomobileComponent implements OnInit {
 
   }
 
-  getCalculosComisionEjecutivo(mprima: any, pcomision_e: any){
-    const primaCalculada_e = mprima * pcomision_e / 100;
-    if(pcomision_e != 0){
-      this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      console.log(this.vehicleFormGroup.get('mcomision_e')?.value)
-    }
-  }
-
-  getCalculosComisionAgentes(mprima: any, pcomision_a: any){
-    const primaCalculada_a = mprima * pcomision_a / 100;
-    if(pcomision_a != 0){
-      this.vehicleFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
-    }
-  }
-
-
-  // commisionSumValidatorAgents(){
-  //   const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-  //   const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-  //   const sumaComisionesIndividuales = this.comisionesDivididas.reduce((total, comision) => total + comision.comision, 0);
-  //   // Sumar las comisiones del productor y del ejecutivo
-  //   const sumaComisionesTotales = sumaComisionesIndividuales + pcomision_p + pcomision_e;
-
-  //   this.commissionSum = sumaComisionesTotales
-
-  //   if(this.commissionSum > 100){
-  //     Swal.fire({
-  //       title: "Se excedió del 100% de Comisión",
-  //       icon: "warning",
-  //       confirmButtonText: "<strong>Aceptar</strong>",
-  //       confirmButtonColor: "#5e72e4",
-  //     });
-  //   }
-  // }
-
   convertStringToNumber(str: any): number {
     if (str == null) {
       return 0;
@@ -691,71 +527,6 @@ export class ContainerAutomobileComponent implements OnInit {
     
     // Si parseFloat devuelve NaN, devuelve 0 como valor predeterminado
     return isNaN(result) ? 0 : result;
-  }
-
-  removeRecord(type: string) {
-    if (type === 'ejecutivo') {
-      this.activaEliminarAgente = false;
-      this.activaEliminarEjecutivo = false;
-      this.Agents = false;
-      this.vehicleFormGroup.get('cejecutivo')?.setValue('');
-      this.vehicleFormGroup.get('xejecutivo')?.setValue('');
-      this.getExecutive();
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('100');
-      this.vehicleFormGroup.get('mcomision_p')?.setValue(this.receiptData.mdistribucion.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_e')?.setValue('');
-      this.vehicleFormGroup.get('cagente')?.setValue('');
-      this.vehicleFormGroup.get('xagente')?.setValue('');
-      
-      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
-
-      const comision = this.receiptData.mdistribucion * this.receiptData.bcv;
-    
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      this.mcomision_e_bs = ''
-
-    } else if (type === 'agente') {
-      this.vehicleFormGroup.get('cagente')?.setValue('');
-      this.vehicleFormGroup.get('xagente')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_a')?.setValue('');
-      this.vehicleFormGroup.get('pcomision_e')?.setValue('60');
-      this.vehicleFormGroup.get('pcomision_p')?.setValue('40');
-
-      this.getAgents();
-
-      const pcomision_p = parseFloat(this.vehicleFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.vehicleFormGroup.get('pcomision_e')?.value) || 0;
-
-      const primaCalculada_p = this.receiptData.mdistribucion * pcomision_p / 100;
-      const primaCalculada_e = this.receiptData.mdistribucion * pcomision_e / 100;
-
-      this.vehicleFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2));
-      this.vehicleFormGroup.get('mcomision_a')?.setValue('');
-
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      this.mcomision_a_bs = '';
-    }
   }
 
   addFile(id:any): void {
@@ -901,7 +672,7 @@ export class ContainerAutomobileComponent implements OnInit {
         confirmButtonColor: "#5e72e4",
       }).then((result) => {
           if (result.isConfirmed) {
-              location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+              // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
           }
       });
     })

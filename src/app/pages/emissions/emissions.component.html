@@ -147,6 +147,11 @@
                   <app-item-form [dataComponent]="aseguradoDataComponent" (created)="getInsurance(); this.newAsegurado = false"></app-item-form>
                 </div>
               </div>
+            </div>
+            <div class="row justify-content-start py-3">
+              <mat-checkbox [checked]="clientDifferent" (change)="clientDifferent = !clientDifferent">¿El tomador es diferente al asegurado?</mat-checkbox>
+            </div>
+            <div *ngIf="clientDifferent" class="row justify-content-start py-3">
               <p class="text-center negrita-oscura">
                 <strong>Datos del Tomador</strong>
               </p>

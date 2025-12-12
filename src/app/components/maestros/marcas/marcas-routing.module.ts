@@ -111,7 +111,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'number'
           }
         ]
-      } 
+      }
     },
     { 
       path: 'vehiculos/info/:id',   component: ItemFormComponent, data: {
