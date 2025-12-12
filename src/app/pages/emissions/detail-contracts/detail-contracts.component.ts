@@ -505,87 +505,92 @@ export class DetailContractsComponent implements OnInit {
               text: 'No se pudo subir el archivo.',
             });
           });
-        }
-    
-        // Proseguir con el guardado del complemento
-        try {
-          const data = {
-            id_poliza: this.id,
-            nrecibo: item.nrecibo,
-            fcobrorec: new Date(),
-            iestadorec: 'C',
-            xruta_rec: rutaCapture || null // Si no hay imagen, se guarda como null
-          };
-    
-          const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
-    
-          // Esperar la respuesta del complemento
-          response.subscribe(res => {
-            if (res['status_receipt']) {
-              Swal.fire({
-                icon: "success",
-                title: `${res['message']}`,
-                showConfirmButton: false,
-                timer: 4000
-              }).then(() => {
-                location.reload();
-              });
-            } else {
-              throw new Error('No se pudo completar la operación');
+          try {
+            const data = {
+              id_poliza: this.id,
+              nrecibo: item.nrecibo,
+              fcobrorec: new Date(),
+              iestadorec: 'C',
+              xruta_rec: rutaCapture || null // Si no hay imagen, se guarda como null
+            };
+      
+            const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
+      
+            // Esperar la respuesta del complemento
+            response.subscribe(res => {
+              if (res['status_receipt']) {
+                Swal.fire({
+                  icon: "success",
+                  title: `${res['message']}`,
+                  showConfirmButton: false,
+                  timer: 4000
+                }).then(() => {
+                  location.reload();
+                });
+              } else {
+                throw new Error('No se pudo completar la operación');
+              }
+            });
+          } catch (error) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Request failed: ${error.message}`,
+            });
+          }
+          const loadFile = (event: any) => {
+            const preview = document.getElementById('filePreview');
+            if (preview && event.target.files && event.target.files[0]) {
+              const reader = new FileReader();
+              reader.onload = (e: any) => {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+              };
+              reader.readAsDataURL(event.target.files[0]);
             }
-          });
-        } catch (error) {
+          };
+        
+          // Manejar el evento de arrastrar y soltar
+          const filePreview = document.getElementById('filePreview');
+          if (filePreview) {
+            // Cuando se arrastra algo sobre el área de previsualización
+            filePreview.addEventListener('dragover', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+            });
+        
+            // Cuando el usuario suelta el archivo sobre el área de previsualización
+            filePreview.addEventListener('drop', (e: DragEvent) => {
+              e.preventDefault();
+              filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+        
+              const files = e.dataTransfer?.files;
+              if (files && files[0]) {
+                const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+                fileInput.files = files; // Asignar el archivo arrastrado al input
+                loadFile({ target: { files } }); // Mostrar la previsualización
+              }
+            });
+        
+            // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+            filePreview.addEventListener('dragleave', () => {
+              filePreview.style.borderColor = '#ccc';
+            });
+          }
+        
+          // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+          window['loadFile'] = loadFile;
+        } else {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: `Request failed: ${error.message}`,
+            text: `Seleccione un archivo para continuar`,
           });
         }
+    
+        // Proseguir con el guardado del complemento
       }
     });
-  
-    // Añadir funcionalidad para mostrar la previsualización de la imagen seleccionada
-    const loadFile = (event: any) => {
-      const preview = document.getElementById('filePreview');
-      if (preview && event.target.files && event.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-      }
-    };
-  
-    // Manejar el evento de arrastrar y soltar
-    const filePreview = document.getElementById('filePreview');
-    if (filePreview) {
-      // Cuando se arrastra algo sobre el área de previsualización
-      filePreview.addEventListener('dragover', (e: DragEvent) => {
-        e.preventDefault();
-        filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
-      });
-  
-      // Cuando el usuario suelta el archivo sobre el área de previsualización
-      filePreview.addEventListener('drop', (e: DragEvent) => {
-        e.preventDefault();
-        filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
-  
-        const files = e.dataTransfer?.files;
-        if (files && files[0]) {
-          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-          fileInput.files = files; // Asignar el archivo arrastrado al input
-          loadFile({ target: { files } }); // Mostrar la previsualización
-        }
-      });
-  
-      // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
-      filePreview.addEventListener('dragleave', () => {
-        filePreview.style.borderColor = '#ccc';
-      });
-    }
-  
-    // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
-    window['loadFile'] = loadFile;
+    
   }
   
 }

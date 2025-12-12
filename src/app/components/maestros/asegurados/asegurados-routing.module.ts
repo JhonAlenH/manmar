@@ -33,14 +33,21 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         fields: [      
           {
             type: 'text',
-            fieldName: 'Nombre Asegurado', class: 'col-md-6',
+            fieldName: 'Nombre', class: 'col-md-6',
             key: 'xnombre',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Apellido Asegurado', class: 'col-md-6',
+            fieldName: 'Apellido', class: 'col-md-6',
             key: 'xapellido',
+            bdType: 'text'
+          },
+          {
+            fieldName: 'Identificacion', class: 'col-md-1',
+            type: 'simple-select',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+            key: 'itipodoc',
             bdType: 'text'
           },
           {
@@ -50,27 +57,28 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            type: 'text',
+            type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
             key: 'fnacimiento',
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'Estado Civil', class: 'col-md-1',
+            type: 'simple-select',
+            fieldName: 'Estado Civil', class: 'col-md-2',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
             key: 'iestado_civil',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Teléfono 1', class: 'col-md-3',
+            fieldName: 'Teléfono', class: 'col-md-2',
             key: 'xtelefono1',
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'Teléfono 2', class: 'col-md-3',
-            key: 'xtelefono2',
+            type: 'email',
+            fieldName: 'Correo', class: 'col-md-2',
+            key: 'xcorreo',
             bdType: 'text'
           },
           {
@@ -78,15 +86,9 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: 'Direccion', class: 'col-md-12',
             key: 'xdireccion',
             bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'eMail', class: 'col-md-6',
-            key: 'xcorreo',
-            bdType: 'text'
-          }     
+          },    
         ]
-      } 
+      }
     },
     { 
       path: 'asegurados/info/:id',   component: ItemFormComponent, data: {
@@ -96,18 +98,24 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         editUrl: '/api/v1/maestros/asegurados/edit/',
         formId: 'edit_asegurados',
         disableUrl: '/api/v1/maestros/asegurados/disable/',
-        fields: [     
-
+        fields: [      
           {
             type: 'text',
-            fieldName: 'Nombre Asegurado', class: 'col-md-6',
+            fieldName: 'Nombre', class: 'col-md-6',
             key: 'xnombre',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Apellido Asegurado', class: 'col-md-6',
+            fieldName: 'Apellido', class: 'col-md-6',
             key: 'xapellido',
+            bdType: 'text'
+          },
+          {
+            fieldName: 'Identificacion', class: 'col-md-1',
+            type: 'simple-select',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+            key: 'itipodoc',
             bdType: 'text'
           },
           {
@@ -117,27 +125,28 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             bdType: 'text'
           },
           {
-            type: 'text',
+            type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
             key: 'fnacimiento',
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'Estado Civil', class: 'col-md-1',
+            type: 'simple-select',
+            fieldName: 'Estado Civil', class: 'col-md-2',
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
             key: 'iestado_civil',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Teléfono 1', class: 'col-md-3',
+            fieldName: 'Teléfono', class: 'col-md-2',
             key: 'xtelefono1',
             bdType: 'text'
           },
           {
-            type: 'text',
-            fieldName: 'Teléfono 2', class: 'col-md-3',
-            key: 'xtelefono2',
+            type: 'email',
+            fieldName: 'Correo', class: 'col-md-2',
+            key: 'xcorreo',
             bdType: 'text'
           },
           {
@@ -145,13 +154,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             fieldName: 'Direccion', class: 'col-md-12',
             key: 'xdireccion',
             bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'eMail', class: 'col-md-6',
-            key: 'xcorreo',
-            bdType: 'text'
-          }
+          },    
         ]
       } 
     },

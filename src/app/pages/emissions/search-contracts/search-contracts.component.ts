@@ -30,6 +30,7 @@ export class SearchContractsComponent implements OnInit {
   cedentsList: any[] = [];
   tradeList: any[] = [];
 
+  searchOn:boolean = false;
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
 
@@ -58,8 +59,6 @@ export class SearchContractsComponent implements OnInit {
     if(this.currentUser){
       this.getCedents();
       this.getTrades();
-
-      this.searchContracts();
     }
   }
 
@@ -155,6 +154,8 @@ export class SearchContractsComponent implements OnInit {
         });
   
         this.dataSource.data = correctedContracts;
+        this.dataSource.sort = this.sort;
+        this.dataSource.paginator = this.paginator;
       }
     })
   }

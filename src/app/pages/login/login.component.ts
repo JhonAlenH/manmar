@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthenticationService } from '../../../app/_services/authentication.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { first } from 'rxjs';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',

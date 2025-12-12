@@ -35,8 +35,8 @@ export class MaestrosComponent implements OnInit {
     },
     {
       text: 'Del Negocio', icon: 'fa-solid fa-briefcase' , id: 'negocio', items: [
-        {text: 'Marcas, Modelos y Versiones', icon: 'fa-solid fa-file-lines', url: 'marcas'},
-        {text: 'Ramos', icon: 'fa-solid fa-car-side', url: 'ramos'},
+        {text: 'Vehículos', icon: 'fa-solid fa-car-side', url: 'vehiculos'},
+        {text: 'Ramos', icon: 'fa-solid fa-file-lines', url: 'ramos'},
       ]
     },
   ]

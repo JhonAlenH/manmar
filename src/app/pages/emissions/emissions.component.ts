@@ -33,6 +33,7 @@ export const MY_FORMATS = {
   ],
 })
 export class EmissionsComponent implements OnInit {
+  clientDifferent = false;
   @ViewChild(MatAccordion) accordion: MatAccordion;
   public copy: string;
   currentUser!: any
@@ -40,6 +41,7 @@ export class EmissionsComponent implements OnInit {
 
   cedentsList: any[] = [];
   tradeList: any[] = [];
+  productList: any[] = [];
   coinsList: any[] = [];
   clientsList: any[] = [];
   takersList: any[] = [];
@@ -48,8 +50,12 @@ export class EmissionsComponent implements OnInit {
   cityList: any[] = [];
   insuranceList: any[] = [];
 
+  newAsegurado:boolean = false
+  newTomador:boolean = false
+
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
+  productControl = new FormControl('');
   coinsControl = new FormControl('');
   clientsControl = new FormControl('');
   takersControl = new FormControl('');
@@ -60,6 +66,7 @@ export class EmissionsComponent implements OnInit {
 
   filteredCedents!: Observable<string[]>;
   filteredTrade!: Observable<string[]>;
+  filteredProduct!: Observable<string[]>;
   filteredCoins!: Observable<string[]>;
   filteredClients!: Observable<string[]>;
   filteredTakers!: Observable<string[]>;
@@ -83,12 +90,173 @@ export class EmissionsComponent implements OnInit {
   fdesde: any;
   msuma_aseg: any;
   msuma_aseg_bs: any;
-  comisionRamo: any;
+  comisionProducto: any;
+  
+
+  aseguradoDataComponent = {
+    title: 'Crear Nuevo Asegurado',
+    mode: 'create',
+    mainUrl: '/api/v1/maestros/asegurados/get/',
+    createUrl: '/api/v1/maestros/asegurados/create', 
+    formId: 'create_asegurados',
+    fields: [      
+      {
+        type: 'text',
+        fieldName: 'Nombre', class: 'col-md-6',
+        key: 'xnombre',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Apellido', class: 'col-md-6',
+        key: 'xapellido',
+        bdType: 'text'
+      },
+      {
+        fieldName: 'Identificacion', class: 'col-md-1',
+        type: 'simple-select',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+        key: 'itipodoc',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Cedula', class: 'col-md-2',
+        key: 'xcedula',
+        bdType: 'text'
+      },
+      {
+        type: 'date',
+        fieldName: 'Fecha Nacimiento', class: 'col-md-3',
+        key: 'fnacimiento',
+        bdType: 'text'
+      },
+      {
+        type: 'simple-select',
+        fieldName: 'Estado Civil', class: 'col-md-2',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
+        key: 'iestado_civil',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Teléfono', class: 'col-md-2',
+        key: 'xtelefono1',
+        bdType: 'text'
+      },
+      {
+        type: 'email',
+        fieldName: 'Correo', class: 'col-md-2',
+        key: 'xcorreo',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Direccion', class: 'col-md-12',
+        key: 'xdireccion',
+        bdType: 'text'
+      },    
+    ]
+  } 
+  tomadorDataComponent = {
+    title: 'Crear Nuevo Tomador',
+    mode: 'create',
+    mainUrl: '/api/v1/maestros/tomadores/get/',
+    createUrl: '/api/v1/maestros/tomadores/create', 
+    formId: 'create_tomadores',
+    fields: [
+      {
+        type: 'text',
+        fieldName: 'Activo', class: 'col-md-0',
+        defaultValue: 1,
+        form_control: true,
+        key: 'bactivo',
+        bdType: 'number'
+      },
+      {
+        type: 'text',
+        fieldName: 'Tomador', class: 'col-md-8',
+        key: 'xtomador',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Profesion', class: 'col-md-4',
+        key: 'xprofesion',
+        bdType: 'text'
+      },
+      {
+        fieldName: 'Identificacion', class: 'col-md-1',
+        type: 'simple-select',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+        key: 'icedula',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Cedula', class: 'col-md-2',
+        key: 'xcedula',
+        bdType: 'text'
+      },
+      { 
+        type: 'select',
+        fieldName: 'País', class: 'col-md-2',
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezuela', value: '58'}], 
+        binding_change_fields: ['cestado'],
+        change_fields: ['cestado', 'cciudad'],
+        key: 'cpais',
+        bdType: 'number'
+      },
+      {
+        fieldName: 'Estado', class: 'col-md-2',
+        type: 'select',
+        key: 'cestado',
+        url_id: 'cpais',
+        binding_change_fields: ['cciudad'],
+        change_fields: ['cciudad'],
+        url: '/api/v1/maestros/estados',
+        bdType: 'number'
+      },
+      {
+        fieldName: 'Ciudad', class: 'col-md-2',
+        type: 'select',
+        key: 'cciudad',
+        url_id: 'cestado',
+        url: '/api/v1/maestros/ciudades',
+        bdType: 'number'
+      },
+      {
+        type: 'text',
+        fieldName: 'Teléfono', class: 'col-md-2',
+        key: 'xtelefono',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Zona Postal', class: 'col-md-1',
+        key: 'xzona_postal',
+        bdType: 'text'
+      },
+      {
+        type: 'email',
+        fieldName: 'Correo', class: 'col-md-2',
+        key: 'xcorreo',
+        bdType: 'text'
+      },
+      {
+        type: 'text',
+        fieldName: 'Direccion', class: 'col-md-10',
+        key: 'xdireccion',
+        bdType: 'text'
+      },    
+    ]
+  } 
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],
     xcedente: [''],
     cramo: [''],
+    cproducto: [''],
     cmoneda: [''],
     xmoneda:[''],
     ccliente: [''],
@@ -128,34 +296,40 @@ export class EmissionsComponent implements OnInit {
   });
 
   constructor( private _formBuilder: FormBuilder,
-                private http: HttpClient,
-                private dateUtilService: DateUtilService,
-                private modalService: NgbModal,
-                private snackBar: MatSnackBar,
-                private route: ActivatedRoute,
-                private router: Router,
-                private dateAdapter: DateAdapter<Date>,
-                ) {
-                  dateAdapter.setLocale('es');
-                  fetch('https://ve.dolarapi.com/v1/dolares')
-                  .then((response) => response.json())
-                  .then(data => {
-                    data.forEach((item: any) => {
-                      if (item.fuente === 'oficial') {
-                        this.bcv = item.promedio;
-                      }
-                    });
-                  })
-                  .catch(error => {
-                    console.error('Error al obtener la tasa del BCV:', error);
-                    // Continuar con el valor predeterminado de `this.bcv`
-                  })
-                }
+    private http: HttpClient,
+    private dateUtilService: DateUtilService,
+    private modalService: NgbModal,
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private router: Router,
+    private dateAdapter: DateAdapter<Date>,
+  ) {
+    dateAdapter.setLocale('es');
+    fetch('https://ve.dolarapi.com/v1/dolares')
+    .then((response) => response.json())
+    .then(data => {
+      data.forEach((item: any) => {
+        if (item.fuente === 'oficial') {
+          this.bcv = item.promedio;
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error al obtener la tasa del BCV:', error);
+      // Continuar con el valor predeterminado de `this.bcv`
+    })
+  }
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     const jsonD = JSON.parse(storedSession);
     this.currentUser = jsonD.data?.user
+
+    this.emissionsFormGroup.get('itipodoc')?.disable();
+    this.emissionsFormGroup.get('xcedula')?.disable();
+
+    this.emissionsFormGroup.get('itipodoc_t')?.disable();
+    this.emissionsFormGroup.get('xdoc_identificacion_t')?.disable();
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -182,6 +356,13 @@ export class EmissionsComponent implements OnInit {
     }
   }
 
+  checkClickOutside(event:any, item:any) {
+    if (event.srcElement.id == 'item-create') {
+      console.log(event.srcElement.id)
+      this[item] = false
+    }
+  }
+
   formatWithSeparator(event: any) {
     let value = event.target.value.replace(/\D/g, '');
     value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -199,6 +380,7 @@ export class EmissionsComponent implements OnInit {
   }
 
   getCedents(){
+    this.cedentsList = []
     this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', {
       cproductor: this.currentUser?.productor?.cproductor
     }).subscribe((response: any) => {
@@ -252,7 +434,6 @@ export class EmissionsComponent implements OnInit {
           this.emissionsFormGroup.get('itipodoc_t')?.setValue(response.data.icedula);
           this.emissionsFormGroup.get('xdoc_identificacion_t')?.setValue(response.data.xcedula);
         }else{
-          console.log('epaaaa')
         }
 
       }
@@ -261,6 +442,7 @@ export class EmissionsComponent implements OnInit {
 
   getTrades(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/trade', null).subscribe((response: any) => {
+      this.tradeList = []
       if (response.data.trade) {
         for (let i = 0; i < response.data.trade.length; i++) {
           this.tradeList.push({
@@ -289,6 +471,45 @@ export class EmissionsComponent implements OnInit {
     const selectedTrade = this.tradeList.find(trade => trade.value === selectedValue);
     if (selectedTrade) {
       this.emissionsFormGroup.get('cramo')?.setValue(selectedTrade.id);
+      this.getProduct();
+    }
+  }
+
+  getProduct(){
+    let data = {
+      cramo: this.emissionsFormGroup.get('cramo')?.value,
+      ccedente: this.emissionsFormGroup.get('ccedente')?.value,
+    }
+    this.productList = []
+    this.http.post(environment.apiUrl + '/api/v1/valrep/product', data).subscribe((response: any) => {
+      if (response.data.product) {
+        for (let i = 0; i < response.data.product.length; i++) {
+          this.productList.push({
+            id: response.data.product[i].id,
+            value: response.data.product[i].xproducto,
+          });
+        }
+        this.productList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.filteredProduct = this.productControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterProduct(value || ''))
+        );
+      }
+    });
+  }
+
+  private _filterProduct(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.productList
+      .map(product => product.value)
+      .filter(product => product.toLowerCase().includes(filterValue));
+  }
+
+  onProductSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedProduct = this.productList.find(product => product.value === selectedValue);
+    if (selectedProduct) {
+      this.emissionsFormGroup.get('cproducto')?.setValue(selectedProduct.id);
     }
 
     this.getTariffs();
@@ -296,14 +517,13 @@ export class EmissionsComponent implements OnInit {
 
   getTariffs(){
     let data = {
-      ccedente: this.emissionsFormGroup.get('ccedente')?.value,
-      cramo: this.emissionsFormGroup.get('cramo')?.value
+      id: this.emissionsFormGroup.get('cproducto')?.value,
     }
     this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
       if(response.status){
-        this.comisionRamo = response.pcomision;
+        this.comisionProducto = response.pcomision;
         
-        if(!this.comisionRamo){
+        if(!this.comisionProducto){
           Swal.fire({
             icon: "error",
             title: "Ha ocurrido un Error",
@@ -324,7 +544,7 @@ export class EmissionsComponent implements OnInit {
 
   searchPolicy(){
     const poliza = this.emissionsFormGroup.get('xpoliza')?.value
-    this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, null).subscribe((response: any) => {
+    this.http.post(environment.apiUrl + `/api/v1/emission/policy/${poliza}`, {ccedente: this.emissionsFormGroup.get('ccedente')?.value}).subscribe((response: any) => {
       if(response.status){
         if(response.xpoliza){
           Swal.fire({
@@ -346,6 +566,7 @@ export class EmissionsComponent implements OnInit {
 
   getCoins(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/coins', null).subscribe((response: any) => {
+      this.coinsList = []
       if (response.data.coins) {
         for (let i = 0; i < response.data.coins.length; i++) {
           this.coinsList.push({
@@ -366,6 +587,14 @@ export class EmissionsComponent implements OnInit {
       }
     });
   }
+  onCoinSelection(event: any) {
+    const selectedValue = event.option.value;
+    const selectedCoin = this.coinsList.find(coin => coin.value === selectedValue);
+    if (selectedCoin) {
+      this.emissionsFormGroup.get('cmoneda')?.setValue(selectedCoin.id);
+      this.emissionsFormGroup.get('xmoneda')?.setValue(selectedCoin.value);
+    }
+  }
 
   private _filterCoins(value: string): string[] {
     const filterValue = value.toLowerCase();
@@ -376,6 +605,7 @@ export class EmissionsComponent implements OnInit {
 
   getInsurance(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/insurance', null).subscribe((response: any) => {
+      this.insuranceList = []
       if (response.data.insurance) {
         for (let i = 0; i < response.data.insurance.length; i++) {
           this.insuranceList.push({
@@ -415,12 +645,13 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('xasegurado')?.setValue(selectedinsurance.value);
       this.emissionsFormGroup.get('itipodoc')?.setValue(selectedinsurance.itipo);
       this.emissionsFormGroup.get('xcedula')?.setValue(selectedinsurance.xdocu);
-      this.searchTakers()
+      // this.searchTakers()
     }
   }
 
   getTakers(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/takers', null).subscribe((response: any) => {
+      this.takersList = []
       if (response.data.takers) {
         for (let i = 0; i < response.data.takers.length; i++) {
           this.takersList.push({
@@ -495,6 +726,7 @@ export class EmissionsComponent implements OnInit {
 
   getMethodOfPayment(){
     this.http.post(environment.apiUrl + '/api/v1/valrep/method-of-payment', null).subscribe((response: any) => {
+      this.methodOfPaymentList = []
       if (response.data.payment) {
         for (let i = 0; i < response.data.payment.length; i++) {
           this.methodOfPaymentList.push({
@@ -536,6 +768,7 @@ export class EmissionsComponent implements OnInit {
     let data = {
       cpais: 58
     };
+    this.stateList = []
     this.http.post(environment.apiUrl + '/api/v1/valrep/state', data).subscribe((response: any) => {
       if (response.data.state) {
         this.stateList = response.data.state.map((state: any) => ({
@@ -617,9 +850,13 @@ export class EmissionsComponent implements OnInit {
 
   SumBs() {
     const mprima = parseFloat(this.emissionsFormGroup.get('mprima')?.value);
-    
-    const msuma_aseg_bs = this.msuma_aseg * this.bcv;
-    const mprima_bs = mprima * this.bcv;
+    let msuma_aseg_bs = this.msuma_aseg
+    let mprima_bs = mprima
+    console.log(this.emissionsFormGroup.get('cmoneda')?.value)
+    if(this.emissionsFormGroup.get('cmoneda')?.value != '1') {
+      msuma_aseg_bs = this.msuma_aseg * this.bcv;
+      mprima_bs = mprima * this.bcv;
+    }
 
     const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
       minimumFractionDigits: 2,
@@ -651,15 +888,15 @@ export class EmissionsComponent implements OnInit {
     this.containerAuto = false;
     this.containerGeneric = false;
     const {
-      ccedente, cramo, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
+      ccedente, cramo,  cproducto, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
       xcedula, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
       xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
       xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
       mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
-    } = this.emissionsFormGroup.value;
+    } = this.emissionsFormGroup.getRawValue();
 
     const mprimaNumeric = Number(mprima);
-    const montoDistribucion = mprimaNumeric * this.comisionRamo / 100;
+    const montoDistribucion = mprimaNumeric * this.comisionProducto / 100;
   
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
       if(Number(cramo) === 20){
@@ -669,6 +906,7 @@ export class EmissionsComponent implements OnInit {
           fhasta: fhasta,
           cmetodologiapago: cmetodologiapago,
           cramo: cramo,
+          cproducto: cproducto,
           ccedente: ccedente,
           cmoneda: cmoneda,
           casegurado: casegurado,
@@ -696,7 +934,7 @@ export class EmissionsComponent implements OnInit {
           msumaext: this.msuma_aseg,
           mprima: mprima_bs,
           mprimaext: mprima,
-          pcomision: this.comisionRamo,
+          pcomision: this.comisionProducto,
           bcv: this.bcv,
           mdistribucion: montoDistribucion
         }
@@ -707,6 +945,7 @@ export class EmissionsComponent implements OnInit {
           fhasta: fhasta,
           cmetodologiapago: cmetodologiapago,
           cramo: cramo,
+          cproducto: cproducto,
           ccedente: ccedente,
           cmoneda: cmoneda,
           casegurado: casegurado,
@@ -734,7 +973,7 @@ export class EmissionsComponent implements OnInit {
           msumaext: this.msuma_aseg,
           mprima: mprima_bs,
           mprimaext: mprima,
-          pcomision: this.comisionRamo,
+          pcomision: this.comisionProducto,
           bcv: this.bcv,
           mdistribucion: montoDistribucion
         }

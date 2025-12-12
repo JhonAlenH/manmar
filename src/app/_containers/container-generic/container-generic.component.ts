@@ -35,17 +35,14 @@ export class ContainerGenericComponent implements OnInit {
 
   receiptList: any[] = [];
   executiveList: any[] = [];
-  agentsList: any[] = []; 
-  coverageList: any[] = []; 
+  agentsList: any[] = [];  
   documentosList: any = []
 
   executiveControl = new FormControl('');
   agentsControl = new FormControl('');
-  coverageControl = new FormControl('');
 
   filteredExecutive!: Observable<string[]>;
   filteredAgents!: Observable<string[]>;
-  filteredCoverage!: Observable<string[]>;
 
   public page = 1;
   public pageSize = 6;
@@ -54,7 +51,6 @@ export class ContainerGenericComponent implements OnInit {
   public pageNotasSize = 5;
 
   genericFormGroup = this._formBuilder.group({
-    ccobertura: [{ value: '', disabled: false }],
     cejecutivo: [{ value: '', disabled: false }],
     xejecutivo: [{ value: '', disabled: false }],
     pcomision_e: [{ value: '', disabled: false }],
@@ -80,9 +76,8 @@ export class ContainerGenericComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
-    this.getExecutive();
+    // this.getExecutive();
     this.getProducers();
-    this.getCoverage();
     this.genericFormGroup.valueChanges.subscribe(() => {
       this.commissionSumValidator();
     });
@@ -111,20 +106,19 @@ export class ContainerGenericComponent implements OnInit {
         }));
       }
     })
+    if(data.pcomision) {
+      this.genericFormGroup.get('pcomision_p')?.setValue(data.pcomision);
+    }
   }
 
   getProducers(){
     this.http.post(environment.apiUrl + '/api/v1/emission/producers', null).subscribe((response: any) => {
       if (response.status) {
-        this.MontoADistribuir = this.receiptData.mdistribucion.toFixed(2);
+        
         this.genericFormGroup.get('cproductor')?.setValue(response.cproductor);
         this.genericFormGroup.get('xproductor')?.setValue(response.xproductor);
-        if(this.currentUser.data.cejecutivo){
-          this.genericFormGroup.get('pcomision_p')?.setValue('40');
-        }else{
-          this.genericFormGroup.get('pcomision_p')?.setValue('100');
-        }
-        const mprima = this.receiptData.mdistribucion;
+
+        const mprima = this.receiptData.mprimaext;
 
         const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
     
@@ -133,291 +127,27 @@ export class ContainerGenericComponent implements OnInit {
         if(pcomision_p != 0){ 
           this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
         }
-        const comision = primaCalculada_p * this.receiptData.bcv;
-    
+        let mcomision_bs = primaCalculada_p 
+        if(this.receiptData.cmoneda != 1 ) {
+          mcomision_bs = primaCalculada_p * this.receiptData.bcv;
+        }
+        
         // Formatear con separadores de miles y decimales
         this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
-        }).format(comision);
+        }).format(mcomision_bs);
 
+        this.MontoADistribuir = primaCalculada_p.toFixed(2);
         this.comisionProductor = response.pcomision
         this.commissionSumValidator();
       }
     });
   }
 
-  getExecutive(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/executive', null).subscribe((response: any) => {
-      if (response.data.executive) {
-        this.executiveList = [];
-        for (let i = 0; i < response.data.executive.length; i++) {
-          this.executiveList.push({
-            id: response.data.executive[i].cejecutivo,
-            value: response.data.executive[i].xejecutivo,
-            comision: response.data.executive[i].pcomision,
-          });
-        }
-        const selectedMe = this.executiveList.find(executive => executive.id === this.currentUser.data.cejecutivo);
-        if (selectedMe) {
-            this.genericFormGroup.get('cejecutivo')?.setValue(selectedMe.id);
-            this.genericFormGroup.get('xejecutivo')?.setValue(selectedMe.value);
-            this.genericFormGroup.get('pcomision_e')?.setValue('');
-            this.genericFormGroup.get('pcomision_p')?.setValue('');
-            this.genericFormGroup.get('pcomision_e')?.setValue('60');
-            this.genericFormGroup.get('pcomision_p')?.setValue('40');
-
-            this.comisionEjecutivo = selectedMe.comision
-
-            const mprima = this.receiptData.mdistribucion;
-            const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-            const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-
-            const primaCalculada_p = mprima * pcomision_p / 100;
-            const primaCalculada_e = mprima * pcomision_e / 100;
-
-            if(pcomision_p != 0){
-              this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-            }
-
-            if(pcomision_p != 0){
-              this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-            }
-            const comision = primaCalculada_p * this.receiptData.bcv;
-            const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-            // Formatear con separadores de miles y decimales
-            this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }).format(comision);
-
-            // Formatear con separadores de miles y decimales
-            this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }).format(comisionE);
-
-            this.Agents = true;
-            this.getAgents();
-            this.commissionSumValidator();
-        }
-        this.executiveList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredExecutive = this.executiveControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterExecutive(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterExecutive(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.executiveList
-      .map(executive => executive.value)
-      .filter(executive => executive.toLowerCase().includes(filterValue));
-  }
-
-  onExecutiveSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedMet = this.executiveList.find(executive => executive.value === selectedValue);
-    if (selectedMet) {
-      this.genericFormGroup.get('cejecutivo')?.setValue(selectedMet.id);
-      this.genericFormGroup.get('xejecutivo')?.setValue(selectedMet.value);
-      this.genericFormGroup.get('pcomision_e')?.setValue('');
-      this.genericFormGroup.get('pcomision_p')?.setValue('');
-      this.genericFormGroup.get('pcomision_e')?.setValue('60');
-      this.genericFormGroup.get('pcomision_p')?.setValue('40');
-
-      this.comisionEjecutivo = selectedMet.comision
-
-      const mprima = this.receiptData.mdistribucion;
-      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-
-      const primaCalculada_p = mprima * pcomision_p / 100;
-      const primaCalculada_e = mprima * pcomision_e / 100;
-
-      if(pcomision_p != 0){
-        this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-      }
-
-      if(pcomision_p != 0){
-        this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      }
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      this.Agents = true;
-      this.activaEliminarEjecutivo = true;
-      this.getAgents();
-      this.commissionSumValidator();
-      // if(this.comisionesDivididas.length > 0){
-      //   this.commisionSumValidatorAgents(); 
-      // }else{
-         
-      // }
-
-    }
-  }
-
-  getAgents(){
-    const ejecutive = this.genericFormGroup.get('cejecutivo')?.value;
-    this.http.get(environment.apiUrl + `/api/v1/valrep/agents/${ejecutive}`).subscribe((response: any) => {
-      if (response.data.agents) {
-        this.agentsList = [];
-        this.agentsList = response.data.agents.map((item: any) => ({
-          id: item.cagente,
-          value: item.xagente,
-          pcomision_a: item.pcomision
-        }))
-        this.agentsList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredAgents = this.agentsControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterAgents(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterAgents(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.agentsList
-      .map(agents => agents.value)
-      .filter(agents => agents.toLowerCase().includes(filterValue));
-  }
-
-  onAgentsSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedAgents = this.agentsList.find(agents => agents.value === selectedValue);
-    if (selectedAgents) {
-      this.genericFormGroup.get('cagente')?.setValue(selectedAgents.id);
-      this.genericFormGroup.get('xagente')?.setValue(selectedAgents.value);
-      this.genericFormGroup.get('pcomision_p')?.setValue(this.comisionProductor);
-      this.genericFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo);
-      this.genericFormGroup.get('pcomision_a')?.setValue(selectedAgents.pcomision_a);
-
-      const mprima = this.receiptData.mdistribucion;
-      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-      const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
-
-      const primaCalculada_p = mprima * pcomision_p / 100;
-      const primaCalculada_e = mprima * pcomision_e / 100;
-      const primaCalculada_a = mprima * pcomision_a / 100;
-
-      if(pcomision_p != 0){
-        this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-      }
-
-      if(pcomision_p != 0){
-        this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      }
-
-      if(pcomision_a != 0){
-        this.genericFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
-      }
-
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-      const comisionA = primaCalculada_a * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_a_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionA);
-
-      this.activaEliminarAgente = true;
-      this.commissionSumValidator();
-    }
-  }
-
-  // onSelectionChange(event: any) {
-  //   this.selectedAgents = event.value;
-
-  //   this.comisionesDivididas = this.selectedAgents.map((item: any) => ({
-  //     valor: item.value,
-  //     comision: item.pcomision_a / this.selectedAgents.length
-  //   }));
-
-  //   this.genericFormGroup.get('pcomision_p')?.setValue(this.comisionProductor)
-  //   this.genericFormGroup.get('pcomision_e')?.setValue(this.comisionEjecutivo)
-  //   this.commisionSumValidatorAgents();
-
-  //   this.cdr.detectChanges();
-  // }
-
-  // onCommissionChange(comision: any, index: number) {
-  //   this.comisionesDivididas[index].comision = comision;
-  //   console.log(comision)
-  // }
-
-  
-  getCoverage(){
-    this.http.post(environment.apiUrl + `/api/v1/valrep/coverage/${this.receiptData.cramo}`, null).subscribe((response: any) => {
-      if (response.data.coverage) {
-        this.coverageList = [];
-        this.coverageList = response.data.coverage.map((item: any) => ({
-          id: item.ccobertura,
-          value: item.xcobertura, 
-        }))
-        this.coverageList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredCoverage = this.coverageControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCoverage(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCoverage(value: any): string[] {
-    const filterValue = value.toLowerCase();
-    return this.coverageList
-      .map(coverage => coverage.value)
-      .filter(coverage => coverage.toLowerCase().includes(filterValue));
-  }
-
-  onCoverageSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selected = this.coverageList.find(coverage => coverage.value === selectedValue);
-    if (selected) {
-      this.genericFormGroup.get('ccobertura')?.setValue(selected.id);
-    }
-  }
-
-
   commissionSumValidator() {
     const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
-    const sum = pcomision_p + pcomision_e + pcomision_a;
-
-    this.commissionSum = sum;
+    this.commissionSum = pcomision_p;
 
     if(this.commissionSum > 100){
       Swal.fire({
@@ -431,11 +161,8 @@ export class ContainerGenericComponent implements OnInit {
 
   commissionSumValidator2() {
     const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
-    const sum = pcomision_p + pcomision_e + pcomision_a;
 
-    this.commissionSum = sum;
+    this.commissionSum = pcomision_p;
 
     if(this.commissionSum > 100){
       Swal.fire({
@@ -450,60 +177,23 @@ export class ContainerGenericComponent implements OnInit {
   }
 
   calculatePremiums(){
-    const mprima = this.receiptData.mdistribucion;
+    const mprima = this.receiptData.mprimaext;
     const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-    const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-    const pcomision_a = parseFloat(this.genericFormGroup.get('pcomision_a')?.value) || 0;
 
     const primaCalculada_p = mprima * pcomision_p / 100;
 
-    if(pcomision_p != 0){
+    let mcomision_bs = primaCalculada_p 
       this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2))
-    }
-    
-    if(pcomision_e != 0){
-      this.getCalculosComisionEjecutivo(mprima, pcomision_e)
-    }
+      if(this.receiptData.cmoneda != 1 ) {
+        mcomision_bs = primaCalculada_p * this.receiptData.bcv;
+      }
+      // Formatear con separadores de miles y decimales
+      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(mcomision_bs);
 
-    if(pcomision_a != 0){
-      this.getCalculosComisionAgentes(mprima, pcomision_a)
-    }
   }
-
-  getCalculosComisionEjecutivo(mprima: any, pcomision_e: any){
-    const primaCalculada_e = mprima * pcomision_e / 100;
-    if(pcomision_e != 0){
-      this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2))
-      console.log(this.genericFormGroup.get('mcomision_e')?.value)
-    }
-  }
-
-  getCalculosComisionAgentes(mprima: any, pcomision_a: any){
-    const primaCalculada_a = mprima * pcomision_a / 100;
-    if(pcomision_a != 0){
-      this.genericFormGroup.get('mcomision_a')?.setValue(primaCalculada_a.toFixed(2))
-    }
-  }
-
-
-  // commisionSumValidatorAgents(){
-  //   const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-  //   const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-  //   const sumaComisionesIndividuales = this.comisionesDivididas.reduce((total, comision) => total + comision.comision, 0);
-  //   // Sumar las comisiones del productor y del ejecutivo
-  //   const sumaComisionesTotales = sumaComisionesIndividuales + pcomision_p + pcomision_e;
-
-  //   this.commissionSum = sumaComisionesTotales
-
-  //   if(this.commissionSum > 100){
-  //     Swal.fire({
-  //       title: "Se excedió del 100% de Comisión",
-  //       icon: "warning",
-  //       confirmButtonText: "<strong>Aceptar</strong>",
-  //       confirmButtonColor: "#334ebd",
-  //     });
-  //   }
-  // }
 
   convertStringToNumber(str: any): number {
     if (str == null) {
@@ -526,70 +216,6 @@ export class ContainerGenericComponent implements OnInit {
     return isNaN(result) ? 0 : result;
   }
 
-  removeRecord(type: string) {
-    if (type === 'ejecutivo') {
-      this.activaEliminarAgente = false;
-      this.activaEliminarEjecutivo = false;
-      this.Agents = false;
-      this.genericFormGroup.get('cejecutivo')?.setValue('');
-      this.genericFormGroup.get('xejecutivo')?.setValue('');
-      this.getExecutive();
-      this.genericFormGroup.get('pcomision_e')?.setValue('');
-      this.genericFormGroup.get('pcomision_p')?.setValue('100');
-      this.genericFormGroup.get('mcomision_p')?.setValue(this.receiptData.mdistribucion.toFixed(2));
-      this.genericFormGroup.get('mcomision_e')?.setValue('');
-      this.genericFormGroup.get('cagente')?.setValue('');
-      this.genericFormGroup.get('xagente')?.setValue('');
-      
-      this.genericFormGroup.get('pcomision_a')?.setValue('');
-
-      const comision = this.receiptData.mdistribucion * this.receiptData.bcv;
-    
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      this.mcomision_e_bs = ''
-
-    } else if (type === 'agente') {
-      this.genericFormGroup.get('cagente')?.setValue('');
-      this.genericFormGroup.get('xagente')?.setValue('');
-      this.genericFormGroup.get('pcomision_a')?.setValue('');
-      this.genericFormGroup.get('pcomision_e')?.setValue('60');
-      this.genericFormGroup.get('pcomision_p')?.setValue('40');
-
-      this.getAgents();
-
-      const pcomision_p = parseFloat(this.genericFormGroup.get('pcomision_p')?.value) || 0;
-      const pcomision_e = parseFloat(this.genericFormGroup.get('pcomision_e')?.value) || 0;
-
-      const primaCalculada_p = this.receiptData.mdistribucion * pcomision_p / 100;
-      const primaCalculada_e = this.receiptData.mdistribucion * pcomision_e / 100;
-
-      this.genericFormGroup.get('mcomision_p')?.setValue(primaCalculada_p.toFixed(2));
-      this.genericFormGroup.get('mcomision_e')?.setValue(primaCalculada_e.toFixed(2));
-      this.genericFormGroup.get('mcomision_a')?.setValue('');
-
-      const comision = primaCalculada_p * this.receiptData.bcv;
-      const comisionE = primaCalculada_e * this.receiptData.bcv;
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_p_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comision);
-
-      // Formatear con separadores de miles y decimales
-      this.mcomision_e_bs = new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(comisionE);
-
-      this.mcomision_a_bs = '';
-    }
-  }
 
   addFile(id:any): void {
     const newImgInput = <HTMLInputElement> document.getElementById(id)
@@ -649,8 +275,8 @@ export class ContainerGenericComponent implements OnInit {
       xcorreo_tomador: this.receiptData.xcorreo.toUpperCase() || null,
       cmoneda: this.receiptData.cmoneda,
       cramo: this.receiptData.cramo,
+      cproducto: this.receiptData.cproducto,
       xpoliza: this.receiptData.xpoliza,
-      ccobertura: this.genericFormGroup.get('ccobertura')?.value,
       fdesde_pol: fdesdeString,
       fhasta_pol: fhastaString,
       femision: new Date(),
@@ -664,11 +290,11 @@ export class ContainerGenericComponent implements OnInit {
       mcomision: this.convertStringToNumber(this.mcomision_p_bs),
       mcomisionext: parseFloat(this.genericFormGroup.get('mcomision_p')?.value),
       cproductor: this.genericFormGroup.get('cproductor')?.value,
-      pcomision_p: this.convertStringToNumber(this.genericFormGroup.get('pcomision_p')?.value),
-      cejecutivo: this.genericFormGroup.get('cejecutivo')?.value,
-      pcomision_e: this.convertStringToNumber(this.genericFormGroup.get('pcomision_e')?.value),
-      cagente: this.genericFormGroup.get('cagente')?.value,
-      pcomision_a: this.genericFormGroup.get('pcomision_a')?.value,
+      pcomision_p: 100,
+      cejecutivo: null,
+      pcomision_e: 0,
+      cagente: null,
+      pcomision_a: 0,
       cusuario: this.currentUser.data.cusuario,
       documentos: this.documentosList
     }
@@ -733,7 +359,7 @@ export class ContainerGenericComponent implements OnInit {
         confirmButtonColor: "#5e72e4",
       }).then((result) => {
           if (result.isConfirmed) {
-              location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+              // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
           }
       });
     })

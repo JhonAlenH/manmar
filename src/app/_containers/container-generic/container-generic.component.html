@@ -1,32 +1,5 @@
 <div class="row justify-content-center">
     <mat-tab-group mat-align-tabs="center">
-      <mat-tab> 
-        <ng-template mat-tab-label>
-            <mat-icon>checklist</mat-icon>
-               Coberturas
-        </ng-template>
-        <form [formGroup]="genericFormGroup">
-            <div class="d-flex justify-content-center py-3">
-                <div class="col-sm-8">
-                  <mat-form-field class="example-full-width">
-                    <mat-label>Coberturas</mat-label>
-                    <input type="text"
-                          placeholder="Seleccione Coberturas"
-                          aria-label="Seleccione"
-                          matInput
-                          [formControl]="coverageControl"
-                          [matAutocomplete]="coverage"
-                          >
-                          <mat-autocomplete #coverage="matAutocomplete" (optionSelected)="onCoverageSelection($event)">
-                            <mat-option *ngFor="let coverage of filteredCoverage | async" [value]="coverage">
-                              {{ coverage }}
-                            </mat-option>
-                          </mat-autocomplete>
-                  </mat-form-field>
-                </div>
-            </div>
-        </form>
-      </mat-tab>
       <mat-tab>  
         <ng-template mat-tab-label>
             <mat-icon>receiptlong</mat-icon>
@@ -52,7 +25,7 @@
       <mat-tab> 
         <ng-template mat-tab-label>
           <i class="fi fi-sr-users" style="font-size: 20px;"></i>
-          &nbsp;Participaciones
+          &nbsp;Participación
         </ng-template> 
         <form [formGroup]="genericFormGroup">
           <!-- <div style="display: flex; flex-direction: column; align-items: center;"> -->
@@ -242,97 +215,12 @@
                 </div>
               </div>
             </div> 
-          
-            <!-- Segundo grupo -->
-            <div class="group">
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Ejecutivos</mat-label>
-                  <input type="text"
-                        placeholder="Seleccione Ejecutivos"
-                        aria-label="Seleccione"
-                        matInput
-                        [formControl]="executiveControl"
-                        [matAutocomplete]="executive"
-                        formControlName="xejecutivo"
-                        required>
-                  <mat-autocomplete #executive="matAutocomplete" (optionSelected)="onExecutiveSelection($event)">
-                    <mat-option *ngFor="let executive of filteredExecutive | async" [value]="executive">
-                      {{ executive }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </mat-form-field>
-              </div>
-          
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Comisión</mat-label>
-                  <input matInput placeholder="Coloque Comision para Ejecutivo" formControlName="pcomision_e" (change)="commissionSumValidator2()">
-                </mat-form-field>
-              </div>
-          
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Monto Prima por Comisión</mat-label>
-                  <input matInput formControlName="mcomision_e">
-                </mat-form-field>
-                <div class="small-text">
-                  <h5>Monto en Bs: {{mcomision_e_bs}}</h5>
-                </div>
-              </div>
-
-              <i class="fi fi-rs-trash icon-trash" 
-                 *ngIf="activaEliminarEjecutivo"
-                 (click)="removeRecord('ejecutivo')"></i>
-            </div>
-          
-            <!-- Tercer grupo -->
-            <div class="group" *ngIf="Agents">
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Agentes</mat-label>
-                  <input type="text"
-                        placeholder="Seleccione Agente"
-                        aria-label="Seleccione"
-                        matInput
-                        [formControl]="agentsControl"
-                        [matAutocomplete]="agents"
-                        formControlName="xagente"
-                        required>
-                  <mat-autocomplete #agents="matAutocomplete" (optionSelected)="onAgentsSelection($event)">
-                    <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent">
-                      {{ agent }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </mat-form-field>
-              </div>
-          
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Comisión</mat-label>
-                  <input matInput placeholder="Coloque Comision para Agente" formControlName="pcomision_a" (change)="commissionSumValidator2()">
-                </mat-form-field>
-              </div>
-          
-              <div class="field">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Monto Prima por Comisión</mat-label>
-                  <input matInput formControlName="mcomision_a">
-                </mat-form-field>
-                <div class="small-text">
-                  <h5>Monto en Bs: {{mcomision_a_bs}}</h5>
-                </div>
-              </div>
-              <i class="fi fi-rs-trash icon-trash" 
-                 *ngIf="activaEliminarAgente"
-                 (click)="removeRecord('agente')"></i>
-            </div>
            
           </div>
           
           
           <div class="text-center py-3">
-            <p><strong>Total Monto a Distribuir: </strong>{{MontoADistribuir}}</p>
+            <p><strong>Total Monto a Distribuir: </strong>{{genericFormGroup.get('mcomision_p')?.value}}</p>
             <p><strong>Total Porcentaje de Comisión: </strong>{{commissionSum}}%</p>
           </div>
         </form>

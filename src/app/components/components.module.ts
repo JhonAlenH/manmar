@@ -6,23 +6,35 @@ import { FooterComponent } from './footer/footer.component';
 import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MaestrosComponent } from './maestros/maestros.component';
+import { TableListComponent } from './table-list/table-list.component';
+import { ItemFormComponent } from './item-form/item-form.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MaterialExampleModule } from '../material.module';
 
 @NgModule({
   imports: [
     CommonModule,
     RouterModule,
-    NgbModule
+    NgbModule,
+    MatButtonModule,
+    MatPaginatorModule,
+    MaterialExampleModule,
   ],
   declarations: [
     FooterComponent,
     NavbarComponent,
     SidebarComponent,
-    MaestrosComponent
+    MaestrosComponent,
+    TableListComponent,
+    ItemFormComponent,
   ],
   exports: [
     FooterComponent,
     NavbarComponent,
-    SidebarComponent
+    SidebarComponent,
+    TableListComponent,
+    ItemFormComponent
   ]
 })
 export class ComponentsModule { }
