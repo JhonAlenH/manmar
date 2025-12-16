@@ -41,46 +41,12 @@ export class DetailContractsComponent implements OnInit {
   public pageReceiptSize = 5;
   paginatedList: any[] = [];
   currentUser!: any
-  ramo!: any;
-  asegurado!: any;
-  tomador!: any;
-  id!: any;
-  fdesde!: any;
-  msuma_aseg!: any;
-  msuma_aseg_bs!: any;
-  mprima_bs!: any;
-  edit: boolean = true;
-  primaAlterada: boolean = false;
-  metodologia!: any;
-  cmetodologia!: any;
-  rutaCapture!: any;
-
-  cedentsList: any[] = [];
-  coinsList: any[] = [];
-  methodOfPaymentList: any[] = [];
+  id:any;
+  // // // Datos de la póliza
+  data_poliza:any = null;
+  // // //
   receiptList: any[] = [];
   documentosList: any = []
-
-  cedentsControl = new FormControl('');
-  coinsControl = new FormControl('');
-  methodOfPaymentControl = new FormControl('');
-
-  filteredCedents!: Observable<string[]>;
-  filteredCoins!: Observable<string[]>;
-  filteredMethodOfPayment!: Observable<string[]>;
-
-  detailFormGroup = this._formBuilder.group({
-    ccedente: [{ value: '', disabled: true }],
-    xcedente: [{ value: '', disabled: true }],
-    cmoneda: [{ value: '', disabled: true }],
-    xmoneda: [{ value: '', disabled: true }],
-    fdesde: [{ value: '', disabled: true }],
-    fhasta: [{ value: '', disabled: true }],
-    xpoliza: [{ value: '', disabled: true }],
-    msuma_aseg: [{ value: '', disabled: true }],
-    mprima: [{ value: '', disabled: true }],
-  });
-
 
   constructor( private _formBuilder: FormBuilder,
                private http: HttpClient,
@@ -94,8 +60,7 @@ export class DetailContractsComponent implements OnInit {
                 if(this.router.getCurrentNavigation().extras.state == undefined){
                   this.router.navigate(['search-contract']);
                 }else{
-                  this.id = this.router.getCurrentNavigation().extras.state.id;       
-                  this.fdesde = this.router.getCurrentNavigation().extras.state.fdesde_pol;  
+                  this.id = this.router.getCurrentNavigation().extras.state.id;        
                 }
                 dateAdapter.setLocale('es');
 
@@ -134,33 +99,13 @@ export class DetailContractsComponent implements OnInit {
   
     if (this.id && this.currentUser) {
       this.values();
-      this.getCedents();
-      this.getCoins();
-      this.receiptPoliza()
     } 
   }
 
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
-      this.ramo = response.data.xramo;
-      this.asegurado = response.data.xnombre;
-      this.tomador = response.data.xtomador;
-      this.msuma_aseg_bs = parseFloat(response.data.msuma);
-      this.mprima_bs = response.data.mprima;
-      this.metodologia = response.data.xmetodologiapago
-      this.cmetodologia = response.data.cmetodologia
+      this.data_poliza = response.data;
       this.documentosList = response.documents
-
-      this.detailFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(response.data.fdesde_pol))
-      this.detailFormGroup.get('ccedente')?.setValue(response.data.ccedente)
-      this.detailFormGroup.get('xcedente')?.setValue(response.data.xcedente)
-      this.detailFormGroup.get('cmoneda')?.setValue(response.data.cmoneda)
-      this.detailFormGroup.get('xmoneda')?.setValue(response.data.xmoneda)
-      this.detailFormGroup.get('xpoliza')?.setValue(response.data.xpoliza)
-      this.detailFormGroup.get('msuma_aseg')?.setValue(this.formatNumber(response.data.msumaext));
-      this.detailFormGroup.get('mprima')?.setValue(this.formatNumber(response.data.mprimaext));
-
-      this.calcularFechaHasta();
     })
   }
 
@@ -170,86 +115,11 @@ export class DetailContractsComponent implements OnInit {
     }
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
-
-  getCedents(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/cedents', null).subscribe((response: any) => {
-      if (response.data.cedents) {
-        this.cedentsList = response.data.cedents.map((item: any) => ({
-          id: item.ccedente,
-          value: item.xcedente,
-        }))
-
-        const selectedCedents = this.cedentsList.find(cedents => cedents.id === this.detailFormGroup.get('ccedente')?.value);
-        if (selectedCedents) {
-            this.detailFormGroup.get('ccedente')?.setValue(selectedCedents.id);
-            this.detailFormGroup.get('xcedente')?.setValue(selectedCedents.value);
-        }
-        this.cedentsList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredCedents = this.cedentsControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCedents(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCedents(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.cedentsList
-      .map(cedent => cedent.value)
-      .filter(cedent => cedent.toLowerCase().includes(filterValue));
-  }
-
-  onCedentSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selected = this.cedentsList.find(cedents => cedents.value === selectedValue);
-    if (selected) {
-      this.detailFormGroup.get('ccedente')?.setValue(selected.id);
-      this.detailFormGroup.get('xcedente')?.setValue(selected.value);
-    }
-  }
-
-  getCoins(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/coins', null).subscribe((response: any) => {
-      if (response.data.coins) {
-        this.coinsList = response.data.coins.map((item: any) => ({
-          id: item.cmoneda,
-          value: item.xmoneda,
-        }))
-        const selectedCoin = this.coinsList.find(coin => coin.id === this.detailFormGroup.get('cmoneda')?.value);
-        if (selectedCoin) {
-            this.detailFormGroup.get('cmoneda')?.setValue(selectedCoin.id);
-            this.detailFormGroup.get('xmoneda')?.setValue(selectedCoin.value);
-        }
-        this.coinsList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredCoins = this.coinsControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCoins(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCoins(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.coinsList
-      .map(coins => coins.value)
-      .filter(coins => coins.toLowerCase().includes(filterValue));
-  }
-
-  onCoinSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selected = this.coinsList.find(coins => coins.value === selectedValue);
-    if (selected) {
-      this.detailFormGroup.get('cmoneda')?.setValue(selected.id);
-      this.detailFormGroup.get('xmoneda')?.setValue(selected.value);
-    }
-  }
-
+  /*
   receipt() {
     let dataCompleta = {
       id: this.id,
-      fdesde: this.detailFormGroup.get('fdesde')?.value,
+      fdesde: this.data_poliza.poliza.fdesde.value,
       mprima: this.detailFormGroup.get('mprima')?.value,
     }
     this.http.post(environment.apiUrl + '/api/v1/emission/receipt-update', dataCompleta).subscribe((response: any) => {
@@ -263,73 +133,7 @@ export class DetailContractsComponent implements OnInit {
       }
     })
   }
-
-  receiptPoliza() {
-    this.http.post(environment.apiUrl + `/api/v1/emission/search-receipt/${this.id}`, null).subscribe((response: any) => {
-      if(response.status){
-        this.receiptList = [];
-        this.receiptList = response.receipt.map((item: any) => ({
-          nrecibo: item.nrecibo,
-          fdesde_rec: this.dateUtilService.formatDateDate(new Date(item.fdesde_rec)),
-          fhasta_rec: this.dateUtilService.formatDateDate(new Date(item.fhasta_rec)),
-          fcobrorec: item.fcobrorec ? this.dateUtilService.formatDateToday(new Date(item.fcobrorec)) : '',  // Si no hay valor, dejar en blanco
-          fcobrorectext: item.fcobrorec,
-          iestadorec: item.iestadorec,
-          iestadorec_t: item.iestadorec === 'P' ? 'Pendiente' : item.iestadorec === 'C' ? 'Cobrado' : '',
-          color: item.iestadorec === 'P' ? 'red' : item.iestadorec === 'C' ? 'green' : 'black',
-          mprima: item.mprimaext.toFixed(2),
-          xruta_rec: item.xruta_rec,
-        }));
-
-        this.updatePaginatedList();
-      }
-    })
-  }
-
-  updatePaginatedList() {
-    const startIndex = (this.pageReceipt - 1) * this.pageReceiptSize;
-    const endIndex = startIndex + this.pageReceiptSize;
-    this.paginatedList  = this.receiptList.slice(startIndex, endIndex);
-  }
-
-  onPageChange() {
-    this.updatePaginatedList();
-  }
-
-  calcularFechaHasta() {
-    const fechaDesde = new Date(this.detailFormGroup.get('fdesde')?.value);
-    const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
-    const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
-    this.detailFormGroup.get('fhasta')?.setValue(fechaHastaISO);
-    this.fdesde = new Date(fechaDesde.getFullYear(), fechaDesde.getMonth(), fechaDesde.getDate());
-  }
-
-  editContract(){
-    this.edit = false
-    this.detailFormGroup.get('fdesde')?.enable();
-    this.detailFormGroup.get('fhasta')?.enable();
-    this.detailFormGroup.get('ccedente')?.enable();
-    this.detailFormGroup.get('xcedente')?.enable();
-    this.detailFormGroup.get('cmoneda')?.enable();
-    this.detailFormGroup.get('xmoneda')?.enable();
-    this.detailFormGroup.get('xpoliza')?.enable();
-    this.detailFormGroup.get('msuma_aseg')?.enable();
-    this.detailFormGroup.get('mprima')?.enable();
-  }
-
-  cancelEdit(){
-    this.values()
-    this.edit = true;
-    this.detailFormGroup.get('fdesde')?.disable();
-    this.detailFormGroup.get('fhasta')?.disable();
-    this.detailFormGroup.get('ccedente')?.disable();
-    this.detailFormGroup.get('xcedente')?.disable();
-    this.detailFormGroup.get('cmoneda')?.disable();
-    this.detailFormGroup.get('xmoneda')?.disable();
-    this.detailFormGroup.get('xpoliza')?.disable();
-    this.detailFormGroup.get('msuma_aseg')?.disable();
-    this.detailFormGroup.get('mprima')?.disable();
-  }
+  */
 
   formatWithSeparator(event: any) {
     let value = event.target.value.replace(/\D/g, '');
@@ -337,30 +141,30 @@ export class DetailContractsComponent implements OnInit {
     event.target.value = value;
 
     const numericValue = Number(value.replace(/\./g, ''));
-    this.msuma_aseg = numericValue;
+    this.data_poliza.poliza.msumaext = numericValue;
   }
 
   formatPrima(event: any) {
     let value = event.target.value.replace(/\D/g, '');
     value = (value / 100).toFixed(2);
     event.target.value = value;
-    this.detailFormGroup.get('mprima')?.setValue(event.target.value)
+    this.data_poliza.poliza.mprimaext = parseFloat(value);
   }
 
   SumBs(){
-    const msuma_aseg_bs = this.msuma_aseg * this.bcv;
+    const msuma_aseg_bs = this.data_poliza.poliza.msumaext * this.bcv;
 
     const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(msuma_aseg_bs);
 
-    this.msuma_aseg_bs = formattedMsumaAsegBs;
-    this.msuma_aseg_bs = this.convertStringToNumber(this.msuma_aseg_bs)
+    this.data_poliza.poliza.msuma = formattedMsumaAsegBs;
+    this.data_poliza.poliza.msuma = this.convertStringToNumber(this.data_poliza.poliza.msuma)
   }
 
   PrimaBs(){
-    const mprima = parseFloat(this.detailFormGroup.get('mprima')?.value);
+    const mprima = parseFloat(this.data_poliza.poliza.mprimaext);
     
     const mprima_bs = mprima * this.bcv;
 
@@ -369,10 +173,8 @@ export class DetailContractsComponent implements OnInit {
       maximumFractionDigits: 2 
     }).format(mprima_bs);
 
-    this.mprima_bs = formattedPriBs;
-    this.mprima_bs = this.convertStringToNumber(this.mprima_bs)
-    this.primaAlterada = true;
-    this.receipt()
+    this.data_poliza.poliza.mprima = formattedPriBs;
+    this.data_poliza.poliza.mprima = this.convertStringToNumber(this.data_poliza.poliza.mprima)
   }
 
   convertStringToNumber(str: any): number {
@@ -418,46 +220,6 @@ export class DetailContractsComponent implements OnInit {
   
   removeNote(index:any){
     this.documentosList.splice(index, 1)
-  }
-
-  onSubmit(){
-    let data = {
-      id: this.id,
-      fdesde_pol: this.detailFormGroup.get('fdesde')?.value,
-      fhasta_pol: this.detailFormGroup.get('fhasta')?.value,
-      ccedente: this.detailFormGroup.get('ccedente')?.value,
-      cmoneda: this.detailFormGroup.get('cmoneda')?.value,
-      xpoliza: this.detailFormGroup.get('xpoliza')?.value,
-      msumaext: this.convertStringToNumber(this.detailFormGroup.get('msuma_aseg')?.value),
-      msuma: this.msuma_aseg_bs,
-      mprimaext: parseFloat(this.detailFormGroup.get('mprima')?.value),
-      mprima: this.mprima_bs,
-      ptasa_cambio: this.bcv
-    }
-    this.http.post(environment.apiUrl + `/api/v1/emission/update`, data).subscribe((response: any) => {
-      if(response.status){
-        Swal.fire({
-          icon: "success",
-          title: `${response.message}`,
-          showConfirmButton: false,
-          timer: 4000
-        }).then((result) => {
-          location.reload()
-        });
-      }
-    },(err) => {
-      Swal.fire({
-        icon: "error",
-        title: "Ha ocurrido un Error",
-        text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
-        confirmButtonText: "<strong>Aceptar</strong>",
-        confirmButtonColor: "#fdd213d1",
-      }).then((result) => {
-          if (result.isConfirmed) {
-              location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
-          }
-      });
-    })
   }
 
   onCobrar(item: any) {

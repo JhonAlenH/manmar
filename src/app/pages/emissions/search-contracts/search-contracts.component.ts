@@ -141,10 +141,13 @@ export class SearchContractsComponent implements OnInit {
     }
 
     this.http.post(environment.apiUrl + '/api/v1/emission/search', data).subscribe((response: any) => {
-      if (response.data.contracts) {console.log(response.data.contracts)
+      if (response.data.contracts) {
+        
         const correctedContracts = response.data.contracts.map((contract: any) => {
-          contract.fdesde_pol = this.dateUtilService.adjustDate(contract.fdesde);
-          contract.fhasta_pol = this.dateUtilService.adjustDate(contract.fhasta);
+          const fdesde = contract.polizas[0]?.fdesde;
+          const fhasta = contract.polizas[0]?.fhasta;
+          contract.fdesde_pol = this.dateUtilService.adjustDate(fdesde);
+          contract.fhasta_pol = this.dateUtilService.adjustDate(fhasta);
           return contract;
         });
   
