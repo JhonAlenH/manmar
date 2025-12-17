@@ -50,6 +50,11 @@ const routes: Routes =[
       {
         path: '',
         loadChildren: () => 
+            import('../../components/maestros/clientes/clientes.module').then(x=>x.ClientesModule)
+      },
+      {
+        path: '',
+        loadChildren: () => 
             import('../../components/maestros/agentes/agentes.module').then(x=>x.AgentesModule)
       },
       {

@@ -33,6 +33,7 @@ export const MY_FORMATS = {
 })
 export class DetailContractsComponent implements OnInit {
   bcv!: any;
+  cmoneda: string = 'Bs.'
 
   public pageNotas = 1;
   public pageNotasSize = 5;
@@ -69,7 +70,7 @@ export class DetailContractsComponent implements OnInit {
                 .then(data => {
                   data.forEach((item: any) => {
                     if (item.fuente === 'oficial') {
-                      this.bcv = item.promedio;
+                      this.bcv = Number((item.promedio).toFixed(2));
                     }
                   });
                 })
@@ -89,7 +90,7 @@ export class DetailContractsComponent implements OnInit {
       .then(data => {
         data.data.forEach((item: any) => {
           if (item.cmoneda === '$') {
-            this.bcv = item.ptasamon;
+            this.bcv = Number((item.ptasamon).toFixed(2));
           }
         });
       })
@@ -105,6 +106,25 @@ export class DetailContractsComponent implements OnInit {
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
       this.data_poliza = response.data;
+      for (const poliza of this.data_poliza.polizas) {
+        if(poliza.iestado == 'N'){poliza.estado = 'Vigente'}
+        if(poliza.iestado == 'R'){poliza.estado = 'Renovada'}
+        if(poliza.iestado == 'A'){poliza.estado = 'Anulada'}
+        let mcomision = 0, mcomisionext = 0
+
+        for (const recibo of poliza.recibos) {
+          if(recibo.iestadorec == 'P'){recibo.estado = 'Pendiente'}
+          if(recibo.iestadorec == 'C'){recibo.estado = 'Cobrado'}
+          if(recibo.iestadorec == 'A'){recibo.estado = 'Anulado'}
+          mcomision += recibo.mcomision
+          mcomisionext += recibo.mcomisionext
+        }
+
+        poliza.pcomision = poliza.recibos[0].pcomision
+        poliza.mcomision = mcomision
+        poliza.mcomisionext = mcomisionext
+      }
+      
       this.documentosList = response.documents
     })
   }
@@ -147,8 +167,7 @@ export class DetailContractsComponent implements OnInit {
   formatPrima(event: any) {
     let value = event.target.value.replace(/\D/g, '');
     value = (value / 100).toFixed(2);
-    event.target.value = value;
-    this.data_poliza.poliza.mprimaext = parseFloat(value);
+    return value
   }
 
   SumBs(){

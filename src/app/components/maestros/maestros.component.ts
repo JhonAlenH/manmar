@@ -26,9 +26,10 @@ export class MaestrosComponent implements OnInit {
     },
     {
       text: 'Personas', icon: 'fa-regular fa-user' , id: 'personas', items: [
-        {text: 'Asegurados', icon: 'fa-sharp fa-regular fa-circle-user', url: 'asegurados'},
+        {text: 'Clientes', icon: 'fa-sharp fa-regular fa-circle-user', url: 'clientes'},
+        // {text: 'Asegurados', icon: 'fa-sharp fa-regular fa-circle-user', url: 'asegurados'},
         {text: 'Agentes', icon: 'fa-sharp fa-solid fa-circle-user', url: 'agentes'},
-        {text: 'Ejecutivos', icon: 'fa-solid fa-people-group', url: 'ejecutivos'}, 
+        // {text: 'Ejecutivos', icon: 'fa-solid fa-people-group', url: 'ejecutivos'}, 
         {text: 'Productores', icon: 'fa-solid fa-ring', url: 'productores'},
         {text: 'Tomadores', icon: 'fa-sharp fa-solid fa-circle-user', url: 'tomadores'},
       ]

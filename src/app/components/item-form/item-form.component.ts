@@ -137,58 +137,9 @@ export class ItemFormComponent implements OnInit {
 
     const formIdContainer = document.forms[this.formId]
     // send item form container
-    formIdContainer.addEventListener('submit', (e)=> {
-      this.loading = true
-      e.preventDefault()
-      const formData = new FormData(formIdContainer)
-      var formBody: any = []
-      // encode form to send in format xrlencoded
-      for (var pair of formData.entries()) {
-        var encodedKey = encodeURIComponent(pair[0]);
-        if(typeof pair[1] == 'string') {
-          var encodedValue = encodeURIComponent(pair[1]);
-        } else {
-          var encodedValue = encodeURIComponent('');
-        }
-        var encodedBdType = this.fields.find(field => field.key == pair[0])
-        if (!encodedBdType) {
-          encodedBdType = this.fields.find(field => field.key_form == pair[0])
-
-        }
-        encodedBdType = encodeURIComponent(encodedBdType.bdType)
-        if (this.ccompania != '1') {
-          if(pair[0] == 'ccompania') {
-            
-          }
-        }
-        formBody.push(encodedKey + "=" + encodedValue + "[]bd_type=" + encodedBdType);
-      }
-
-      formBody = formBody.join("&");
-      // url to create in create mode 
-      if(this.mode == 'create') {
-        this.http.post(environment.apiUrl + this.createUrl, formBody, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            }
-        }).subscribe((data) => {
-        //   this.openSnackBar(data['message'])
-          this.loading = false
-          if(this.dataComponent) {
-            this.created.emit();
-          }
-        })
-      } else if(this.mode == 'edit') {
-        this.http.post(environment.apiUrl + this.editUrl, formBody, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            }
-        }).subscribe((data) => {
-        //   this.openSnackBar(data['message'])
-          this.loading = false
-          
-        })
-      }
+    formIdContainer.addEventListener('submit', (e:any)=> {
+      this.submitForm(e, formIdContainer)
+      
     })
   }
   // get info about the fields pased by routing file
@@ -658,6 +609,59 @@ export class ItemFormComponent implements OnInit {
           this.disabled = true
         }
       }
+    }
+  }
+  submitForm(e:any, formIdContainer:any) {
+    this.loading = true
+    e.preventDefault()
+    const formData = new FormData(formIdContainer)
+    var formBody: any = []
+    // encode form to send in format xrlencoded
+    for (var pair of formData.entries()) {
+      var encodedKey = encodeURIComponent(pair[0]);
+      if(typeof pair[1] == 'string') {
+        var encodedValue = encodeURIComponent(pair[1]);
+      } else {
+        var encodedValue = encodeURIComponent('');
+      }
+      var encodedBdType = this.fields.find(field => field.key == pair[0])
+      if (!encodedBdType) {
+        encodedBdType = this.fields.find(field => field.key_form == pair[0])
+
+      }
+      encodedBdType = encodeURIComponent(encodedBdType.bdType)
+      if (this.ccompania != '1') {
+        if(pair[0] == 'ccompania') {
+          
+        }
+      }
+      formBody.push(encodedKey + "=" + encodedValue + "[]bd_type=" + encodedBdType);
+    }
+
+    formBody = formBody.join("&");
+    // url to create in create mode 
+    if(this.mode == 'create') {
+      this.http.post(environment.apiUrl + this.createUrl, formBody, {
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+      }).subscribe((data) => {
+      //   this.openSnackBar(data['message'])
+        this.loading = false
+        if(this.dataComponent) {
+          this.created.emit();
+        }
+      })
+    } else if(this.mode == 'edit') {
+      this.http.post(environment.apiUrl + this.editUrl, formBody, {
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+      }).subscribe((data) => {
+      //   this.openSnackBar(data['message'])
+        this.loading = false
+        
+      })
     }
   }
 }

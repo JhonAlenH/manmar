@@ -198,7 +198,7 @@ export class AdministratorComponent implements OnInit {
     .then(data => {
       data.forEach((item: any) => {
         if (item.fuente === 'oficial') {
-          this.bcv = item.promedio;
+          this.bcv = Number((item.promedio).toFixed(2));
         }
       });
     })
@@ -219,7 +219,7 @@ export class AdministratorComponent implements OnInit {
         .then(data => {
           data.data.forEach((item: any) => {
             if (item.cmoneda === '$') {
-              this.bcv = item.ptasamon;
+              this.bcv = Number((item.ptasamon).toFixed(2));
             }
           });
   

@@ -38,6 +38,7 @@ export class EmissionsComponent implements OnInit {
   public copy: string;
   currentUser!: any
   bcv!: any;
+  cmoneda: string = 'Bs.'
 
   cedentsList: any[] = [];
   tradeList: any[] = [];
@@ -310,7 +311,7 @@ export class EmissionsComponent implements OnInit {
     .then(data => {
       data.forEach((item: any) => {
         if (item.fuente === 'oficial') {
-          this.bcv = item.promedio;
+          this.bcv = Number((item.promedio).toFixed(2));
         }
       });
     })
@@ -337,7 +338,7 @@ export class EmissionsComponent implements OnInit {
       .then(data => {
         data.data.forEach((item: any) => {
           if (item.cmoneda === '$') {
-            this.bcv = item.ptasamon;
+            this.bcv = Number((item.ptasamon).toFixed(2));
           }
         });
       })
@@ -349,10 +350,8 @@ export class EmissionsComponent implements OnInit {
       this.getCedents();
       this.getTrades();
       this.getCoins();
-      this.getTakers();
       this.getMethodOfPayment()
-      this.getState();
-      this.getInsurance();
+      this.getClients();
     }
   }
 
@@ -446,7 +445,7 @@ export class EmissionsComponent implements OnInit {
       if (response.data.trade) {
         for (let i = 0; i < response.data.trade.length; i++) {
           this.tradeList.push({
-            id: response.data.trade[i].cramo,
+            id: response.data.trade[i].id,
             value: response.data.trade[i].xramo,
           });
         }
@@ -603,21 +602,33 @@ export class EmissionsComponent implements OnInit {
       .filter(coins => coins.toLowerCase().includes(filterValue));
   }
 
-  getInsurance(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/insurance', null).subscribe((response: any) => {
+  getClients(){
+    this.http.post(environment.apiUrl + '/api/v1/valrep/clients', null).subscribe((response: any) => {
       this.insuranceList = []
-      if (response.data.insurance) {
-        for (let i = 0; i < response.data.insurance.length; i++) {
+      if (response.data.clients) {
+        for (const client of response.data.clients) {
           this.insuranceList.push({
-            id: response.data.insurance[i].casegurado,
-            value: `${response.data.insurance[i].xnombre} ${response.data.insurance[i].xapellido || ''}`.trim(),
-            xdocu: response.data.insurance[i].cci_rif
+            id: client.id,
+            value: `${`${client.xnombre} ${client.xapellido || ''}`.trim()} (${client.cci_rif})`,
+            xdocu: client.cci_rif
+          });
+          this.takersList.push({
+            id: client.id,
+            value: `${`${client.xnombre} ${client.xapellido || ''}`.trim()} (${client.cci_rif})`,
+            xdocu: client.cci_rif
           });
         }
+        
         this.insuranceList.sort((a, b) => a.value > b.value ? 1 : -1)
+        this.takersList.sort((a, b) => a.value > b.value ? 1 : -1)
+
         this.filteredInsurance = this.insuranceControl.valueChanges.pipe(
           startWith(''),
           map(value => this._filterInsurance(value || ''))
+        );
+        this.filteredTakers = this.takersControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterTakers(value || ''))
         );
       }
     });
@@ -647,26 +658,6 @@ export class EmissionsComponent implements OnInit {
       this.emissionsFormGroup.get('xcedula')?.setValue(selectedinsurance.xdocu);
       // this.searchTakers()
     }
-  }
-
-  getTakers(){
-    this.http.post(environment.apiUrl + '/api/v1/valrep/takers', null).subscribe((response: any) => {
-      this.takersList = []
-      if (response.data.takers) {
-        for (let i = 0; i < response.data.takers.length; i++) {
-          this.takersList.push({
-            id: response.data.takers[i].ctomador,
-            value: `${response.data.takers[i].xnombre} ${response.data.takers[i].xnombre|| ''}`.trim(),
-            xdocu: response.data.takers[i].cci_rif,
-          });
-        }
-        this.takersList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredTakers = this.takersControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterTakers(value || ''))
-        );
-      }
-    });
   }
 
   private _filterTakers(value: string): string[] {
@@ -761,83 +752,6 @@ export class EmissionsComponent implements OnInit {
     if (selectedMet) {
       this.emissionsFormGroup.get('cmetodologiapago')?.setValue(selectedMet.id);
       this.receipt()
-    }
-  }
-
-  getState(){
-    let data = {
-      cpais: 58
-    };
-    this.stateList = []
-    this.http.post(environment.apiUrl + '/api/v1/valrep/state', data).subscribe((response: any) => {
-      if (response.data.state) {
-        this.stateList = response.data.state.map((state: any) => ({
-          id: state.cestado,
-          value: state.xestado
-        }));
-
-        const selectedState = this.stateList.find(state => state.id === 1);
-        if (selectedState) {
-          this.emissionsFormGroup.get('cestado')?.setValue(selectedState.id);
-          this.emissionsFormGroup.get('xestado')?.setValue(selectedState.value);
-          this.getCity();
-        }
-        this.stateList.sort((a, b) => a.value > b.value ? 1 : -1)
-        this.filteredState = this.stateControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterState(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterState(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.stateList
-      .map(state => state.value)
-      .filter(state => state.toLowerCase().includes(filterValue));
-  }
-
-  onStateSelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedState = this.stateList.find(state => state.value === selectedValue);
-    if (selectedState) {
-      this.emissionsFormGroup.get('cestado')?.setValue(selectedState.id);
-      this.getCity();
-    }
-  }
-
-  getCity(){
-    let data = {
-      // cpais: 58,
-      cestado: this.emissionsFormGroup.get('cestado')?.value
-    };
-    this.http.post(environment.apiUrl + '/api/v1/valrep/city', data).subscribe((response: any) => {
-      if (response.data.city) {
-        this.cityList = response.data.city.map((city: any) => ({
-          id: city.cciudad,
-          value: city.xciudad
-        }));
-        this.filteredCity = this.cityControl.valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterCity(value || ''))
-        );
-      }
-    });
-  }
-
-  private _filterCity(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.cityList
-      .map(city => city.value)
-      .filter(city => city.toLowerCase().includes(filterValue));
-  }
-
-  onCitySelection(event: any) {
-    const selectedValue = event.option.value;
-    const selectedCity = this.cityList.find(city => city.value === selectedValue);
-    if (selectedCity) {
-      this.emissionsFormGroup.get('cciudad')?.setValue(selectedCity.id);
     }
   }
 

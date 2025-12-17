@@ -101,7 +101,7 @@
               <p class="text-center negrita-oscura w-100">
                 <strong>Datos del Asegurado</strong>
               </p>
-              <div class="col-md-4">
+              <div class="col-md-11">
                 <mat-form-field class="example-full-width">
                   <mat-label>Asegurado</mat-label>
                   <input type="text"
@@ -117,26 +117,6 @@
                             {{ insurance }}
                           </mat-option>
                         </mat-autocomplete>
-                </mat-form-field>
-              </div>
-
-              <div class="col-md-3">
-                <mat-form-field style="display: block">
-                  <mat-label>Identificación</mat-label>
-                  <mat-select formControlName="itipodoc">
-                    <mat-option value="V">V</mat-option>
-                    <mat-option value="P">P</mat-option>
-                    <mat-option value="E">E</mat-option>
-                    <mat-option value="J">J</mat-option>
-                    <mat-option value="C">C</mat-option>
-                    <mat-option value="G">G</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div class="col-md-4">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Documento de Identidad</mat-label>
-                  <input matInput placeholder="Documento de Identidad" formControlName="xcedula">
                 </mat-form-field>
               </div>
               <div class="col-md-1 d-flex justify-content-end">
@@ -155,7 +135,7 @@
               <p class="text-center negrita-oscura">
                 <strong>Datos del Tomador</strong>
               </p>
-              <div class="col-md-4">
+              <div class="col-md-11">
                 <mat-form-field class="example-full-width">
                   <mat-label>Tomador</mat-label>
                   <input type="text"
@@ -171,26 +151,6 @@
                       {{ takers }}
                     </mat-option>
                   </mat-autocomplete>
-                </mat-form-field>
-              </div>
-            
-              <div class="col-md-3">
-                <mat-form-field style="display: block">
-                  <mat-label>Identificación</mat-label>
-                  <mat-select formControlName="itipodoc_t">
-                    <mat-option value="V">V</mat-option>
-                    <mat-option value="P">P</mat-option>
-                    <mat-option value="E">E</mat-option>
-                    <mat-option value="J">J</mat-option>
-                    <mat-option value="C">C</mat-option>
-                    <mat-option value="G">G</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div class="col-md-4">
-                <mat-form-field class="example-full-width">
-                  <mat-label>Documento de Identidad</mat-label>
-                  <input matInput placeholder="Documento de Identidad" formControlName="xdoc_identificacion_t" (change)="rif()">
                 </mat-form-field>
               </div>
               <div class="col-md-1 d-flex justify-content-end">
