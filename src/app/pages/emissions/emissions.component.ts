@@ -93,29 +93,31 @@ export class EmissionsComponent implements OnInit {
   msuma_aseg_bs: any;
   comisionProducto: any;
   
-
-  aseguradoDataComponent = {
-    title: 'Crear Nuevo Asegurado',
+  clientDataComponent = {
+    title: 'Crear Nuevo Cliente',
     mode: 'create',
-    mainUrl: '/api/v1/maestros/asegurados/get/',
-    createUrl: '/api/v1/maestros/asegurados/create', 
-    formId: 'create_asegurados',
+    mainUrl: '/api/v1/maestros/clientes/get/',
+    createUrl: '/api/v1/maestros/clientes/create', 
+    formId: 'create_clientes',
     fields: [      
       {
         type: 'text',
         fieldName: 'Nombre', class: 'col-md-6',
+        required: true,
         key: 'xnombre',
         bdType: 'text'
       },
       {
         type: 'text',
         fieldName: 'Apellido', class: 'col-md-6',
+        required: false,
         key: 'xapellido',
         bdType: 'text'
       },
       {
-        fieldName: 'Identificacion', class: 'col-md-1',
         type: 'simple-select',
+        fieldName: 'Identificacion', class: 'col-md-1',
+        required: true,
         values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
         key: 'itipodoc',
         bdType: 'text'
@@ -123,94 +125,31 @@ export class EmissionsComponent implements OnInit {
       {
         type: 'text',
         fieldName: 'Cedula', class: 'col-md-2',
-        key: 'xcedula',
+        required: true,
+        key: 'cci_rif',
         bdType: 'text'
       },
       {
         type: 'date',
         fieldName: 'Fecha Nacimiento', class: 'col-md-3',
+        required: false,
         key: 'fnacimiento',
-        bdType: 'text'
-      },
-      {
-        type: 'simple-select',
-        fieldName: 'Estado Civil', class: 'col-md-2',
-        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
-        key: 'iestado_civil',
-        bdType: 'text'
-      },
-      {
-        type: 'text',
-        fieldName: 'Teléfono', class: 'col-md-2',
-        key: 'xtelefono1',
-        bdType: 'text'
-      },
-      {
-        type: 'email',
-        fieldName: 'Correo', class: 'col-md-2',
-        key: 'xcorreo',
-        bdType: 'text'
-      },
-      {
-        type: 'text',
-        fieldName: 'Direccion', class: 'col-md-12',
-        key: 'xdireccion',
-        bdType: 'text'
-      },    
-    ]
-  } 
-  tomadorDataComponent = {
-    title: 'Crear Nuevo Tomador',
-    mode: 'create',
-    mainUrl: '/api/v1/maestros/tomadores/get/',
-    createUrl: '/api/v1/maestros/tomadores/create', 
-    formId: 'create_tomadores',
-    fields: [
-      {
-        type: 'text',
-        fieldName: 'Activo', class: 'col-md-0',
-        defaultValue: 1,
-        form_control: true,
-        key: 'bactivo',
-        bdType: 'number'
-      },
-      {
-        type: 'text',
-        fieldName: 'Tomador', class: 'col-md-8',
-        key: 'xtomador',
-        bdType: 'text'
-      },
-      {
-        type: 'text',
-        fieldName: 'Profesion', class: 'col-md-4',
-        key: 'xprofesion',
-        bdType: 'text'
-      },
-      {
-        fieldName: 'Identificacion', class: 'col-md-1',
-        type: 'simple-select',
-        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
-        key: 'icedula',
-        bdType: 'text'
-      },
-      {
-        type: 'text',
-        fieldName: 'Cedula', class: 'col-md-2',
-        key: 'xcedula',
         bdType: 'text'
       },
       { 
         type: 'select',
         fieldName: 'País', class: 'col-md-2',
-        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezuela', value: '58'}], 
+        required: false,
+        url: '/api/v1/maestros/paises',
         binding_change_fields: ['cestado'],
         change_fields: ['cestado', 'cciudad'],
         key: 'cpais',
         bdType: 'number'
       },
       {
-        fieldName: 'Estado', class: 'col-md-2',
         type: 'select',
+        fieldName: 'Estado', class: 'col-md-2',
+        required: false,
         key: 'cestado',
         url_id: 'cpais',
         binding_change_fields: ['cciudad'],
@@ -219,39 +158,53 @@ export class EmissionsComponent implements OnInit {
         bdType: 'number'
       },
       {
-        fieldName: 'Ciudad', class: 'col-md-2',
         type: 'select',
+        fieldName: 'Ciudad', class: 'col-md-2',
+        required: false,
         key: 'cciudad',
         url_id: 'cestado',
         url: '/api/v1/maestros/ciudades',
         bdType: 'number'
       },
       {
+        type: 'simple-select',
+        fieldName: 'Estado Civil', class: 'col-md-2',
+        required: false,
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}, {text: 'N/A', value: 'N'}], 
+        key: 'iestado_civil',
+        bdType: 'text'
+      },
+      {
+        type: 'simple-select',
+        fieldName: 'Sexo', class: 'col-md-2',
+        required: false,
+        values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Femenino', value: 'F'}, {text: 'Masculino', value: 'M'}, {text: 'N/A', value: 'N'}], 
+        key: 'isexo',
+        bdType: 'text'
+      },
+      {
         type: 'text',
         fieldName: 'Teléfono', class: 'col-md-2',
+        required: false,
         key: 'xtelefono',
         bdType: 'text'
       },
       {
-        type: 'text',
-        fieldName: 'Zona Postal', class: 'col-md-1',
-        key: 'xzona_postal',
-        bdType: 'text'
-      },
-      {
         type: 'email',
-        fieldName: 'Correo', class: 'col-md-2',
+        fieldName: 'Correo', class: 'col-md-6',
+        required: false,
         key: 'xcorreo',
         bdType: 'text'
       },
       {
         type: 'text',
-        fieldName: 'Direccion', class: 'col-md-10',
+        fieldName: 'Direccion', class: 'col-md-6',
+        required: false,
         key: 'xdireccion',
         bdType: 'text'
-      },    
+      }
     ]
-  } 
+  }
 
   emissionsFormGroup = this._formBuilder.group({
     ccedente: [''],

@@ -35,6 +35,7 @@
                     [type]="field.type"
                     [attr.name]="field.key"
                     [id]="field.key"
+                    step="any"
                     *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')"
                     [value]="field.defaultValue"
                     (change)="checkIfComplete()"
@@ -48,7 +49,7 @@
                     [id]="field.key"
                     [attr.name]="field.key"
                     *ngIf="(field.binding_change_fields) && (field.type == 'select' || field.type == 'simple-select')"
-                    (change)="setOtherValue($event, field.binding_change_fields)"
+                    (change)="setOtherValue($event, field.key, field.binding_change_fields)"
                   >
                     <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                       {{option.text}}
@@ -65,7 +66,7 @@
                     *ngIf="(!field.binding_change_fields) && (field.type == 'select' || field.type == 'simple-select')"
                     (change)="checkOtherValue($event, field.key)"
                   >
-                    <option *ngFor="let option of field.options" [value]="option.value">
+                    <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                       {{option.text}}
                     </option>
                   </select>

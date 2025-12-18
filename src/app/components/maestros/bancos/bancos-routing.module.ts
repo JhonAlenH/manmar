@@ -11,10 +11,11 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         url: '/api/v1/maestros/bancos/search',
         tableId: 'bancos',
         tableInfo: [
-          { headerName: 'Codigo', key: 'cbanco', primary_key: true },
+          { headerName: 'ID', key: 'cbanco', primary_key: true },
+          { headerName: 'Codigo de Banco', key: 'cod_bancario' },
           { headerName: 'Nombre del Banco', key: 'xbanco' },
-          { headerName: 'Nacional o Extranjetro', key: 'itipo' },
-          { headerName: 'País', key: 'cpais' },
+          { headerName: 'Moneda', key: 'xmoneda' },
+          { headerName: 'País', key: 'xpais' },
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -32,21 +33,33 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         fields: [      
           {
             type: 'text',
-            fieldName: 'Nombre del Banco', class: 'col-md-8',
+            fieldName: 'Nombre del Banco', class: 'col-md-6',
+            required: true,
             key: 'xbanco',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: '(N) Nacional, (E)) Extranjero', class: 'col-md-2',
-            key: 'itipo',
+            fieldName: 'Codigo Bancario', class: 'col-md-2',
+            required: false,
+            key: 'cod_bancario',
             bdType: 'text'
           },
-          {
-            type: 'text',
+          { 
+            type: 'select',
             fieldName: 'País', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/paises',
             key: 'cpais',
-            bdType: 'text'
+            bdType: 'number'
+          },
+          { 
+            type: 'select',
+            fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/monedas',
+            key: 'cmoneda',
+            bdType: 'number'
           }
         ]
       } 
@@ -59,25 +72,36 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         editUrl: '/api/v1/maestros/bancos/edit/',
         formId: 'edit_bancos',
         disableUrl: '/api/v1/maestros/bancos/disable/',
-        fields: [     
-
+        fields: [      
           {
             type: 'text',
-            fieldName: 'Nombre del Banco', class: 'col-md-8',
+            fieldName: 'Nombre del Banco', class: 'col-md-6',
+            required: true,
             key: 'xbanco',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: '(N) Nacional, (E)) Extranjero', class: 'col-md-2',
-            key: 'itipo',
+            fieldName: 'Codigo Bancario', class: 'col-md-2',
+            required: false,
+            key: 'cod_bancario',
             bdType: 'text'
           },
-          {
-            type: 'text',
+          { 
+            type: 'select',
             fieldName: 'País', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/paises',
             key: 'cpais',
-            bdType: 'text'
+            bdType: 'number'
+          },
+          { 
+            type: 'select',
+            fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/monedas',
+            key: 'cmoneda',
+            bdType: 'number'
           }
         ]
       } 

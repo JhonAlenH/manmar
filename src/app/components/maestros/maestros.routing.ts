@@ -45,22 +45,7 @@ const routes: Routes =[
       {
         path: '',
         loadChildren: () => 
-            import('../../components/maestros/asegurados/asegurados.module').then(x=>x.AseguradosModule)
-      },
-      {
-        path: '',
-        loadChildren: () => 
             import('../../components/maestros/clientes/clientes.module').then(x=>x.ClientesModule)
-      },
-      {
-        path: '',
-        loadChildren: () => 
-            import('../../components/maestros/agentes/agentes.module').then(x=>x.AgentesModule)
-      },
-      {
-        path: '',
-        loadChildren: () => 
-            import('../../components/maestros/ejecutivos/ejecutivos.module').then(x=>x.EjecutivosModule)
       },
       {
         path: '',
@@ -70,7 +55,7 @@ const routes: Routes =[
       {
         path: '',
         loadChildren: () => 
-            import('../../components/maestros/tomadores/tomadores.module').then(x=>x.TomadoresModule)
+            import('../../components/maestros/productos/productos.module').then(x=>x.ProductosModule)
       },
       {
         path: '',

@@ -11,7 +11,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         url: '/api/v1/maestros/ramos/search',
         tableId: 'ramos',
         tableInfo: [
-          { headerName: 'Ramo', key: 'cramo', primary_key: true },
+          { headerName: 'Ramo', key: 'id', primary_key: true },
           { headerName: 'Descripción', key: 'xramo' },
         ],
         extraInfo: [

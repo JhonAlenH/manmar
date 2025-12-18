@@ -37,6 +37,7 @@ export class ItemFormComponent implements OnInit {
   disabled: boolean = true
   multipleValuesFields: any = null
   searchFieldIndex:any  = 0
+  currentUser!: any
 
   sub = new Subscription()
   constructor(
@@ -58,6 +59,9 @@ export class ItemFormComponent implements OnInit {
 //   }
 
   async ngOnInit() {
+    const storedSession = localStorage.getItem('user');
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
     
     // this.openSnackBarLoading()
     // this.ccompania = localStorage.getItem("ccompania");
@@ -110,8 +114,8 @@ export class ItemFormComponent implements OnInit {
     }
     
     if(this.mode == 'info') {
-        this.http.get(environment.apiUrl + this.mainUrl+this.itemId, {}).subscribe(async (data) => {
-        this.itemData = data['data'].result
+        this.http.get(environment.apiUrl + this.mainUrl+this.itemId, {}).subscribe(async (response:any) => {
+        this.itemData = response.data
         await this.getFieldsData()
         // this.closeSnackBar()
       })
@@ -147,40 +151,26 @@ export class ItemFormComponent implements OnInit {
   async getFieldsData() {
     this.multipleValuesFields = this.fields.filter(field => field.type == 'multiple-select')
     for(const field of this.fields) {
+      field.defaultValue = ''
       // select options added
       if(field.type.includes('select')){
         if(field.url) {
           if(!field.url_id && !field.url_ids) {
-            this.http.get(environment.apiUrl + field.url).subscribe(async (data:any) => {
-              field.options = await data.data
-              if(this.mode == 'create') {
-                if(field.defaultValue != '') {
-                  const selected = field.options.find(option => option.value == field.defaultValue)
-                  selected.selected = true
-                } else {
-                  // field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
-                }
-              } else {
-                // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
-              }
-              if(this.mode == 'info') {
-                if(typeof this.itemData[field.key] == 'number'){
-                  const optionSelected = field.options.find(option => option.value == this.itemData[field.key])
-                  if (optionSelected) {
-                    field.defaultValue = this.itemData[field.key]
-                    optionSelected.selected = true
-                  }
-                }
-              }
+            const responseRaw = await fetch(environment.apiUrl + field.url,{
+              "method": "GET", "headers": { "CONTENT-TYPE": "Application/json"}
             })
+            const response = await responseRaw.json()
+            
+            if (response.status) {
+              console.log('data', response.data)
+              field.options = response.data
+              if(field.defaultValue != '') {
+                const selected = field.options.find(option => option.value == field.defaultValue)
+                selected.selected = true
+              }
+            }
           } else {
             field.defaultValue = ''
-            if(field.type == 'multiple-select'){
-              field.defaultValue = this.itemData[field.key_form]
-              field.addedValuesIds = this.itemData[field.added_data_key]
-            } else {
-              field.defaultValue = this.itemData[field.key]
-            }
             if(field.type == 'auto-select') {
               field.options.unshift({text: 'Selecciona una opcion...', value: ''})
             }
@@ -193,37 +183,39 @@ export class ItemFormComponent implements OnInit {
               if (selected){
                 selected.selected = true
               }
-              // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
-            } else {
-              // field.options.unshift({text: 'Selecciona una opcion...', value: '', selected: true})
             }
-          } else {
-            // field.options.unshift({text: 'Selecciona una opcion...', value: ''})
-          }
+          } 
           
         }
         if(field.type == 'multiple-select') {
           field.addedValues = []
         }
-      } else {
-        if(this.mode == 'info'){
-          // added default value to inputs to the info mode
-          if(typeof this.itemData[field.key] == 'string' || typeof this.itemData[field.key] == 'number') {
-            field.defaultValue = this.itemData[field.key]
-          }
-        }
-      } 
-      if(this.mode == 'create'){
-        if (field.form_control) {
-          field.display = 'none'
-        } else {
-          field.display = 'block'
-        }
-        if (!field.defaultValue){
-          field.defaultValue = ''
-        }
       }
+
+      if (field.form_control) { field.display = 'none' } else { field.display = 'block' }
+      if (!field.defaultValue){ field.defaultValue = '' }
       
+    }
+    if(this.mode == 'info') {
+      for (const field of this.fields) {
+        if(field.type.includes('select')) {
+          if(field.type == 'multiple-select'){
+            field.defaultValue = this.itemData[field.key_form]
+            field.addedValuesIds = this.itemData[field.added_data_key]
+          } else {
+            const optionSelected = field.options.find(option => option.value == this.itemData[field.key])
+            console.log(optionSelected)
+            if (optionSelected) {
+              field.defaultValue = this.itemData[field.key]
+              optionSelected.selected = true
+            }
+          }
+        } else {
+          field.defaultValue = this.itemData[field.key]
+        }
+        // if(this.mode == 'info') {
+        // }
+      }
     }
   }
   // change item (adde or available) to multipleSelect field
@@ -299,20 +291,23 @@ export class ItemFormComponent implements OnInit {
       }
     }
     if(searchedField.url){
+      console.log(searchedField)
       searchedField.options = []
       let extraParam = ''
       if(value) {
         extraParam = '/' + value
       } else {
+        let fields = []
         if(searchedField.url_ids) {
-          for (const id of searchedField.url_ids) {
-            const fieldToGet = this.fields.find(item => item.key == id)
-            if(fieldToGet) {
-              extraParam += '/' + fieldToGet.defaultValue
-            }
-          }
+          fields = searchedField.url_ids
         } else {
-          extraParam = '/' + searchedField.url_id
+          fields.push(searchedField.url_id)
+        }
+        for (const id of fields) {
+          const fieldToGet = this.fields.find(item => item.key == id)
+          if(fieldToGet) {
+            extraParam += '/' + fieldToGet.defaultValue
+          }
         }
       }
       this.http.get(environment.apiUrl + searchedField.url + extraParam).subscribe((data:any) => {
@@ -436,7 +431,9 @@ export class ItemFormComponent implements OnInit {
     this.checkIfComplete()
   }
   // called in the front of mutiple selection
-  setOtherValue(event:any, fieldBindingKeys:any) {
+  setOtherValue(event:any, fieldKey:any, fieldBindingKeys:any) {
+    const findedItem = this.fields.find(field => field.key == fieldKey)
+    findedItem.defaultValue = event.currentTarget.value
     for (const fieldBindingKey of fieldBindingKeys) {
       
       const field = this.fields.find(fieldT => fieldT.key == fieldBindingKey)
@@ -466,6 +463,7 @@ export class ItemFormComponent implements OnInit {
   }
   checkOtherValue(event:any, fieldKey: any) {
     const searchedField = this.fields.find(field => field.key == fieldKey)
+    searchedField.defaultValue = event.currentTarget.value
 
     if(searchedField.form_control_value) {
       const searchedFieldToChange = this.fields.find(field => field.key == searchedField.form_control_value.key)
@@ -487,7 +485,7 @@ export class ItemFormComponent implements OnInit {
     findedItem.defaultValue = event.currentTarget.value
     // Actualizar otros campos cuyo valor dependen de este
     if(event.currentTarget.value && fieldBindingKeys) {
-      this.setOtherValue(event, fieldBindingKeys)
+      this.setOtherValue(event, fieldKey, fieldBindingKeys)
     }
     // Actualizar campos que se ven afectados por un cambio de este campo
     if(findedItem.change_fields) {
@@ -604,9 +602,12 @@ export class ItemFormComponent implements OnInit {
     for (var p of formData) {
       let name = p[0];
       let value = p[1];
-      if(name != 'cmarca' && name != 'cmodelo' && name != 'cversion'){
-        if(!value) {
-          this.disabled = true
+      const field = this.fields.find((item:any) => item.key == name)
+      if(field?.required) {
+        if(name != 'cmarca' && name != 'cmodelo' && name != 'cversion'){
+          if(!value) {
+            this.disabled = true
+          }
         }
       }
     }
@@ -635,9 +636,10 @@ export class ItemFormComponent implements OnInit {
           
         }
       }
-      formBody.push(encodedKey + "=" + encodedValue + "[]bd_type=" + encodedBdType);
+      formBody.push(encodedKey + "=" + encodedValue);
     }
-
+    formBody.push('cusuario_creacion' + "=" + this.currentUser.cusuario);
+    
     formBody = formBody.join("&");
     // url to create in create mode 
     if(this.mode == 'create') {
@@ -650,17 +652,21 @@ export class ItemFormComponent implements OnInit {
         this.loading = false
         if(this.dataComponent) {
           this.created.emit();
+        } else {
+          window.history.back()
+          // window.location.reload()
         }
       })
     } else if(this.mode == 'edit') {
       this.http.post(environment.apiUrl + this.editUrl, formBody, {
           headers: {
-              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
           }
       }).subscribe((data) => {
       //   this.openSnackBar(data['message'])
         this.loading = false
-        
+        window.history.back()
+        // window.location.reload()
       })
     }
   }

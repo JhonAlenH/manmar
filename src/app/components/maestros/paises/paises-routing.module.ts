@@ -29,8 +29,9 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         formId: 'create_pais',
         fields: [      
           {
-            fieldName: 'Nombre del País', class: 'col-md-6',
             type: 'text',
+            fieldName: 'Nombre del País', class: 'col-md-12',
+            required: true,
             key: 'xpais',
             bdType: 'text'
           }
@@ -45,10 +46,11 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         editUrl: '/api/v1/maestros/paises/edit/',
         formId: 'edit_paises',
         disableUrl: '/api/v1/paises/disable/',
-        fields: [     
+        fields: [
           {
-            fieldName: 'Nombre del País', class: 'col-md-6',
             type: 'text',
+            fieldName: 'Nombre del País', class: 'col-md-12',
+            required: true,
             key: 'xpais',
             bdType: 'text'
           }

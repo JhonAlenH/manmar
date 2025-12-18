@@ -34,18 +34,21 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Nombre', class: 'col-md-6',
+            required: true,
             key: 'xnombre',
             bdType: 'text'
           },
           {
             type: 'text',
             fieldName: 'Apellido', class: 'col-md-6',
+            required: false,
             key: 'xapellido',
             bdType: 'text'
           },
           {
-            fieldName: 'Identificacion', class: 'col-md-1',
             type: 'simple-select',
+            fieldName: 'Identificacion', class: 'col-md-1',
+            required: true,
             values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
             key: 'itipodoc',
             bdType: 'text'
@@ -53,34 +56,31 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Cedula', class: 'col-md-2',
+            required: true,
             key: 'cci_rif',
             bdType: 'text'
           },
           {
             type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
+            required: false,
             key: 'fnacimiento',
-            bdType: 'text'
-          },
-          {
-            type: 'simple-select',
-            fieldName: 'Estado Civil', class: 'col-md-2',
-            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
-            key: 'iestado_civil',
             bdType: 'text'
           },
           { 
             type: 'select',
             fieldName: 'País', class: 'col-md-2',
-            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezuela', value: '58'}], 
+            required: false,
+            url: '/api/v1/maestros/paises',
             binding_change_fields: ['cestado'],
             change_fields: ['cestado', 'cciudad'],
             key: 'cpais',
             bdType: 'number'
           },
           {
-            fieldName: 'Estado', class: 'col-md-2',
             type: 'select',
+            fieldName: 'Estado', class: 'col-md-2',
+            required: false,
             key: 'cestado',
             url_id: 'cpais',
             binding_change_fields: ['cciudad'],
@@ -89,28 +89,48 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
             bdType: 'number'
           },
           {
-            fieldName: 'Ciudad', class: 'col-md-2',
             type: 'select',
+            fieldName: 'Ciudad', class: 'col-md-2',
+            required: false,
             key: 'cciudad',
             url_id: 'cestado',
             url: '/api/v1/maestros/ciudades',
             bdType: 'number'
           },
           {
+            type: 'simple-select',
+            fieldName: 'Estado Civil', class: 'col-md-2',
+            required: false,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}, {text: 'N/A', value: 'N'}], 
+            key: 'iestado_civil',
+            bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Sexo', class: 'col-md-2',
+            required: false,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Femenino', value: 'F'}, {text: 'Masculino', value: 'M'}, {text: 'N/A', value: 'N'}], 
+            key: 'isexo',
+            bdType: 'text'
+          },
+          {
             type: 'text',
             fieldName: 'Teléfono', class: 'col-md-2',
+            required: false,
             key: 'xtelefono',
             bdType: 'text'
           },
           {
             type: 'email',
-            fieldName: 'Correo', class: 'col-md-2',
+            fieldName: 'Correo', class: 'col-md-6',
+            required: false,
             key: 'xcorreo',
             bdType: 'text'
           },
           {
             type: 'text',
             fieldName: 'Direccion', class: 'col-md-6',
+            required: false,
             key: 'xdireccion',
             bdType: 'text'
           }
@@ -129,18 +149,21 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Nombre', class: 'col-md-6',
+            required: true,
             key: 'xnombre',
             bdType: 'text'
           },
           {
             type: 'text',
             fieldName: 'Apellido', class: 'col-md-6',
+            required: false,
             key: 'xapellido',
             bdType: 'text'
           },
           {
-            fieldName: 'Identificacion', class: 'col-md-1',
             type: 'simple-select',
+            fieldName: 'Identificacion', class: 'col-md-1',
+            required: true,
             values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
             key: 'itipodoc',
             bdType: 'text'
@@ -148,34 +171,31 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Cedula', class: 'col-md-2',
+            required: true,
             key: 'cci_rif',
             bdType: 'text'
           },
           {
             type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
+            required: false,
             key: 'fnacimiento',
-            bdType: 'text'
-          },
-          {
-            type: 'simple-select',
-            fieldName: 'Estado Civil', class: 'col-md-2',
-            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}], 
-            key: 'iestado_civil',
             bdType: 'text'
           },
           { 
             type: 'select',
             fieldName: 'País', class: 'col-md-2',
-            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezuela', value: '58'}], 
+            required: false,
+            url: '/api/v1/maestros/paises',
             binding_change_fields: ['cestado'],
             change_fields: ['cestado', 'cciudad'],
             key: 'cpais',
             bdType: 'number'
           },
           {
-            fieldName: 'Estado', class: 'col-md-2',
             type: 'select',
+            fieldName: 'Estado', class: 'col-md-2',
+            required: false,
             key: 'cestado',
             url_id: 'cpais',
             binding_change_fields: ['cciudad'],
@@ -184,28 +204,48 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
             bdType: 'number'
           },
           {
-            fieldName: 'Ciudad', class: 'col-md-2',
             type: 'select',
+            fieldName: 'Ciudad', class: 'col-md-2',
+            required: false,
             key: 'cciudad',
             url_id: 'cestado',
             url: '/api/v1/maestros/ciudades',
             bdType: 'number'
           },
           {
+            type: 'simple-select',
+            fieldName: 'Estado Civil', class: 'col-md-2',
+            required: false,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Soltero', value: 'S'}, {text: 'Casado', value: 'C'}, {text: 'Divorciado', value: 'D'}, {text: 'N/A', value: 'N'}], 
+            key: 'iestado_civil',
+            bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Sexo', class: 'col-md-2',
+            required: false,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Femenino', value: 'F'}, {text: 'Masculino', value: 'M'}, {text: 'N/A', value: 'N'}], 
+            key: 'isexo',
+            bdType: 'text'
+          },
+          {
             type: 'text',
             fieldName: 'Teléfono', class: 'col-md-2',
+            required: false,
             key: 'xtelefono',
             bdType: 'text'
           },
           {
             type: 'email',
-            fieldName: 'Correo', class: 'col-md-2',
+            fieldName: 'Correo', class: 'col-md-6',
+            required: false,
             key: 'xcorreo',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Direccion', class: 'col-md-12',
+            fieldName: 'Direccion', class: 'col-md-6',
+            required: false,
             key: 'xdireccion',
             bdType: 'text'
           }
