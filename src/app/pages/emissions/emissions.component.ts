@@ -77,8 +77,6 @@ export class EmissionsComponent implements OnInit {
   filteredInsurance!: Observable<string[]>;
 
   containerAuto: boolean = false;
-  containerSalud: boolean = false;
-  containerGeneric: boolean = false;
   takersInfo: boolean = false;
   insuredInfo: boolean = false;
   WhatsApp: boolean = false;
@@ -753,102 +751,39 @@ export class EmissionsComponent implements OnInit {
 
   receipt() {
     this.containerAuto = false;
-    this.containerGeneric = false;
     const {
-      ccedente, cramo,  cproducto, cmoneda, casegurado, xasegurado, fdesde, fhasta, itipodoc, 
-      xcedula, ctomador, xtomador, itipodoc_t, xdoc_identificacion_t, 
-      xprofesion, xrif, xdomicilio, cpais, cestado, cciudad, xzona_postal,
-      xdireccion, xcorreo, xcorreo_asegurado, xpoliza, msuma_aseg, msuma_aseg_bs, 
-      mprima, mprima_bs, cmetodologiapago, xtelefono_asegurado
+      ccedente, cramo, cproducto, cmoneda, fdesde, fhasta, ctomador, casegurado,
+      xpoliza, msuma_aseg, msuma_aseg_bs, mprima, mprima_bs, cmetodologiapago
     } = this.emissionsFormGroup.getRawValue();
 
     const mprimaNumeric = Number(mprima);
-    const montoDistribucion = mprimaNumeric * this.comisionProducto / 100;
+    const mcomision = mprimaNumeric * this.comisionProducto / 100;
   
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
-      if(Number(cramo) === 20){
-        this.containerAuto = true;
-        this.receiptData = {
-          fdesde: fdesde,
-          fhasta: fhasta,
-          cmetodologiapago: cmetodologiapago,
-          cramo: cramo,
-          cproducto: cproducto,
-          ccedente: ccedente,
-          cmoneda: cmoneda,
-          casegurado: casegurado,
-          xasegurado: xasegurado.toUpperCase(),
-          itipodoc: itipodoc,
-          xcedula: xcedula,
-          ctomador: ctomador,
-          xtomador: xtomador.toUpperCase(),
-          itipodoc_t: itipodoc_t,
-          xdoc_identificacion_t: xdoc_identificacion_t,
-          xprofesion: xprofesion.toUpperCase(),
-          xrif: xrif,
-          xdomicilio: xdomicilio.toUpperCase(),
-          cpais: cpais,
-          cestado: cestado,
-          cciudad: cciudad,
-          xzona_postal: xzona_postal,
-          xdireccion: xdireccion.toUpperCase(),
-          xcorreo: xcorreo.toUpperCase(),
-          xcorreo_asegurado: xcorreo_asegurado.toUpperCase(),
-          xpoliza: xpoliza,
-          msuma_aseg: msuma_aseg,
-          xtelefono_asegurado: xtelefono_asegurado,
-          msuma: msuma_aseg_bs,
-          msumaext: this.msuma_aseg,
-          mprima: mprima_bs,
-          mprimaext: mprima,
-          pcomision: this.comisionProducto,
-          bcv: this.bcv,
-          mdistribucion: montoDistribucion
-        }
-      }else{
-        this.containerGeneric = true;
-        this.receiptData = {
-          fdesde: fdesde,
-          fhasta: fhasta,
-          cmetodologiapago: cmetodologiapago,
-          cramo: cramo,
-          cproducto: cproducto,
-          ccedente: ccedente,
-          cmoneda: cmoneda,
-          casegurado: casegurado,
-          xasegurado: xasegurado,
-          itipodoc: itipodoc,
-          xcedula: xcedula,
-          ctomador: ctomador,
-          xtomador: xtomador,
-          itipodoc_t: itipodoc_t,
-          xdoc_identificacion_t: xdoc_identificacion_t,
-          xprofesion: xprofesion,
-          xrif: xrif,
-          xdomicilio: xdomicilio,
-          cpais: cpais,
-          cestado: cestado,
-          cciudad: cciudad,
-          xzona_postal: xzona_postal,
-          xdireccion: xdireccion,
-          xcorreo: xcorreo,
-          xcorreo_asegurado: xcorreo_asegurado,
-          xpoliza: xpoliza,
-          msuma_aseg: msuma_aseg,
-          xtelefono_asegurado: xtelefono_asegurado,
-          msuma: msuma_aseg_bs,
-          msumaext: this.msuma_aseg,
-          mprima: mprima_bs,
-          mprimaext: mprima,
-          pcomision: this.comisionProducto,
-          bcv: this.bcv,
-          mdistribucion: montoDistribucion
-        }
+      
+      this.containerAuto = true;
+      this.receiptData = {
+        fdesde: fdesde,
+        fhasta: fhasta,
+        cmetodologiapago: cmetodologiapago,
+        cramo: cramo,
+        cproducto: cproducto,
+        ccedente: ccedente,
+        cmoneda: cmoneda,
+        casegurado: casegurado,
+        ctomador: ctomador,
+        xpoliza: xpoliza,
+        msuma: msuma_aseg_bs,
+        msumaext: msuma_aseg,
+        mprima: mprima_bs,
+        mprimaext: mprima,
+        pcomision: this.comisionProducto,
+        bcv: this.bcv,
+        mcomision: mcomision
       }
 
     } else {
       this.containerAuto = false;
-      this.containerGeneric = false;
     }
   }
 
