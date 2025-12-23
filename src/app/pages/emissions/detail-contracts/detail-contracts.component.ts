@@ -44,7 +44,7 @@ export class DetailContractsComponent implements OnInit {
   currentUser!: any
   id:any;
   // // // Datos de la póliza
-  data_poliza:any = null;
+  poliza:any = null;
   // // //
   receiptList: any[] = [];
   documentosList: any = []
@@ -61,7 +61,7 @@ export class DetailContractsComponent implements OnInit {
                 if(this.router.getCurrentNavigation().extras.state == undefined){
                   this.router.navigate(['search-contract']);
                 }else{
-                  this.id = this.router.getCurrentNavigation().extras.state.id;        
+                  this.id = this.router.getCurrentNavigation().extras.state.cpoliza;        
                 }
                 dateAdapter.setLocale('es');
 
@@ -105,14 +105,14 @@ export class DetailContractsComponent implements OnInit {
 
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
-      this.data_poliza = response.data;
-      for (const poliza of this.data_poliza.polizas) {
-        if(poliza.iestado == 'N'){poliza.estado = 'Vigente'}
-        if(poliza.iestado == 'R'){poliza.estado = 'Renovada'}
-        if(poliza.iestado == 'A'){poliza.estado = 'Anulada'}
+      this.poliza = response.data;
+      for (const vigencia of this.poliza.vigencias) {
+        if(vigencia.iestado == 'N'){vigencia.estado = 'Vigente'}
+        if(vigencia.iestado == 'R'){vigencia.estado = 'Renovada'}
+        if(vigencia.iestado == 'A'){vigencia.estado = 'Anulada'}
         let mcomision = 0, mcomisionext = 0
 
-        for (const recibo of poliza.recibos) {
+        for (const recibo of vigencia.recibos) {
           if(recibo.iestadorec == 'P'){recibo.estado = 'Pendiente'}
           if(recibo.iestadorec == 'C'){recibo.estado = 'Cobrado'}
           if(recibo.iestadorec == 'A'){recibo.estado = 'Anulado'}
@@ -120,9 +120,9 @@ export class DetailContractsComponent implements OnInit {
           mcomisionext += recibo.mcomisionext
         }
 
-        poliza.pcomision = poliza.recibos[0].pcomision
-        poliza.mcomision = mcomision
-        poliza.mcomisionext = mcomisionext
+        vigencia.pcomision = vigencia.recibos[0].pcomision
+        vigencia.mcomision = mcomision
+        vigencia.mcomisionext = mcomisionext
       }
       
       this.documentosList = response.documents
@@ -154,68 +154,6 @@ export class DetailContractsComponent implements OnInit {
     })
   }
   */
-
-  formatWithSeparator(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    event.target.value = value;
-
-    const numericValue = Number(value.replace(/\./g, ''));
-    this.data_poliza.poliza.msumaext = numericValue;
-  }
-
-  formatPrima(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2);
-    return value
-  }
-
-  SumBs(){
-    const msuma_aseg_bs = this.data_poliza.poliza.msumaext * this.bcv;
-
-    const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(msuma_aseg_bs);
-
-    this.data_poliza.poliza.msuma = formattedMsumaAsegBs;
-    this.data_poliza.poliza.msuma = this.convertStringToNumber(this.data_poliza.poliza.msuma)
-  }
-
-  PrimaBs(){
-    const mprima = parseFloat(this.data_poliza.poliza.mprimaext);
-    
-    const mprima_bs = mprima * this.bcv;
-
-    const formattedPriBs = new Intl.NumberFormat('de-DE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
-    }).format(mprima_bs);
-
-    this.data_poliza.poliza.mprima = formattedPriBs;
-    this.data_poliza.poliza.mprima = this.convertStringToNumber(this.data_poliza.poliza.mprima)
-  }
-
-  convertStringToNumber(str: any): number {
-    if (str == null) {
-      return 0;
-    }
-    
-    // Asegurarse de que el valor sea una cadena
-    const stringValue = String(str);
-    
-    // Elimina los separadores de miles
-    let numberWithoutThousandsSeparator = stringValue.replace(/\./g, '');
-    
-    // Reemplaza la coma decimal con un punto decimal
-    let numberWithDotDecimal = numberWithoutThousandsSeparator.replace(/,/g, '.');
-    
-    // Convierte el string resultante a número
-    let result = parseFloat(numberWithDotDecimal);
-    
-    // Si parseFloat devuelve NaN, devuelve 0 como valor predeterminado
-    return isNaN(result) ? 0 : result;
-  }
 
   addFile(id:any): void {
     const newImgInput = <HTMLInputElement> document.getElementById(id)

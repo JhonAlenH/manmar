@@ -100,7 +100,7 @@ export class RenovationsComponent implements OnInit {
         for (let i = 0; i < response.data.cedents.length; i++) {
           this.cedentsList.push({
             id: response.data.cedents[i].ccedente,
-            value: response.data.cedents[i].xcedente,
+            value: response.data.cedents[i].persona.xnombre,
           });
         }
         this.cedentsList.sort((a, b) => a.value > b.value ? 1 : -1)

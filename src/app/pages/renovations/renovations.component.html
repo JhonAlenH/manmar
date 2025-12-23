@@ -100,22 +100,22 @@
                     <!-- Columna Crámo -->
                     <ng-container matColumnDef="xpoliza">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Póliza </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xpoliza }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element.poliza.xpoliza }} </td>
                       </ng-container>
                       
                       <ng-container matColumnDef="xcedente">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Cedente </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xcedente }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element.producto?.cedente?.persona?.xnombre }} </td>
                       </ng-container>
             
                       <ng-container matColumnDef="xramo">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Ramo </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xramo }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element.producto?.ramo?.xramo }} </td>
                       </ng-container>
             
                       <ng-container matColumnDef="xasegurado">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Asegurado </th>
-                        <td mat-cell *matCellDef="let element"> {{ element.xasegurado }} </td>
+                        <td mat-cell *matCellDef="let element"> {{ element.poliza?.asegurado?.xnombre }} {{element.poliza?.asegurado?.xapellido}}</td>
                       </ng-container>
 
                       <ng-container matColumnDef="fhasta">

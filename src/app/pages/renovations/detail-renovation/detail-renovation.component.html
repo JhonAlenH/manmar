@@ -79,6 +79,16 @@
                         </mat-select>
                       </mat-form-field>
                     </div>
+                    <div class="col-md-6">
+                      <mat-form-field class="example-full-width">
+                        <h5 class="text-center"><strong>Producto</strong></h5>
+                        <mat-select formControlName="cproducto" (selectionChange)="updateReceiptData()">
+                          <mat-option *ngFor="let product of productList" [value]="product.id" >
+                            {{ product.value }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
                   </div>
                 </div>
                 <div class="col-sm-6">
@@ -163,11 +173,11 @@
                             </td>
                             <td>
                               <h5><strong>Porcentaje</strong></h5>
-                              <input type="number" formControlName="pcomision_p" class="custom-input" (change)="calculateComisionMonto()">
+                              <input type="number" formControlName="pcomision" class="custom-input" (change)="calculateComisionMonto()">
                             </td>
                             <td>
                               <h5><strong>Prima</strong></h5>
-                              <input type="number" formControlName="mcomision_pext" class="custom-input" (change)="calculateComisionPorcentaje()">
+                              <input type="number" formControlName="mcomision_ext" class="custom-input" (change)="calculateComisionPorcentaje()">
                             </td>
                           </tr>
                         </tbody>

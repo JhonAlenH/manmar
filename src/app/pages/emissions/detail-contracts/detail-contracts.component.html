@@ -3,18 +3,18 @@
     <div class="col">
       <div class="card shadow hola">
         <div class="card-body">
-          <div style="position: relative; z-index: 1000;">
-            <mat-card appearance="outlined">
+          <div style="position: relative; z-index: 1000;" *ngIf="poliza">
+            <mat-card appearance="outlined" >
               <mat-card-content>
                 <div class="row justify-content-center" style="row-gap: 15px;">
                   <div class="col-sm-3">
                     <div class="d-flex align-items-center">
-                      <span class="text-center"><strong>Poliza: </strong>{{data_poliza.xpoliza}}</span>
+                      <span class="text-center"><strong>Poliza: </strong>{{poliza.xpoliza}}</span>
                     </div>
                   </div>
                   <div class="col-sm-3">
                     <div class="d-flex align-items-center">
-                      <span class="text-center"><strong>Fecha Creación: </strong>{{data_poliza.fcreacion}}</span>
+                      <span class="text-center"><strong>Fecha Creación: </strong>{{poliza.fcreacion}}</span>
                     </div>
                   </div>
                   <div class="col-sm-6">
@@ -26,33 +26,33 @@
                   </div>
                   <div class="col-sm-3">
                     <div class="d-flex align-items-center ">
-                      <span class="text-center"><strong>Asegurado: </strong>{{data_poliza.asegurado.xnombre}} {{data_poliza.asegurado.xapellido}}</span>
+                      <span class="text-center"><strong>Asegurado: </strong>{{poliza.asegurado.xnombre}} {{poliza.asegurado.xapellido}}</span>
                     </div>
                   </div>
                   <div class="col-sm-3">
                     <div class="d-flex align-items-center">
-                      <span class="text-center"><strong>Tomador: </strong>{{data_poliza.tomador.xnombre}} {{data_poliza.tomador.xapellido}}</span>
+                      <span class="text-center"><strong>Tomador: </strong>{{poliza.tomador.xnombre}} {{poliza.tomador.xapellido}}</span>
                     </div>
                   </div>
                   <div class="col-sm-6 ">
                     <div class="d-flex align-items-center justify-content-end">
-                      <span class="text-center"><strong>Cedente: </strong>{{data_poliza.cedente.persona.xnombre}}</span>
+                      <span class="text-center"><strong>Cedente: </strong>{{poliza.cedente.persona.xnombre}}</span>
                     </div>
                   </div>
                 </div>
               </mat-card-content>
             </mat-card>
 
-            <div class="d-flex flex-column mt-5" *ngIf="data_poliza">
+            <div class="d-flex flex-column mt-5" *ngIf="poliza">
               <h5><strong>Vigencias</strong></h5>
               <mat-accordion class="mt-3">
-                <mat-expansion-panel *ngFor="let poliza of data_poliza.polizas">
+                <mat-expansion-panel *ngFor="let vigencia of poliza.vigencias">
                   <mat-expansion-panel-header>
                     <mat-panel-title>
-                      <strong class="me-2">1. </strong> {{poliza.fdesde}} - {{poliza.fhasta}}
+                      <strong class="me-2">1. </strong> {{vigencia.fdesde}} - {{vigencia.fhasta}}
                     </mat-panel-title>
                     <mat-panel-description class="text-end">
-                      <span>{{poliza.moneda.xrepresentacion}} {{poliza.mprimaext}}</span>
+                      <span>{{vigencia.moneda.xrepresentacion}} {{vigencia.mprimaext}}</span>
                     </mat-panel-description>
                   </mat-expansion-panel-header>
                   <div class="">
@@ -62,38 +62,38 @@
                     <div class="row py-4">
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center">
-                          <span class="text-center"><strong>Fecha Desde: </strong>{{poliza.fdesde}}</span>
+                          <span class="text-center"><strong>Fecha Desde: </strong>{{vigencia.fdesde}}</span>
                         </div>
                       </div>
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center">
-                          <span class="text-center"><strong>Fecha Hasta: </strong>{{poliza.fhasta}}</span>
+                          <span class="text-center"><strong>Fecha Hasta: </strong>{{vigencia.fhasta}}</span>
                         </div>
                       </div>
                       <div class="col-sm-4">
                         <div class="d-flex align-items-center">
-                          <span class="text-center"><strong>Metodología de Pago: </strong>{{poliza.metodologia_pago.xmetodologiapago}}</span>
+                          <span class="text-center"><strong>Metodología de Pago: </strong>{{vigencia.metodologia_pago.xmetodologiapago}}</span>
                         </div>
                       </div>
                       <div class="col-sm-2">
                         <div class="d-flex align-items-center justify-content-end">
-                          <span class="text-center"><strong>Moneda: </strong>{{poliza.moneda.xmoneda}}</span>
+                          <span class="text-center"><strong>Moneda: </strong>{{vigencia.moneda.xmoneda}}</span>
                         </div>
                       </div>
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center">
-                          <span *ngIf="poliza.producto?.ramo" class="text-center"><strong>Ramo: </strong>{{poliza.producto.ramo.xramo}}</span>
+                          <span *ngIf="vigencia.producto?.ramo" class="text-center"><strong>Ramo: </strong>{{vigencia.producto.ramo.xramo}}</span>
                         </div>
                       </div>
                       <div class="col-sm-6">
                         <div class="d-flex align-items-center">
-                          <span *ngIf="poliza.producto" class="text-center"><strong>Producto: </strong>{{poliza.producto.xproducto}}</span>
+                          <span *ngIf="vigencia.producto" class="text-center"><strong>Producto: </strong>{{vigencia.producto.xproducto}}</span>
                         </div>
                       </div>
                       
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center justify-content-end">
-                          <span class="text-center"><strong>Estado: </strong>{{poliza.estado}}</span>
+                          <span class="text-center"><strong>Estado: </strong>{{vigencia.estado}}</span>
                         </div>
                       </div>
                     </div>
@@ -104,38 +104,38 @@
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Suma Asegurada</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(poliza.msumaext).toFixed(2)" type="text">
-                          <span matSuffix>{{poliza.moneda.xrepresentacion}} &nbsp;</span>
+                          <input disabled matInput [value]="(vigencia.msumaext).toFixed(2)" type="text">
+                          <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Suma Asegurada en Bs: {{(poliza.msuma).toFixed(2)}}</h5>
+                          <h5>Suma Asegurada en Bs: {{(vigencia.msuma).toFixed(2)}}</h5>
                         </div>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Prima</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(poliza.mprimaext).toFixed(2)" type="text">
-                          <span matSuffix>{{poliza.moneda.xrepresentacion}} &nbsp;</span>
+                          <input disabled matInput [value]="(vigencia.mprimaext).toFixed(2)" type="text">
+                          <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Prima en Bs: {{(poliza.mprima).toFixed(2)}}</h5>
+                          <h5>Prima en Bs: {{(vigencia.mprima).toFixed(2)}}</h5>
                         </div>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Porcentaje de Comision</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(poliza.pcomision).toFixed(2)" type="text">
+                          <input disabled matInput [value]="(vigencia.pcomision).toFixed(2)" type="text">
                           <span matSuffix>% &nbsp;</span>
                         </mat-form-field>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Comision</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(poliza.mcomisionext).toFixed(2)" type="text">
-                          <span matSuffix>{{poliza.moneda.xrepresentacion}} &nbsp;</span>
+                          <input disabled matInput [value]="(vigencia.mcomisionext).toFixed(2)" type="text">
+                          <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Comision en Bs: {{(poliza.mcomision).toFixed(2)}}</h5>
+                          <h5>Comision en Bs: {{(vigencia.mcomision).toFixed(2)}}</h5>
                         </div>
                       </div>
                     </div>
@@ -155,7 +155,7 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr scope="row" *ngFor="let item of poliza.recibos">
+                              <tr scope="row" *ngFor="let item of vigencia.recibos">
                                 <td style="white-space: nowrap">{{ item.ncuota }}</td>
                                 <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
                                 <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>

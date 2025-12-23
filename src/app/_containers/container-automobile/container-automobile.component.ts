@@ -203,8 +203,8 @@ export class ContainerAutomobileComponent implements OnInit {
       if(response.status){
         this.receiptList = response.data.receipt.map((receipt: any) => ({
           ncuota: receipt.id,
-          fdesde_rec: this.dateUtilService.formatDate(new Date(receipt.fdesde_rec)),
-          fhasta_rec: this.dateUtilService.formatDate(new Date(receipt.fhasta_rec)),
+          fdesde_rec: this.formatDateToString(new Date(receipt.fdesde_rec)),
+          fhasta_rec: this.formatDateToString(new Date(receipt.fhasta_rec)),
           ptasamon: this.receiptData.bcv,
           ctomador: this.receiptData.ctomador || this.receiptData.casegurado,
           msumaaseg: this.convertStringToNumber(this.receiptData.msuma),
@@ -511,16 +511,16 @@ export class ContainerAutomobileComponent implements OnInit {
     this.documentosList.splice(index, 1)
   }
 
+  formatDateToString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   onSubmit(){
 
-    const formatDateToString = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
   
-    const fdesdeString = formatDateToString(new Date(this.receiptData.fdesde));
+    const fdesdeString = this.formatDateToString(new Date(this.receiptData.fdesde));
     const fhastaString = this.receiptData.fhasta;
 
     let data = {
@@ -533,7 +533,7 @@ export class ContainerAutomobileComponent implements OnInit {
       fcreacion: new Date(),
       iestado: 1,
       cusuario_creacion: this.currentUser.cusuario,
-      polizas: [
+      vigencias: [
         {
           cproductor_convenio: this.currentUser.productor.cproductor,
           cmoneda: this.receiptData.cmoneda,
@@ -552,8 +552,7 @@ export class ContainerAutomobileComponent implements OnInit {
           recibos: this.receiptList,
         }
       ],
-      ptasa_cambio: this.receiptData.bcv,
-      pcomision: 100,
+      ptasamon: this.receiptData.bcv,
       documentos: this.documentosList
     }
 

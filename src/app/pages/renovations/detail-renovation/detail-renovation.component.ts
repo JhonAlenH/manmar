@@ -37,6 +37,7 @@ export class DetailRenovationComponent implements OnInit {
   moneda!: any;
   cedente!: any;
   poliza!: any;
+  vigencia!: any;
   fdesdeAnt!: any;
   fhastaAnt!: any;
   fecha!: any;
@@ -47,6 +48,7 @@ export class DetailRenovationComponent implements OnInit {
   comisionRamo: any;
 
   methodOfPaymentList: any[] = [];
+  productList: any[] = [];
   receiptList: any[] = [];
 
   renovFormGroup = this._formBuilder.group({
@@ -58,14 +60,12 @@ export class DetailRenovationComponent implements OnInit {
     fhasta: ['', Validators.required],
     xpoliza: ['', Validators.required],
     msuma_aseg: ['', Validators.required],
+    cramo: ['', Validators.required],
+    cproducto: ['', Validators.required],
     mprima: ['', Validators.required],
     cmetodologiapago: ['', Validators.required],
-    pcomision_p: [0, Validators.required],
-    pcomision_e: [''],
-    pcomision_a: [''],
-    mcomision_pext: [0, Validators.required],
-    mcomision_eext: [''],
-    mcomision_aext: [''],
+    pcomision: [0, Validators.required],
+    mcomision_ext: [0, Validators.required],
   });
 
   renovLabels = [
@@ -79,8 +79,9 @@ export class DetailRenovationComponent implements OnInit {
     {id: 'msuma_aseg', value:'Suma Asegurada'},
     {id: 'mprima', value:'Prima'},
     {id: 'cmetodologiapago', value:'Metodología de Pago'},
-    {id: 'pcomision_p', value:'Porcentaje de Comisión'},
-    {id: 'mcomision_pext', value:'Monto de Comisión'},
+    {id: 'pcomision', value:'Porcentaje de Comisión'},
+    {id: 'cproducto', value:'Producto'},
+    {id: 'mcomision_ext', value:'Monto de Comisión'},
   ]
 
   constructor( private _formBuilder: FormBuilder,
@@ -95,7 +96,7 @@ export class DetailRenovationComponent implements OnInit {
                if(this.router.getCurrentNavigation().extras.state == undefined){
                  this.router.navigate(['renovations']);
                }else{
-                 this.id = this.router.getCurrentNavigation().extras.state.id;       
+                 this.id = this.router.getCurrentNavigation().extras.state.poliza?.cpoliza;       
                  this.fdesde = this.router.getCurrentNavigation().extras.state.fdesde_pol;  
                }
                dateAdapter.setLocale('es');
@@ -142,33 +143,40 @@ export class DetailRenovationComponent implements OnInit {
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
       this.data = response.data
-      this.cramo = response.data.cramo;
-      this.ramo = response.data.xramo;
-      this.asegurado = response.data.xnombre;
-      this.tomador = response.data.xtomador;
+      this.asegurado = `${this.data.asegurado?.xnombre} ${this.data.asegurado?.xapellido}`.trim();
+      this.tomador = `${this.data.tomador?.xnombre} ${this.data.tomador?.xapellido}`.trim();
+      
+      this.vigencia = this.data.vigencias[0];
+      
+      this.cramo = this.vigencia.producto?.ramo?.cramo;
+      this.ramo = this.vigencia.producto?.ramo.xramo;
+      this.metodologia = this.vigencia.metodologia_pago.xmetodologiapago
+      this.cmetodologia = this.vigencia.metodologia_pago.cmetodologia
+      this.cedente = this.data.cedente?.persona?.xnombre
+      this.moneda = this.vigencia.moneda?.xmoneda
+      this.poliza = this.data.xpoliza
+      this.xproductor = this.data.productor?.usuario?.persona.xnombre
 
-      this.metodologia = response.data.xmetodologiapago
-      this.cmetodologia = response.data.cmetodologia
-      this.cedente = response.data.xcedente
-      this.moneda = response.data.xmoneda
-      this.poliza = response.data.xpoliza
-      this.fdesdeAnt = this.dateUtilService.formatDate(new Date(response.data.fdesde_pol))
-      this.fecha = response.data.fdesde_pol
+      this.fdesdeAnt = this.dateUtilService.formatDate(new Date(this.vigencia.fdesde))
+      this.fecha = this.vigencia.fdesde
 
-      this.renovFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(response.data.fhasta_pol))
-      this.renovFormGroup.get('ccedente')?.setValue(response.data.ccedente)
-      this.renovFormGroup.get('xcedente')?.setValue(response.data.xcedente)
-      this.renovFormGroup.get('cmoneda')?.setValue(response.data.cmoneda)
-      this.renovFormGroup.get('xmoneda')?.setValue(response.data.xmoneda)
-      this.renovFormGroup.get('xpoliza')?.setValue(response.data.xpoliza)
-      this.renovFormGroup.get('cmetodologiapago')?.setValue(response.data.cmetodologiapago)
+      this.renovFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(this.vigencia.fhasta))
+      this.renovFormGroup.get('ccedente')?.setValue(this.data.cedente.ccedente)
+      this.renovFormGroup.get('xcedente')?.setValue(this.data.cedente.xcedente)
+      this.renovFormGroup.get('cmoneda')?.setValue(this.vigencia.moneda.cmoneda)
+      this.renovFormGroup.get('xmoneda')?.setValue(this.vigencia.moneda.xmoneda)
+      this.renovFormGroup.get('xpoliza')?.setValue(this.data.xpoliza)
+      this.renovFormGroup.get('cmetodologiapago')?.setValue(this.vigencia?.metodologia_pago.cmetodologiapago)
+      this.renovFormGroup.get('msuma_aseg')?.setValue((this.vigencia.msumaext).toFixed(2));
+      this.renovFormGroup.get('mprima')?.setValue((this.vigencia.mprimaext).toFixed(2));
+      this.renovFormGroup.get('pcomision')?.setValue((this.vigencia.producto?.pcomision).toFixed(2));
+      this.renovFormGroup.get('cproducto')?.setValue(this.vigencia.producto.cproducto);
+      this.renovFormGroup.get('cramo')?.setValue(this.vigencia.producto?.ramo?.cramo);
       this.getMethod();
-      this.renovFormGroup.get('msuma_aseg')?.setValue((response.data.msumaext).toFixed(2));
-      this.renovFormGroup.get('mprima')?.setValue((response.data.mprimaext).toFixed(2));
+      this.getProduct();
 
       this.calcularFechaHasta();
-      this.searchDistribution();
-      this.getTariffs();
+      // this.searchDistribution();
 
       this.format('mprima')
       this.format('msuma_aseg')
@@ -243,10 +251,24 @@ export class DetailRenovationComponent implements OnInit {
   }
 
   getMethod(){
+    this.methodOfPaymentList = []
     this.http.post(environment.apiUrl + '/api/v1/valrep/method-of-payment', null).subscribe((response: any) => {
       this.methodOfPaymentList = response.data.payment.map((item: any) => ({
         id: item.cmetodologiapago,
         value: item.xmetodologiapago
+      }))
+    })
+  }
+  getProduct(){
+    let data = {
+      cramo: this.renovFormGroup.get('cramo')?.value,
+      ccedente: this.renovFormGroup.get('ccedente')?.value,
+    }
+    this.productList = []
+    this.http.post(environment.apiUrl + '/api/v1/valrep/product', data).subscribe((response: any) => {
+      this.productList = response.data.product.map((item: any) => ({
+        id: item.cproducto,
+        value: item.xproducto
       }))
     })
   }
@@ -256,6 +278,7 @@ export class DetailRenovationComponent implements OnInit {
       fdesde: this.renovFormGroup.get('fdesde')?.value,
       fhasta: this.renovFormGroup.get('fhasta')?.value,
       mprima: this.renovFormGroup.get('mprima')?.value,
+      pcomision: this.renovFormGroup.get('pcomision')?.value,
       cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
     }
     this.receiptList = [];
@@ -276,43 +299,14 @@ export class DetailRenovationComponent implements OnInit {
     })
   }
   calculateComisionMonto() {
-    const mcomision = Number(((Number(this.renovFormGroup.get('pcomision_p')?.value) /100) * Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
-    this.renovFormGroup.get('mcomision_pext')?.setValue(mcomision);
-    this.formatWithSeparator(this.renovFormGroup.get('mcomision_pext'))
+    const mcomision = Number(((Number(this.renovFormGroup.get('pcomision')?.value) /100) * Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
+    this.renovFormGroup.get('mcomision_ext')?.setValue(mcomision);
+    this.formatWithSeparator(this.renovFormGroup.get('mcomision_ext'))
   }
   calculateComisionPorcentaje() {
-    const pcomision =  Number(((Number(this.renovFormGroup.get('mcomision_pext')?.value) * 100) / Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
-    this.renovFormGroup.get('pcomision_p')?.setValue(pcomision);
-    this.formatWithSeparator(this.renovFormGroup.get('mcomision_pext'))
-  }
-
-  getTariffs(){
-    let data = {
-      ccedente: this.renovFormGroup.get('ccedente')?.value,
-      cramo: this.cramo
-    }
-    this.http.post(environment.apiUrl + `/api/v1/emission/tariffs`, data).subscribe((response: any) => {
-      if(response.status){
-        this.comisionRamo = response.pcomision;
-        this.renovFormGroup.get('pcomision_p')?.setValue(this.comisionRamo);
-        this.calculateComisionMonto()
-        if(!this.comisionRamo){
-          Swal.fire({
-            icon: "error",
-            title: "Ha ocurrido un Error",
-            text: "Estimado usuario, no exite arancel por el ramo y por la cedente, por ende no se puede calcular las comisiones.",
-            confirmButtonText: "<strong>Aceptar</strong>",
-            confirmButtonColor: "#5e72e4",
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
-              }
-          });
-        }
-      }
-    },(err) => {
-
-    })
+    const pcomision =  Number(((Number(this.renovFormGroup.get('mcomision_ext')?.value) * 100) / Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
+    this.renovFormGroup.get('pcomision')?.setValue(pcomision);
+    this.formatWithSeparator(this.renovFormGroup.get('mcomision_ext'))
   }
 
   onSubmit(){
@@ -337,7 +331,7 @@ export class DetailRenovationComponent implements OnInit {
         confirmButtonColor: "#5e72e4",
       });
     }
-    if(this.renovFormGroup.get('pcomision_p')?.value > 100){
+    if(this.renovFormGroup.get('pcomision')?.value > 100){
       Swal.fire({
         title: "Se excedió del 100% de Comisión",
         icon: "warning",
@@ -346,33 +340,26 @@ export class DetailRenovationComponent implements OnInit {
       });
       return
     }
-    const dataSubmit = {
-      ccedente: this.renovFormGroup.get('ccedente')?.value,
-      casegurado: this.data.casegurado,
-      ctomador: this.data.ctomador,
-      cmoneda: this.renovFormGroup.get('cmoneda')?.value,
-      cramo: this.data.cramo,
-      xpoliza: this.data.xpoliza,
-      fdesde_pol: this.renovFormGroup.get('fdesde')?.value,
-      fhasta_pol: this.renovFormGroup.get('fhasta')?.value,
-      cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
-      ptasa_cambio: this.bcv,
-      msuma: this.msuma_aseg_bs,
-      msumaext: this.renovFormGroup.get('msuma_aseg')?.value,
-      mprima: this.mprima_bs,
-      femision: this.dateUtilService.formatDate(new Date()),
-      mprimaext: this.renovFormGroup.get('mprima')?.value,
-      pcomision: this.renovFormGroup.get('pcomision_p')?.value,
-      mcomision: Number(this.renovFormGroup.get('mcomision_pext')?.value) * this.bcv,
-      mcomisionext: Number(this.renovFormGroup.get('mcomision_pext')?.value),
-      cproductor: this.data.cproductor,
-      pcomision_p: 100,
-      cejecutivo: null,
-      pcomision_e: null,
-      cagente: null,
-      pcomision_a: null,
-      documentos: []
-    }
+    let dataSubmit = {
+          cproductor_convenio: this.currentUser.productor.cproductor,
+          cmoneda: this.renovFormGroup.get('cmoneda')?.value,
+          xpoliza: this.data.xpoliza,
+          cproducto: this.renovFormGroup.get('cproducto')?.value,
+          fdesde: this.renovFormGroup.get('fdesde')?.value,
+          fhasta: this.renovFormGroup.get('fhasta')?.value,
+          femision: new Date(),
+          cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
+          iestado: 'V',
+          msuma: this.convertStringToNumber(this.msuma_aseg_bs),
+          msumaext: this.renovFormGroup.get('msuma_aseg')?.value,
+          mprima: this.convertStringToNumber(this.mprima_bs),
+          mprimaext: parseFloat(this.renovFormGroup.get('mprima')?.value),
+          cusuario: this.currentUser.cusuario,
+          recibos: this.receiptList,
+          ptasamon: this.bcv,
+          pcomision: this.renovFormGroup.get('pcomision')?.value,
+          documentos: []
+        }
     this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.data.id}`, dataSubmit).subscribe((response: any) => {
           if(response.status){
             Swal.fire({

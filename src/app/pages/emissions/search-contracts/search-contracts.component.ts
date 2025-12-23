@@ -144,8 +144,8 @@ export class SearchContractsComponent implements OnInit {
       if (response.data.contracts) {
         
         const correctedContracts = response.data.contracts.map((contract: any) => {
-          const fdesde = contract.polizas[0]?.fdesde;
-          const fhasta = contract.polizas[0]?.fhasta;
+          const fdesde = contract.vigencias[0]?.fdesde;
+          const fhasta = contract.vigencias[0]?.fhasta;
           contract.fdesde_pol = this.dateUtilService.adjustDate(fdesde);
           contract.fhasta_pol = this.dateUtilService.adjustDate(fhasta);
           return contract;

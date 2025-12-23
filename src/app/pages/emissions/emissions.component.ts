@@ -341,7 +341,7 @@ export class EmissionsComponent implements OnInit {
             value: `${response.data.cedents[i].persona?.xnombre} ${response.data.cedents[i].persona?.xapellido || ''}`.trim(),
           });
         }
-        const selectedCedents = this.cedentsList.find(cedents => cedents.id === 73);
+        const selectedCedents = this.cedentsList.find(cedents => cedents.id === 60);
         if (selectedCedents) {
             this.emissionsFormGroup.get('ccedente')?.setValue(selectedCedents.id);
             this.emissionsFormGroup.get('xcedente')?.setValue(selectedCedents.value);
@@ -396,7 +396,7 @@ export class EmissionsComponent implements OnInit {
       if (response.data.trade) {
         for (let i = 0; i < response.data.trade.length; i++) {
           this.tradeList.push({
-            id: response.data.trade[i].id,
+            id: response.data.trade[i].cramo,
             value: response.data.trade[i].xramo,
           });
         }
@@ -435,7 +435,7 @@ export class EmissionsComponent implements OnInit {
       if (response.data.product) {
         for (let i = 0; i < response.data.product.length; i++) {
           this.productList.push({
-            id: response.data.product[i].id,
+            id: response.data.product[i].cproducto,
             value: response.data.product[i].xproducto,
           });
         }
@@ -559,12 +559,12 @@ export class EmissionsComponent implements OnInit {
       if (response.data.clients) {
         for (const client of response.data.clients) {
           this.insuranceList.push({
-            id: client.id,
+            id: client.cpersona,
             value: `${`${client.xnombre} ${client.xapellido || ''}`.trim()} (${client.cci_rif})`,
             xdocu: client.cci_rif
           });
           this.takersList.push({
-            id: client.id,
+            id: client.cpersona,
             value: `${`${client.xnombre} ${client.xapellido || ''}`.trim()} (${client.cci_rif})`,
             xdocu: client.cci_rif
           });
