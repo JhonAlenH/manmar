@@ -53,9 +53,11 @@ export class DetailRenovationComponent implements OnInit {
 
   renovFormGroup = this._formBuilder.group({
     ccedente: ['', Validators.required],
-    xcedente: ['', Validators.required],
+    casegurado: ['', Validators.required],
+    ctomador: ['', Validators.required],
+    // xcedente: ['', Validators.required],
     cmoneda: ['', Validators.required],
-    xmoneda: ['', Validators.required],
+    // xmoneda: ['', Validators.required],
     fdesde: ['', Validators.required],
     fhasta: ['', Validators.required],
     xpoliza: ['', Validators.required],
@@ -70,7 +72,7 @@ export class DetailRenovationComponent implements OnInit {
 
   renovLabels = [
     {id: 'ccedente', value:'Código Cedente'},
-    {id: 'xcedente', value:'Cedente'},
+    // {id: 'xcedente', value:'Cedente'},
     {id: 'cmoneda', value:'Código Moneda'},
     {id: 'xmoneda', value:'Moneda'},
     {id: 'fdesde', value:'Fecha Inicio'},
@@ -119,6 +121,8 @@ export class DetailRenovationComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
+    this.currentUser = this.currentUser.data.user;
+    console.log(this.currentUser)
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -162,9 +166,11 @@ export class DetailRenovationComponent implements OnInit {
 
       this.renovFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(this.vigencia.fhasta))
       this.renovFormGroup.get('ccedente')?.setValue(this.data.cedente.ccedente)
-      this.renovFormGroup.get('xcedente')?.setValue(this.data.cedente.xcedente)
+      this.renovFormGroup.get('casegurado')?.setValue(this.data.asegurado.cpersona)
+      this.renovFormGroup.get('ctomador')?.setValue(this.data.tomador.cpersona)
+      // this.renovFormGroup.get('xcedente')?.setValue(this.data.cedente.xcedente)
       this.renovFormGroup.get('cmoneda')?.setValue(this.vigencia.moneda.cmoneda)
-      this.renovFormGroup.get('xmoneda')?.setValue(this.vigencia.moneda.xmoneda)
+      // this.renovFormGroup.get('xmoneda')?.setValue(this.vigencia.moneda.xmoneda)
       this.renovFormGroup.get('xpoliza')?.setValue(this.data.xpoliza)
       this.renovFormGroup.get('cmetodologiapago')?.setValue(this.vigencia?.metodologia_pago.cmetodologiapago)
       this.renovFormGroup.get('msuma_aseg')?.setValue((this.vigencia.msumaext).toFixed(2));
@@ -272,6 +278,12 @@ export class DetailRenovationComponent implements OnInit {
       }))
     })
   }
+  formatDateToString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   updateReceiptData() {
     let dataCompleta = {
@@ -284,10 +296,37 @@ export class DetailRenovationComponent implements OnInit {
     this.receiptList = [];
     this.http.post(environment.apiUrl + '/api/v1/renovations/receipt', dataCompleta).subscribe((response: any) => {
       if(response.status){
-        this.receiptList = response.data.receipt.map((state: any) => ({
-          fdesde_rec: this.dateUtilService.formatDate(new Date(state.fdesde_rec)),
-          fhasta_rec: this.dateUtilService.formatDate(new Date(state.fhasta_rec)),
-          mprima: state.mprima.toFixed(2),
+        this.receiptList = response.data.receipt.map((receipt: any) => ({
+          ncuota: receipt.id,
+          fdesde_rec: this.formatDateToString(new Date(receipt.fdesde_rec)),
+          fhasta_rec: this.formatDateToString(new Date(receipt.fhasta_rec)),
+          ptasamon: this.bcv,
+          ctomador: this.renovFormGroup.get('ctomador')?.value,
+          msumaaseg: this.convertStringToNumber(this.msuma_aseg_bs),
+          msumaasegext: this.renovFormGroup.get('msuma_aseg')?.value,
+          mprima: Number((receipt.mprima * this.bcv).toFixed(2)),
+          mprimaext: Number(receipt.mprima.toFixed(2)),
+          pcomision: this.renovFormGroup.get('pcomision')?.value,
+          mcomision: Number((receipt.mcomision * this.bcv).toFixed(2)),
+          mcomisionext: Number(receipt.mcomision.toFixed(2)),
+          iestadorec: 'P',
+          comisiones: [{
+            cproductor: this.currentUser.productor.cproductor,
+            cmoneda: this.renovFormGroup.get('cmoneda')?.value,
+            ptasamon: this.bcv,
+            pcomision: this.renovFormGroup.get('pcomision')?.value,
+            mcomision: Number((receipt.mcomision * this.bcv).toFixed(2)),
+            mcomisionext: Number(receipt.mcomision.toFixed(2)),
+            iestado: 'P',
+            bactivo: 1,
+            cusuario_creacion: this.currentUser.cusuario,
+            fcreacion: new Date()
+          }]
+
+        // this.receiptList = response.data.receipt.map((state: any) => ({
+        //   fdesde_rec: this.dateUtilService.formatDate(new Date(state.fdesde_rec)),
+        //   fhasta_rec: this.dateUtilService.formatDate(new Date(state.fhasta_rec)),
+        //   mprima: state.mprima.toFixed(2),
         }));
       }
     })
@@ -330,6 +369,7 @@ export class DetailRenovationComponent implements OnInit {
         confirmButtonText: "<strong>Aceptar</strong>",
         confirmButtonColor: "#5e72e4",
       });
+      return
     }
     if(this.renovFormGroup.get('pcomision')?.value > 100){
       Swal.fire({
@@ -341,6 +381,7 @@ export class DetailRenovationComponent implements OnInit {
       return
     }
     let dataSubmit = {
+          cpoliza: this.id,
           cproductor_convenio: this.currentUser.productor.cproductor,
           cmoneda: this.renovFormGroup.get('cmoneda')?.value,
           xpoliza: this.data.xpoliza,
@@ -360,7 +401,7 @@ export class DetailRenovationComponent implements OnInit {
           pcomision: this.renovFormGroup.get('pcomision')?.value,
           documentos: []
         }
-    this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.data.id}`, dataSubmit).subscribe((response: any) => {
+    this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.id}`, dataSubmit).subscribe((response: any) => {
           if(response.status){
             Swal.fire({
               icon: "success",
