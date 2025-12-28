@@ -11,7 +11,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
         url: '/api/v1/maestros/clientes/search',
         tableId: 'clientes',
         tableInfo: [
-          { headerName: 'ID', key: 'id', primary_key: true },
+          { headerName: 'ID', key: 'cpersona', primary_key: true },
           { headerName: 'Cédula', key: 'cci_rif' },
           { headerName: 'Nombre', key: 'xnombre' },
           { headerName: 'Apellido', key: 'xapellido' },
@@ -36,6 +36,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
             fieldName: 'Nombre', class: 'col-md-6',
             required: true,
             key: 'xnombre',
+            pattern: '[^0-9]*',
             bdType: 'text'
           },
           {
@@ -43,6 +44,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
             fieldName: 'Apellido', class: 'col-md-6',
             required: false,
             key: 'xapellido',
+            pattern: '[^0-9]*',
             bdType: 'text'
           },
           {
@@ -63,7 +65,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           {
             type: 'date',
             fieldName: 'Fecha Nacimiento', class: 'col-md-3',
-            required: false,
+            required: true,
             key: 'fnacimiento',
             bdType: 'text'
           },

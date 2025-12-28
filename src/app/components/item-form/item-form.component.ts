@@ -636,7 +636,7 @@ export class ItemFormComponent implements OnInit {
           
         }
       }
-      formBody.push(encodedKey + "=" + encodedValue);
+      formBody.push(encodedKey + "=" + encodedValue.toUpperCase());
     }
     formBody.push('cusuario_creacion' + "=" + this.currentUser.cusuario);
     

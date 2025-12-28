@@ -35,6 +35,7 @@
                     [type]="field.type"
                     [attr.name]="field.key"
                     [id]="field.key"
+                    [pattern]="field.pattern || '[\\s\\S]*'"
                     step="any"
                     *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')"
                     [value]="field.defaultValue"

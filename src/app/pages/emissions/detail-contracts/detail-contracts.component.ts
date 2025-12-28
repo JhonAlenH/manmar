@@ -107,13 +107,18 @@ export class DetailContractsComponent implements OnInit {
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
       this.poliza = response.data;
       for (const vigencia of this.poliza.vigencias) {
-        if(vigencia.iestado == 'N'){vigencia.estado = 'Vigente'}
+        if(vigencia.iestado == 'V'){vigencia.estado = 'Vigente'}
         if(vigencia.iestado == 'R'){vigencia.estado = 'Renovada'}
         if(vigencia.iestado == 'A'){vigencia.estado = 'Anulada'}
         let mcomision = 0, mcomisionext = 0
-
+        
         for (const recibo of vigencia.recibos) {
-          if(recibo.iestadorec == 'P'){recibo.estado = 'Pendiente'}
+          if(recibo.iestadorec == 'P'){
+            if(!vigencia.receiptP) {
+              vigencia.receiptP = recibo.ncuota
+            }
+            recibo.estado = 'Pendiente'
+          }
           if(recibo.iestadorec == 'C'){recibo.estado = 'Cobrado'}
           if(recibo.iestadorec == 'A'){recibo.estado = 'Anulado'}
           mcomision += recibo.mcomision
