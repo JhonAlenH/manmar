@@ -315,11 +315,10 @@ export class EmissionsComponent implements OnInit {
 
   formatWithSeparator(event: any) {
     let value = event.target.value.replace(/\D/g, '');
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    value = (value / 100).toFixed(2);
     event.target.value = value;
-
-    const numericValue = Number(value.replace(/\./g, ''));
-    this.msuma_aseg = numericValue;
+    this.msuma_aseg = event.target.value;
+    this.emissionsFormGroup.get('msuma_aseg')?.setValue(event.target.value)
   }
 
   formatPrima(event: any) {
