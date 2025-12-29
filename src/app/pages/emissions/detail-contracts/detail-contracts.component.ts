@@ -124,7 +124,10 @@ export class DetailContractsComponent implements OnInit {
   values(){
     this.http.post(environment.apiUrl + `/api/v1/emission/detail/${this.id}`, {}).subscribe((response: any) => {
       this.poliza = response.data;
+      this.poliza.fcreacion = this.dateUtilService.formatDate(new Date(this.poliza.fcreacion));
       for (const vigencia of this.poliza.vigencias) {
+        vigencia.fdesde = this.dateUtilService.formatDate(new Date(vigencia.fdesde));
+        vigencia.fhasta = this.dateUtilService.formatDate(new Date(vigencia.fhasta));
         if(vigencia.iestado == 'V'){vigencia.estado = 'Vigente'}
         if(vigencia.iestado == 'R'){vigencia.estado = 'Renovada'}
         if(vigencia.iestado == 'A'){vigencia.estado = 'Anulada'}
@@ -194,6 +197,11 @@ export class DetailContractsComponent implements OnInit {
     });
 
 
+  }
+  adjustDate(dateString: string): string {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
+    return date.toLocaleDateString('en-GB'); // Convert back to YYYY-MM-DD format
   }
   async createNote(index: any, vigencia:any){
     const documentToCreate = vigencia.documentos[index]

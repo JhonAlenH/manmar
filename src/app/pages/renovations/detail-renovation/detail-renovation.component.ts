@@ -163,8 +163,9 @@ export class DetailRenovationComponent implements OnInit {
 
       this.fdesdeAnt = this.dateUtilService.formatDate(new Date(this.vigencia.fdesde))
       this.fecha = this.vigencia.fdesde
+      this.fhastaAnt = this.dateUtilService.formatDate(new Date(this.vigencia.fhasta))
 
-      this.renovFormGroup.get('fdesde')?.setValue(this.dateUtilService.adjustDate(this.vigencia.fhasta))
+      this.renovFormGroup.get('fdesde')?.setValue(this.vigencia.fhasta)
       this.renovFormGroup.get('ccedente')?.setValue(this.data.cedente.ccedente)
       this.renovFormGroup.get('casegurado')?.setValue(this.data.asegurado.cpersona)
       this.renovFormGroup.get('ctomador')?.setValue(this.data.tomador.cpersona)
@@ -201,6 +202,7 @@ export class DetailRenovationComponent implements OnInit {
 
   calcularFechaHasta() {
     const fechaDesde = new Date(this.renovFormGroup.get('fdesde')?.value);
+    console.log(fechaDesde)
     const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
     const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
     this.renovFormGroup.get('fhasta')?.setValue(fechaHastaISO);
@@ -209,9 +211,7 @@ export class DetailRenovationComponent implements OnInit {
 
     const fechaDesdeA = new Date(this.fecha);
     const fechaHastaA = new Date(fechaDesdeA.getFullYear() + 1, fechaDesdeA.getMonth(), fechaDesdeA.getDate() + 1);
-    const fechaHastaISOA = fechaHastaA.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
-
-    this.fhastaAnt = this.dateUtilService.formatDate(fechaHastaA)
+    
   }
 
   formatWithSeparator(formControl:any) {
@@ -285,6 +285,12 @@ export class DetailRenovationComponent implements OnInit {
     return `${year}-${month}-${day}`;
   };
 
+  adjustDate(dateString: string): string {
+    const date = new Date(dateString);
+    // date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
+    return date.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
+  }
+
   updateReceiptData() {
     let dataCompleta = {
       fdesde: this.renovFormGroup.get('fdesde')?.value,
@@ -298,8 +304,8 @@ export class DetailRenovationComponent implements OnInit {
       if(response.status){
         this.receiptList = response.data.receipt.map((receipt: any) => ({
           ncuota: receipt.id,
-          fdesde_rec: this.formatDateToString(new Date(receipt.fdesde_rec)),
-          fhasta_rec: this.formatDateToString(new Date(receipt.fhasta_rec)),
+          fdesde_rec: this.adjustDate(receipt.fdesde_rec),
+          fhasta_rec: this.adjustDate(receipt.fhasta_rec),
           ptasamon: this.bcv,
           ctomador: this.renovFormGroup.get('ctomador')?.value,
           msumaaseg: this.convertStringToNumber(this.msuma_aseg_bs),

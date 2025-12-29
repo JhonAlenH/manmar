@@ -20,7 +20,7 @@ import { DateUtilService } from './../../../_services/date-util.service';
 export class SearchContractsComponent implements OnInit {
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'fdesde_pol', 'fhasta_pol'];
+  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'cci_rif_asegurado', 'fcreacion'];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -145,10 +145,8 @@ export class SearchContractsComponent implements OnInit {
       if (response.data.contracts) {
         
         const correctedContracts = response.data.contracts.map((contract: any) => {
-          const fdesde = contract.vigencias[0]?.fdesde || '';
-          const fhasta = contract.vigencias[0]?.fhasta || '';
-          contract.fdesde_pol = fdesde ? this.dateUtilService.adjustDate(fdesde) : '';
-          contract.fhasta_pol = fhasta ? this.dateUtilService.adjustDate(fhasta) : '';
+          const fcreacion = contract.fcreacion || '';
+          contract.fcreacion = fcreacion ? this.dateUtilService.adjustDate(fcreacion) : '';
           return contract;
         });
   
