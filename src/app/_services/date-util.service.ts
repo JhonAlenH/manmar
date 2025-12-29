@@ -83,7 +83,7 @@ export class DateUtilService {
   adjustDate(dateString: string): string {
     const date = new Date(dateString);
     date.setDate(date.getDate() + 1); // Adjust date by adding 1 day
-    return date.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
+    return date.toLocaleDateString('en-GB'); // Convert back to YYYY-MM-DD format
   }
 
   formatDateYMD(date: Date): string {
