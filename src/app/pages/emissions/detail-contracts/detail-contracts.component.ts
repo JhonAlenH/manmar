@@ -148,7 +148,7 @@ export class DetailContractsComponent implements OnInit {
         vigencia.mcomisionext = mcomisionext
       }
       
-      this.documentosList = response.documents
+      // this.documentosList = response.documents
     })
   }
 
@@ -183,23 +183,53 @@ export class DetailContractsComponent implements OnInit {
     newImgInput.click()
   }
 
-  addNote(event: any){
+  addNote(event: any, vigencia:any){
     
     const form = new FormData()
     form.append( "file", event.target.files[0], event.target.files[0].name)
     form.append( "fileName", event.target.files[0].name)
     const response = this.http.post(environment.apiUrl + '/api/upload/document/emission', form)
-    response.subscribe( data => {
-      this.documentosList.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
+    response.subscribe( async data => {
+      vigencia.documentos.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})
+    });
+
+
+  }
+  async createNote(index: any, vigencia:any){
+    const documentToCreate = vigencia.documentos[index]
+    const dataDocument = {
+        itipo: 'P',
+        bactivo: 1,
+        ccodigo: vigencia.cvigencia,
+        xarchivo: documentToCreate.xarchivo,
+        xruta: documentToCreate.xruta,
+        xtitulo: documentToCreate.xtitulo,
+      }
+    const responseRaw = await fetch(environment.apiUrl + '/api/create/document', {
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(dataDocument)
+    })
+    const responseDoc = await responseRaw.json()
+    if(responseDoc.data) {
+      vigencia.documentos[index].cdocumento = responseDoc.data.cdocumento
       const newImgInput = <HTMLInputElement> document.getElementById('newFile')
       newImgInput.value = null
-
-      console.log(this.documentosList);
-    });
+    } else {
+      await this.removeNote(index, vigencia)
+    }
   }
   
-  removeNote(index:any){
-    this.documentosList.splice(index, 1)
+  async removeNote(index:any, vigencia:any){
+    
+    if(vigencia.documentos[index].cdocumento){
+      const responseRaw = await fetch(environment.apiUrl + '/api/delete/document/' + vigencia.documentos[index].cdocumento, {
+        "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+      })
+      const responseDoc = await responseRaw.json()
+      if(responseDoc.status) {
+        return
+      }
+    }
+    vigencia.documentos.splice(index, 1)
   }
   
 

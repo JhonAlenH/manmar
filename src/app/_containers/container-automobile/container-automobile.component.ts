@@ -499,7 +499,7 @@ export class ContainerAutomobileComponent implements OnInit {
     form.append( "fileName", event.target.files[0].name)
     const response = this.http.post(environment.apiUrl + '/api/upload/document/emission', form)
     response.subscribe( data => {
-      this.documentosList.push({xnombrenota: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
+      this.documentosList.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
       const newImgInput = <HTMLInputElement> document.getElementById('newFile')
       newImgInput.value = null
 

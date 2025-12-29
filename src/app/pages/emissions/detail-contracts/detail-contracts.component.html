@@ -128,7 +128,6 @@
                           <span matSuffix>% &nbsp;</span>
                         </mat-form-field>
                       </div>
-                      Nose {{vigencia.receiptP}}
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Comision</strong></h5>
                         <mat-form-field class="example-full-width">
@@ -203,9 +202,9 @@
                             <i class="fa-solid fa-plus"></i>
                           </button>
                             
-                          <div style="margin-top: 3.5rem;" *ngIf="documentosList.length > 0">
+                          <div style="margin-top: 3.5rem;" *ngIf="vigencia.documentos.length > 0">
                   
-                            <div *ngFor="let nota of documentosList | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
+                            <div *ngFor="let nota of vigencia.documentos | slice: (pageNotas - 1) * pageSize : (pageNotas - 1) * pageNotasSize + pageNotasSize; index as i" class="row mt-4 added-note">
                               <form class="col-md-5 d-flex align-items-center">  
                                 <input  class="input-mat" type="text"
                                 placeholder="Titulo del Documento"
@@ -214,22 +213,27 @@
                                 matInput
                                 >
                               </form>
-                              <div class="col-md-6 d-flex align-items-center">
+                              <div class="col-md-5 d-flex align-items-center">
                                 <a style="text-decoration: none;" target="_blank" [href]="nota.xruta">
                                   <span style="color: black;">{{nota.xarchivo}}</span>
                                   <i class="ml-1 fa-solid fa-arrow-up-right-from-square"></i>
                                 </a>
                               </div>
                               <div class="col-md-1 d-flex align-items-center justify-content-end">
-                                <button (click)="removeNote(i)" style="padding: 10px 14px;" class="btn btn-primary">
+                                <button matTooltip="Eliminar Archivo" (click)="removeNote(i, vigencia)" style="padding: 10px 14px;" class="btn btn-primary">
                                   <i class="fa-solid fa-trash"></i>
+                                </button>
+                              </div>
+                              <div *ngIf="!nota.cdocumento" class="col-md-1 d-flex align-items-center justify-content-end">
+                                <button matTooltip="Guardar Archivo" (click)="createNote(i, vigencia)" style="padding: 10px 14px;" class="btn btn-primary">
+                                  <i class="fa-solid fa-floppy-disk"></i>
                                 </button>
                               </div>
                             </div>
                             <div style="display: grid;place-items: center;" class="mt-4">
                               <ngb-pagination
-                              *ngIf="documentosList.length > 0"
-                              [collectionSize]="documentosList.length" 
+                              *ngIf="vigencia.documentos.length > 0"
+                              [collectionSize]="vigencia.documentos.length" 
                               [(page)]="pageNotas" 
                               [pageSize]="pageNotasSize"
                               [maxSize]="1"
@@ -243,11 +247,11 @@
                           </div>
                           
                           <div>
-                            <form [class]="documentosList.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
-                              <span *ngIf="documentosList.length <= 0">
+                            <form [class]="vigencia.documentos.length > 0 ? 'w-100 d-flex justify-content-end align-items-center mt-4' : 'w-100 d-flex justify-content-between align-items-center mt-4'">
+                              <span *ngIf="vigencia.documentos.length <= 0">
                                 No hay documentos añadidos por el momento
                               </span>
-                              <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event)">
+                              <input type="file" accept="application/pdf" style="display: none;" id="newFile" (change)="addNote($event, vigencia)">
                             </form>
                           </div>
                         </div>
