@@ -172,7 +172,7 @@
                                   </button>
                             
                                   <!-- Mostrar el enlace si xruta_rec tiene información -->
-                                  <a *ngIf="item.xruta_rec" [href]="item.xruta_rec" target="_blank">
+                                  <a *ngIf="item.documento?.xruta" [href]="item.documento.xruta" target="_blank">
                                     Ver comprobante
                                   </a>
                                 </td>
@@ -216,7 +216,7 @@
                               </form>
                               <div class="col-md-6 d-flex align-items-center">
                                 <a style="text-decoration: none;" target="_blank" [href]="nota.xruta">
-                                  <span style="color: black;">{{nota.xnombrenota}}</span>
+                                  <span style="color: black;">{{nota.xarchivo}}</span>
                                   <i class="ml-1 fa-solid fa-arrow-up-right-from-square"></i>
                                 </a>
                               </div>

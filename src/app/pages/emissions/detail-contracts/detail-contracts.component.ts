@@ -41,6 +41,7 @@ export class DetailContractsComponent implements OnInit {
   public pageReceipt = 1;
   public pageReceiptSize = 5;
   paginatedList: any[] = [];
+  bankList: any[] = [];
   currentUser!: any
   id:any;
   // // // Datos de la póliza
@@ -83,6 +84,7 @@ export class DetailContractsComponent implements OnInit {
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
+    this.currentUser = this.currentUser.data.user;
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -101,6 +103,22 @@ export class DetailContractsComponent implements OnInit {
     if (this.id && this.currentUser) {
       this.values();
     } 
+  }
+
+  async getBanks() {
+    const responseRaw = await fetch(environment.apiUrl + '/api/v1/valrep/bank' ,{
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+    })
+    const response = await responseRaw.json()
+    if (response.status) {
+      if (response.data.bank) {
+        this.bankList = response.data.bank.map((banco: any) => ({
+          cbanco: banco.cbanco,
+          xbanco: banco.xbanco,
+          cmoneda: banco.cmoneda
+        })).sort((a:any, b:any) => a.xbanco > b.xbanco ? 1 : -1);
+      }
+    }
   }
 
   values(){
@@ -172,7 +190,7 @@ export class DetailContractsComponent implements OnInit {
     form.append( "fileName", event.target.files[0].name)
     const response = this.http.post(environment.apiUrl + '/api/upload/document/emission', form)
     response.subscribe( data => {
-      this.documentosList.push({xnombrenota: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
+      this.documentosList.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
       const newImgInput = <HTMLInputElement> document.getElementById('newFile')
       newImgInput.value = null
 
@@ -183,11 +201,64 @@ export class DetailContractsComponent implements OnInit {
   removeNote(index:any){
     this.documentosList.splice(index, 1)
   }
+  
 
-  onCobrar(item: any) {
+  async onCobrar(item: any) {
+    await this.getBanks();
+    const loadFile = (event: any) => {
+      const preview = document.getElementById('filePreview');
+      if (preview && event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%;" />`;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    };
+  
+    // Manejar el evento de arrastrar y soltar
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) {
+      // Cuando se arrastra algo sobre el área de previsualización
+      filePreview.addEventListener('dragover', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#5e72e4'; // Cambiar el color del borde al arrastrar
+      });
+  
+      // Cuando el usuario suelta el archivo sobre el área de previsualización
+      filePreview.addEventListener('drop', (e: DragEvent) => {
+        e.preventDefault();
+        filePreview.style.borderColor = '#ccc'; // Volver el borde al color original
+  
+        const files = e.dataTransfer?.files;
+        if (files && files[0]) {
+          const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+          fileInput.files = files; // Asignar el archivo arrastrado al input
+          loadFile({ target: { files } }); // Mostrar la previsualización
+        }
+      });
+  
+      // Restablecer el estilo cuando el usuario deja de arrastrar fuera del área
+      filePreview.addEventListener('dragleave', () => {
+        filePreview.style.borderColor = '#ccc';
+      });
+    }
+  
+    // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+    window['loadFile'] = loadFile;
+
     Swal.fire({
       title: "Adjunte el comprobante",
       html: `
+        <div class="d-flex justify-content-center flex-column mb-3 w-100">
+          <input type="text" id="xreferencia" name="xreferencia" class="swal2-input" placeholder="Referencia de pago">
+          <select id="cbanco" name="cbanco" class="swal2-select" placeholder="Banco">
+            <option value="">Seleccione una opción...</option>
+          ${this.bankList.map((banco: any) => `
+            <option value="${banco.cbanco}">${banco.xbanco}</option>
+          `).join('')}
+          </select>
+        </div>
         <div style="text-align: center;">
           <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFile(event)">
           <label for="fileInput" style="cursor: pointer;">
@@ -205,6 +276,8 @@ export class DetailContractsComponent implements OnInit {
       allowOutsideClick: false,
       preConfirm: async () => {
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        const banco = document.getElementById('cbanco') as HTMLInputElement;
+        const referencia = document.getElementById('xreferencia') as HTMLInputElement;
         let rutaCapture = null;
     
         if (fileInput.files && fileInput.files[0]) {
@@ -231,11 +304,18 @@ export class DetailContractsComponent implements OnInit {
           });
           try {
             const data = {
-              id_poliza: this.id,
-              nrecibo: item.nrecibo,
-              fcobrorec: new Date(),
-              iestadorec: 'C',
-              xruta_rec: rutaCapture || null // Si no hay imagen, se guarda como null
+              crecibo: item.crecibo,
+              fcobro: new Date(),
+              itipo: 'M',
+              ptasamon: this.bcv,
+              cmoneda: item.cmoneda,
+              mmonto: item.mprima,
+              mmontoext: item.mprimaext,
+              cusuario: this.currentUser.cusuario,
+              cbanco: banco.value,
+              xreferencia: referencia.value,
+              xtitulo: 'referencia_pago',
+              xruta: rutaCapture || null // Si no hay imagen, se guarda como null
             };
       
             const response = this.http.post(environment.apiUrl + `/api/v1/emission/update-receipt-premium`, data);
@@ -302,6 +382,7 @@ export class DetailContractsComponent implements OnInit {
           }
         
           // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
+          console.log('algo')
           window['loadFile'] = loadFile;
         } else {
           Swal.fire({
