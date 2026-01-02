@@ -8,11 +8,12 @@ declare interface RouteInfo {
     class: string;
 }
 export const ROUTES: RouteInfo[] = [
-    { path: '/dashboard', title: 'Dashboard',  icon: 'ni-tv-2 text-primary', class: '' },
-    { path: '/administrator', title: 'Administración',  icon:'ni ni-money-coins text-yellow', class: '' },
-    { path: '/search-contract', title: 'Emisiones',  icon:'ni-bullet-list-67 text-red', class: '' },
-    { path: '/renovations', title: 'Renovaciones',  icon:'ni-bullet-list-67 text-red', class: '' },
-    { path: '/maestros', title: 'Maestros',  icon:'ni-planet text-blue', class: '' },
+    { path: '/dashboard', title: 'Dashboard',  icon: 'fa-display text-primary', class: '' },
+    { path: '/administrator', title: 'Administración',  icon:'fa-coins text-yellow', class: '' },
+    { path: '/search-contract', title: 'Emisiones',  icon:'fa-cash-register text-green', class: '' },
+    { path: '/reports', title: 'Reportes',  icon:'fa-file text-red', class: '' },
+    { path: '/renovations', title: 'Renovaciones',  icon:'fa-recycle text-gray', class: '' },
+    { path: '/maestros', title: 'Maestros',  icon:'fa-earth-americas text-blue', class: '' },
     // { path: '/maps', title: 'Maps',  icon:'ni-pin-3 text-orange', class: '' },
     // { path: '/user-profile', title: 'User profile',  icon:'ni-single-02 text-yellow', class: '' },
     // { path: '/tables', title: 'Tables',  icon:'ni-bullet-list-67 text-red', class: '' },

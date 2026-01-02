@@ -9,9 +9,9 @@ import { EmissionsComponent } from '../../pages/emissions/emissions.component';
 import { SearchContractsComponent } from '../../pages/emissions/search-contracts/search-contracts.component';
 import { DetailContractsComponent } from '../../pages/emissions/detail-contracts/detail-contracts.component';
 import { AdministratorComponent } from '../../pages/administrator/administrator.component';
-import { MaestrosComponent } from 'src/app/components/maestros/maestros.component';
 import { RenovationsComponent } from '../../pages/renovations/renovations.component';
 import { DetailRenovationComponent } from '../../pages/renovations/detail-renovation/detail-renovation.component';
+
 
 export const AdminLayoutRoutes: Routes = [
     { path: 'dashboard',      component: DashboardComponent },
@@ -24,6 +24,10 @@ export const AdminLayoutRoutes: Routes = [
     { path: 'emissions',      component: EmissionsComponent },
     { path: 'administrator',      component: AdministratorComponent },
     { path: 'renovations',      component: RenovationsComponent },
+    {
+      path: '',
+      loadChildren: () => import('src/app/pages/reports/reports.module').then(m => m.ReportsModule)
+    },
     { path: 'detail-renovation',      component: DetailRenovationComponent },
     { path: 'user-profile',   component: UserProfileComponent },
     { path: 'tables',         component: TablesComponent },

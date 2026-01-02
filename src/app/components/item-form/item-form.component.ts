@@ -617,27 +617,28 @@ export class ItemFormComponent implements OnInit {
     e.preventDefault()
     const formData = new FormData(formIdContainer)
     var formBody: any = []
+    console.log(formData)
     // encode form to send in format xrlencoded
-    for (var pair of formData.entries()) {
-      var encodedKey = encodeURIComponent(pair[0]);
-      if(typeof pair[1] == 'string') {
-        var encodedValue = encodeURIComponent(pair[1]);
-      } else {
-        var encodedValue = encodeURIComponent('');
-      }
-      var encodedBdType = this.fields.find(field => field.key == pair[0])
-      if (!encodedBdType) {
-        encodedBdType = this.fields.find(field => field.key_form == pair[0])
+    // for (var pair of formData.entries()) {
+    //   var encodedKey = encodeURIComponent(pair[0]);
+    //   if(typeof pair[1] == 'string') {
+    //     var encodedValue = encodeURIComponent(pair[1]);
+    //   } else {
+    //     var encodedValue = encodeURIComponent('');
+    //   }
+    //   var encodedBdType = this.fields.find(field => field.key == pair[0])
+    //   if (!encodedBdType) {
+    //     encodedBdType = this.fields.find(field => field.key_form == pair[0])
 
-      }
-      encodedBdType = encodeURIComponent(encodedBdType.bdType)
-      if (this.ccompania != '1') {
-        if(pair[0] == 'ccompania') {
+    //   }
+    //   encodedBdType = encodeURIComponent(encodedBdType.bdType)
+    //   if (this.ccompania != '1') {
+    //     if(pair[0] == 'ccompania') {
           
-        }
-      }
-      formBody.push(encodedKey + "=" + encodedValue.toUpperCase());
-    }
+    //     }
+    //   }
+    //   formBody.push(encodedKey + "=" + encodedValue.toUpperCase());
+    // }
     formBody.push('cusuario_creacion' + "=" + this.currentUser.cusuario);
     
     formBody = formBody.join("&");

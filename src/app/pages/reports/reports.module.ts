@@ -1,22 +1,26 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaestrosRoutingModule } from './maestros.routing';
+import { ReportsRoutingModule } from './reports.routing';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MaterialExampleModule } from 'src/app/material.module';
+import { ReportItemComponent } from 'src/app/components/report-item/report-item.component';
 
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    ReportItemComponent,
+  ],
   imports: [
     CommonModule,
-    MaestrosRoutingModule,
+    
+    ReportsRoutingModule,
     ReactiveFormsModule,
     NgbModule,
     MatButtonModule,
     MaterialExampleModule
   ]
 })
-export class MaestrosModule { }
+export class ReportsModule { }

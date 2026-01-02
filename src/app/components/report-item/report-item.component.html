@@ -1,0 +1,71 @@
+<div class="p-5" *ngIf="data">
+
+  <h1>{{data.title}}</h1>
+  <hr>
+  <form id="reporte">
+    <div class="d-flex flex-wrap">
+      <div class="row w-100">
+        <ng-container *ngFor="let field of data.fields">
+          <div 
+            [style]="'display:' + field.display"
+            [class]="'p-2 form-group ' + field.class">
+            <label>{{field.fieldName}}</label>
+            
+            <!-- INPUTS -->
+            <input
+              class="form-control"
+              [disabled]="disabledInputs || field.disabledField"
+              [type]="field.type"
+              [attr.name]="field.key"
+              [id]="field.key"
+              [pattern]="field.pattern || '[\\s\\S]*'"
+              step="any"
+              *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')"
+              [value]="field.value"
+              (change)="changeValue($event, field)"
+            >
+            <!-- RANGE DATE -->
+            <div *ngIf="(field.type == 'range-date')" class=" d-flex">
+              <input
+                class="form-control w-50"
+                [disabled]="disabledInputs || field.disabledField"
+                type="date"
+                [attr.name]="field.key + 'Begin'"
+                [id]="field.key + 'Begin'"
+                [value]="field.rangeBegin"
+                (change)="changeRange($event,'rangeBegin',field)"
+              >
+              <input
+                class="form-control w-50"
+                [disabled]="disabledInputs || field.disabledField"
+                type="date"
+                [attr.name]="field.key + 'End'"
+                [id]="field.key + 'End'"
+                [value]="field.rangeEnd"
+                (change)="changeRange($event,'rangeEnd',field)"
+              >
+            </div>
+      
+            <!-- SELECT -->
+            <select
+              class="form-control text-capitalize"
+              [value]="field.value"
+              [disabled]="disabledInputs || field.disabledField"
+              [id]="field.key"
+              [attr.name]="field.key"
+              *ngIf="field.type == 'select'"
+              (change)="changeValue($event, field)"
+            >
+              <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
+                {{option.text}}
+              </option>
+            </select>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end">
+      <button (click)="getReport()" type="button" class="btn btn-primary" [disabled]="disabled">Imprimir</button>
+    </div>
+  </form>
+</div>

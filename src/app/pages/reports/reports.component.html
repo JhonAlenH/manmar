@@ -1,0 +1,24 @@
+
+<!-- <div class="container-fluid ">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-center">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="p-5">
+
+  <h1>Listado de Reportes</h1>
+  <hr>
+  <div class="d-flex flex-wrap" *ngIf="reports.length > 0">
+    <div *ngFor="let report of reports" class="p-2">
+      <a [routerLink]="report.route" class="btn btn-outline-primary d-flex align-items-center">
+        <i class="fa-solid {{report.icon}} fa-lg mr-2"></i> {{report.name}}
+      </a>
+    </div>
+  </div>
+</div>

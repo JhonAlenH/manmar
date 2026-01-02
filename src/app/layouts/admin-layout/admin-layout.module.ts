@@ -22,6 +22,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ContainerAutomobileComponent } from '../../_containers/container-automobile/container-automobile.component';
 import { ContainerGenericComponent } from '../../_containers/container-generic/container-generic.component';
 import { ComponentsModule } from "src/app/components/components.module";
+import { ReportsComponent } from 'src/app/pages/reports/reports.component';
 // import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
@@ -49,7 +50,8 @@ import { ComponentsModule } from "src/app/components/components.module";
     ContainerGenericComponent,
     AdministratorComponent,
     RenovationsComponent,
-    DetailRenovationComponent
+    DetailRenovationComponent,
+    ReportsComponent
   ]
 })
 
