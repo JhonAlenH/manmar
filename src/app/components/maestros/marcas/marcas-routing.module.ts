@@ -32,14 +32,6 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         formId: 'create_vehiculos',
         fields: [
           {
-            type: 'text',
-            fieldName: 'Activo', class: 'col-md-0',
-            defaultValue: 1,
-            form_control: true,
-            key: 'bactivo',
-            bdType: 'number'
-          },
-          {
             type: 'auto-select',
             fieldName: 'Marca', class: 'col-md-2',
             classShow: 'col-md-4',
@@ -122,14 +114,6 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         formId: 'edit_vehiculos',
         disableUrl: '/api/v1/maestros/vehiculos/disable/',
         fields: [
-          {
-            type: 'text',
-            fieldName: 'Activo', class: 'col-md-0',
-            defaultValue: 1,
-            form_control: true,
-            key: 'bactivo',
-            bdType: 'number'
-          },
           {
             type: 'auto-select',
             fieldName: 'Marca', class: 'col-md-2',

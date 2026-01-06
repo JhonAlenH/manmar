@@ -12,10 +12,10 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         tableId: 'cedentes',
         tableInfo: [
           { headerName: 'Cedente', key: 'ccedente', primary_key: true },
-          { headerName: 'Rif', key: 'xrif' },
+          { headerName: 'RIF', key: 'cci_rif' },
           { headerName: 'Descripcion', key: 'xcedente' },
-          { headerName: 'Teléfono', key: 'xtelefono1' },
-          { headerName: 'email', key: 'xcorreo' },
+          { headerName: 'Teléfono', key: 'xtelefono' },
+          { headerName: 'Correo', key: 'xcorreo' },
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -34,26 +34,61 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Descripción Cedente', class: 'col-md-10',
+            required: true,
             key: 'xcedente',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Rif.', class: 'col-md-2',
-            key: 'xrif',
+            fieldName: 'Codigo Superintendencia', class: 'col-md-2',
+            required: true,
+            key: 'csuper',
+            bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Identificacion', class: 'col-md-1',
+            required: true,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Jurídico', value: 'J'}], 
+            key: 'itipodoc',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Ciudad', class: 'col-md-1',
-            key: 'cciudad',
+            fieldName: 'RIF.', class: 'col-md-2',
+            required: true,
+            key: 'cci_rif',
             bdType: 'text'
           },
+          { 
+            type: 'select',
+            fieldName: 'País', class: 'col-md-2',
+            required: false,
+            url: '/api/v1/maestros/paises',
+            binding_change_fields: ['cestado'],
+            change_fields: ['cestado', 'cciudad'],
+            key: 'cpais',
+            bdType: 'number'
+          },
           {
-            type: 'text',
-            fieldName: 'Estado', class: 'col-md-1',
+            type: 'select',
+            fieldName: 'Estado', class: 'col-md-2',
+            required: false,
             key: 'cestado',
-            bdType: 'text'
+            url_id: 'cpais',
+            binding_change_fields: ['cciudad'],
+            change_fields: ['cciudad'],
+            url: '/api/v1/maestros/estados',
+            bdType: 'number'
+          },
+          {
+            type: 'select',
+            fieldName: 'Ciudad', class: 'col-md-2',
+            required: false,
+            key: 'cciudad',
+            url_id: 'cestado',
+            url: '/api/v1/maestros/ciudades',
+            bdType: 'number'
           },
           {
             type: 'text',
@@ -64,39 +99,15 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Teléfono', class: 'col-md-2',
-            key: 'xtelefono1',
+            key: 'xtelefono',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Teléfono 2', class: 'col-md-2',
-            key: 'xtelefono2',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'eMail', class: 'col-md-4',
+            fieldName: 'Correo', class: 'col-md-4',
             key: 'xcorreo',
             bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'Portal', class: 'col-md-4',
-            key: 'xportal',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'Usuario', class: 'col-md-2',
-            key: 'xusuario',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'Login', class: 'col-md-2',
-            key: 'xlogin',
-            bdType: 'text'
-          }        
+          },       
         ]
       } 
     },
@@ -108,31 +119,65 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         editUrl: '/api/v1/maestros/cedentes/edit/',
         formId: 'edit_cedentes',
         disableUrl: '/api/v1/maestros/cedentes/disable/',
-        fields: [     
-
+        fields: [      
           {
             type: 'text',
             fieldName: 'Descripción Cedente', class: 'col-md-10',
+            required: true,
             key: 'xcedente',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Rif.', class: 'col-md-2',
-            key: 'xrif',
+            fieldName: 'Codigo Superintendencia', class: 'col-md-2',
+            required: true,
+            key: 'csuper',
+            bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Identificacion', class: 'col-md-1',
+            required: true,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Jurídico', value: 'J'}], 
+            key: 'itipodoc',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Ciudad', class: 'col-md-1',
-            key: 'cciudad',
+            fieldName: 'RIF.', class: 'col-md-2',
+            required: true,
+            key: 'cci_rif',
             bdType: 'text'
           },
+          { 
+            type: 'select',
+            fieldName: 'País', class: 'col-md-2',
+            required: false,
+            url: '/api/v1/maestros/paises',
+            binding_change_fields: ['cestado'],
+            change_fields: ['cestado', 'cciudad'],
+            key: 'cpais',
+            bdType: 'number'
+          },
           {
-            type: 'text',
-            fieldName: 'Estado', class: 'col-md-1',
+            type: 'select',
+            fieldName: 'Estado', class: 'col-md-2',
+            required: false,
             key: 'cestado',
-            bdType: 'text'
+            url_id: 'cpais',
+            binding_change_fields: ['cciudad'],
+            change_fields: ['cciudad'],
+            url: '/api/v1/maestros/estados',
+            bdType: 'number'
+          },
+          {
+            type: 'select',
+            fieldName: 'Ciudad', class: 'col-md-2',
+            required: false,
+            key: 'cciudad',
+            url_id: 'cestado',
+            url: '/api/v1/maestros/ciudades',
+            bdType: 'number'
           },
           {
             type: 'text',
@@ -143,39 +188,15 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'text',
             fieldName: 'Teléfono', class: 'col-md-2',
-            key: 'xtelefono1',
+            key: 'xtelefono',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Teléfono 2', class: 'col-md-2',
-            key: 'xtelefono2',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'eMail', class: 'col-md-4',
+            fieldName: 'Correo', class: 'col-md-4',
             key: 'xcorreo',
             bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'Portal Web', class: 'col-md-4',
-            key: 'xportal',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'Usuario', class: 'col-md-2',
-            key: 'xusuario',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'Login', class: 'col-md-2',
-            key: 'xlogin',
-            bdType: 'text'
-          }
+          },       
         ]
       } 
     },

@@ -5,7 +5,7 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between">
           <h5 class="title title-item">{{ title }}</h5>
-          <button *ngIf="mode == 'info'" class="btn btn-primary m-0" (click)="mode ='edit'; disabledInputs = false">Editar</button>
+          <button *ngIf="mode == 'info'" class="btn btn-primary m-0" (click)="mode ='edit'; disabledInputs = false; checkIfComplete();" [disabled]="!activeEdit">Editar</button>
         </div>
         <div class="card-body">
           <form id="{{ formId }}">
@@ -25,21 +25,21 @@
                     [id]="field.key"
                     *ngIf="(field.type == 'textarea')"
                     [value]="field.defaultValue" rows="1"
-                    (change)="checkIfComplete()"
+                    (change)="assignValue(field,$event)"
                   ></textarea>
 
                   <!-- INPUTS -->
                   <input
                     class="form-control"
                     [disabled]="disabledInputs || field.disabledField"
-                    type="date"
+                    [type]="field.type"
                     [attr.name]="field.key"
                     [id]="field.key"
                     [pattern]="field.pattern || '[\\s\\S]*'"
                     step="any"
                     *ngIf="(field.type == 'text' || field.type == 'date' || field.type == 'number' || field.type == 'email')"
                     [value]="field.defaultValue"
-                    (change)="checkIfComplete()"
+                    (change)="assignValue(field,$event)"
                   >
   
                   <!-- SELECTS WITH BINDING -->
@@ -81,7 +81,7 @@
                     *ngIf="(field.binding_change_fields) && (field.type == 'auto-select')"
                     (change)="setText($event, field.key, field.binding_change_fields)"
                   >
-                    <option *ngFor="let option of field.options" [value]="option.value">
+                    <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                       {{option.text}}
                     </option>
                   </select>
@@ -94,7 +94,7 @@
                     *ngIf="(!field.binding_change_fields) && (field.type == 'auto-select')"
                     (change)="setText($event, field.key)"
                   >
-                    <option *ngFor="let option of field.options" [value]="option.value">
+                    <option *ngFor="let option of field.options" [value]="option.value" [attr.selected]="option.selected">
                       {{option.text}}
                     </option>
                   </select>
@@ -111,7 +111,7 @@
                     [id]="field.key"
                     *ngIf="(!field.binding_change_fields) && (field.type == 'auto-text')"
                     [value]="field.defaultValue"
-                    (change)="checkIfComplete()"
+                    (change)="assignValue(field, $event)"
                   >
                 </div>
               </ng-container>
@@ -270,7 +270,7 @@
               </mat-stepper>
             </div>
             <div class="d-flex justify-content-end">
-              <button matTooltip="Crear" matTooltipPosition="left" class="btn" mat-raised-button mat-button color="primary" id="submit_{{ formId }}" [disabled]="loading || disabled">
+              <button matTooltip="Crear" matTooltipPosition="left" class="btn" mat-raised-button mat-button color="primary" id="submit_{{ formId }}" [disabled]="loading || disabled ">
                 <span *ngIf="!loading">Guardar</span>
                 <div *ngIf="loading" class="spinner-border" role="status">
                   <span class="visually-hidden">Loading...</span>

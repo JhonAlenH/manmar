@@ -23,6 +23,7 @@ export class ItemFormComponent implements OnInit {
   internMode:any = null
   itemData = {}
   mainUrl = ''
+  firstItem = false
   itemId:any = ''
   title = ''
   createUrl = ''
@@ -32,12 +33,14 @@ export class ItemFormComponent implements OnInit {
   fields:any = ['1']
   formId = ''
   options: any = []
-  ccompania: any = ''
   loading: boolean = false
   disabled: boolean = true
   multipleValuesFields: any = null
   searchFieldIndex:any  = 0
   currentUser!: any
+
+  activeEdit = false
+  activeSave = false
 
   sub = new Subscription()
   constructor(
@@ -64,8 +67,6 @@ export class ItemFormComponent implements OnInit {
     this.currentUser = jsonD.data?.user
     
     // this.openSnackBarLoading()
-    // this.ccompania = localStorage.getItem("ccompania");
-    this.ccompania = 1;
     if(this.dataComponent){
       const v = this.dataComponent
       this.mode = v.mode
@@ -100,7 +101,6 @@ export class ItemFormComponent implements OnInit {
         }
       });
     }
-
     if(this.mode == 'info') {
       this.route.url.subscribe( v => {
         this.itemId = v[2].path
@@ -111,112 +111,130 @@ export class ItemFormComponent implements OnInit {
     }
     for (const field of this.fields) {
       field.options = []
+      if (field.form_control) { field.display = 'none' } else { field.display = 'block' }
     }
     
     if(this.mode == 'info') {
-        this.http.get(environment.apiUrl + this.mainUrl+this.itemId, {}).subscribe(async (response:any) => {
-        this.itemData = response.data
-        await this.getFieldsData()
-        // this.closeSnackBar()
+      const responseRaw = await fetch(environment.apiUrl + this.mainUrl + this.itemId,{
+        "method": "GET", "headers": { "CONTENT-TYPE": "Application/json"}
       })
+      const response = await responseRaw.json()
+      if(response.status) {
+        this.itemData = response.data
+        this.firstItem = true
+        this.setDataFields()
+        await this.getFieldsData()
+        this.activeEdit = true
+        this.firstItem = false
+        // this.closeSnackBar()
+      }
     } else {
       await this.getFieldsData()
     //   this.closeSnackBar()
     }
+    
   }
   async ngAfterViewInit(){
 
-    
     window.addEventListener('load', async (e) => {
     })
-    for (const field of await this.fields) {
-      if (field.url_id){
-        setTimeout(() => {
-          const fieldTo = this.fields.find(item => item.key == field.url_id)
-          this.setValue(field.key, fieldTo.defaultValue)
-
-        }, 2000);
-      }
-    }
+    
 
     const formIdContainer = document.forms[this.formId]
     // send item form container
-    formIdContainer.addEventListener('submit', (e:any)=> {
+    formIdContainer.addEventListener('submit', (e:any) => {
       this.submitForm(e, formIdContainer)
       
     })
   }
   // get info about the fields pased by routing file
 
+  setDataFields() {
+    for (const field of this.fields) {
+      if(field.type == 'multiple-select'){
+        field.defaultValue = this.itemData[field.key_form]
+        field.addedValuesIds = this.itemData[field.added_data_key]
+      } else {
+        field.defaultValue = this.itemData[field.key]
+        if(field.defaultValue){
+          if(field.change_fields) {
+            for (const fieldCha of field.change_fields) {
+              const gettedField = this.fields.find(fieldA => fieldA.key == fieldCha)
+              console.log(gettedField)
+              if(gettedField.reverse) {
+                gettedField.display = 'none'
+              }
+            }
+          }
+        }
+      }
+      // if(this.mode == 'info') {
+      // }
+    }
+    
+  }
   async getFieldsData() {
     this.multipleValuesFields = this.fields.filter(field => field.type == 'multiple-select')
     for(const field of this.fields) {
-      field.defaultValue = ''
+      if(!this.firstItem) {
+        field.defaultValue = ''
+      }
       // select options added
       if(field.type.includes('select')){
+
         if(field.url) {
-          if(!field.url_id && !field.url_ids) {
-            const responseRaw = await fetch(environment.apiUrl + field.url,{
-              "method": "GET", "headers": { "CONTENT-TYPE": "Application/json"}
-            })
-            const response = await responseRaw.json()
-            
-            if (response.status) {
-              console.log('data', response.data)
-              field.options = response.data
-              if(field.defaultValue != '') {
-                const selected = field.options.find(option => option.value == field.defaultValue)
-                selected.selected = true
-              }
-            }
-          } else {
-            field.defaultValue = ''
-            if(field.type == 'auto-select') {
-              field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+          let extraParam = ''
+          let fields = []
+  
+          if(field.url_ids) {
+            fields = field.url_ids
+          } 
+          if (field.url_id) {
+            fields.push(field.url_id)
+          }
+          for (const id of fields) {
+            const fieldToGet = this.fields.find((item:any) => item.key == id)
+            if(fieldToGet) {
+              extraParam += '/' + fieldToGet.defaultValue
             }
           }
+          // if(!field.url_id && !field.url_ids) {
+            const responseRaw = await fetch(environment.apiUrl + field.url + extraParam,{
+              "method": "GET", "headers": { "CONTENT-TYPE": "Application/json"}
+            })
+            if (responseRaw.ok) {
+              const response = await responseRaw.json()
+              
+              if (response.status) {
+                field.options = response.data
+                if(field.defaultValue != '') {
+                  const selected = field.options.find(option => option.value == field.defaultValue)
+                  selected.selected = true
+                }
+              } 
+            } else {
+              field.options.unshift({text: 'Selecciona una opcion...', value: ''})
+            }
         } else {
           field.options = field.values
-          if(this.mode == 'create') {
+          // if(this.mode == 'create') {
             if(field.defaultValue != '') {
               const selected = field.options.find(option => option.value == field.defaultValue)
               if (selected){
                 selected.selected = true
               }
             }
-          } 
+          // } 
           
         }
         if(field.type == 'multiple-select') {
           field.addedValues = []
         }
       }
-
-      if (field.form_control) { field.display = 'none' } else { field.display = 'block' }
-      if (!field.defaultValue){ field.defaultValue = '' }
+      if (!field.defaultValue) { field.defaultValue = '' }
       
     }
-    if(this.mode == 'info') {
-      for (const field of this.fields) {
-        if(field.type.includes('select')) {
-          if(field.type == 'multiple-select'){
-            field.defaultValue = this.itemData[field.key_form]
-            field.addedValuesIds = this.itemData[field.added_data_key]
-          } else {
-            const optionSelected = field.options.find(option => option.value == this.itemData[field.key])
-            console.log(optionSelected)
-            if (optionSelected) {
-              field.defaultValue = this.itemData[field.key]
-              optionSelected.selected = true
-            }
-          }
-        } else {
-          field.defaultValue = this.itemData[field.key]
-        }
-        // if(this.mode == 'info') {
-        // }
-      }
-    }
+    
   }
   // change item (adde or available) to multipleSelect field
   changeItemTo(event: any, field: any, value: any) {
@@ -291,7 +309,6 @@ export class ItemFormComponent implements OnInit {
       }
     }
     if(searchedField.url){
-      console.log(searchedField)
       searchedField.options = []
       let extraParam = ''
       if(value) {
@@ -425,7 +442,6 @@ export class ItemFormComponent implements OnInit {
           }
         }
         // this.openSnackBar(data.message)
-        console.log(data.message)
       })
     }
     this.checkIfComplete()
@@ -471,7 +487,6 @@ export class ItemFormComponent implements OnInit {
         searchedFieldToChange.display = 'block'
       } else {
         const itemField = <HTMLInputElement>document.getElementsByName(searchedFieldToChange.key)[0]
-        itemField.value = this.ccompania
         searchedFieldToChange.display = 'none'
         this.setValue(searchedFieldToChange.binding_change_fields, itemField.value)
       }
@@ -512,7 +527,6 @@ export class ItemFormComponent implements OnInit {
         }
       }
     }
-    // this.checkIfComplete()
   }
   searchOcurrences(event: any) {
 
@@ -595,8 +609,13 @@ export class ItemFormComponent implements OnInit {
   noSend(event: any) {
     event.preventDefault()
   }
+  assignValue(field:any, event:any){
+    field.defaultValue = event.currentTarget.value
+    this.checkIfComplete()
+  }
   checkIfComplete(){
     this.disabled = false
+    this.activeEdit = true
     const formIdContainer = document.forms[this.formId]
     const formData = new FormData(formIdContainer)
     for (var p of formData) {
@@ -612,44 +631,34 @@ export class ItemFormComponent implements OnInit {
       }
     }
   }
-  submitForm(e:any, formIdContainer:any) {
+  async submitForm(e:any, formIdContainer:any) {
     this.loading = true
     e.preventDefault()
-    const formData = new FormData(formIdContainer)
-    var formBody: any = []
-    console.log(formData)
-    // encode form to send in format xrlencoded
-    // for (var pair of formData.entries()) {
-    //   var encodedKey = encodeURIComponent(pair[0]);
-    //   if(typeof pair[1] == 'string') {
-    //     var encodedValue = encodeURIComponent(pair[1]);
-    //   } else {
-    //     var encodedValue = encodeURIComponent('');
-    //   }
-    //   var encodedBdType = this.fields.find(field => field.key == pair[0])
-    //   if (!encodedBdType) {
-    //     encodedBdType = this.fields.find(field => field.key_form == pair[0])
-
-    //   }
-    //   encodedBdType = encodeURIComponent(encodedBdType.bdType)
-    //   if (this.ccompania != '1') {
-    //     if(pair[0] == 'ccompania') {
-          
-    //     }
-    //   }
-    //   formBody.push(encodedKey + "=" + encodedValue.toUpperCase());
-    // }
-    formBody.push('cusuario_creacion' + "=" + this.currentUser.cusuario);
     
-    formBody = formBody.join("&");
+    const values = this.fields.filter((item:any) => item.defaultValue).map((item2)=> {return { 
+      key: item2.key, value: item2.defaultValue
+    }})
+    let data:any = {}
+    for (const value of values) {
+      data[value.key] = value.value
+    }
+    
     // url to create in create mode 
     if(this.mode == 'create') {
-      this.http.post(environment.apiUrl + this.createUrl, formBody, {
-          headers: {
-              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-          }
-      }).subscribe((data) => {
-      //   this.openSnackBar(data['message'])
+      data.cusuario_creacion = this.currentUser.cusuario;
+      const responseForm = await fetch(environment.apiUrl + this.createUrl, {
+        "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
+      })
+      const response = await responseForm.json()
+      if(response.status) {
+
+      
+      // this.http.post(environment.apiUrl + this.createUrl, data, {
+      //     headers: {
+      //         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      //     }
+      // }).subscribe((data) => {
+      // //   this.openSnackBar(data['message'])
         this.loading = false
         if(this.dataComponent) {
           this.created.emit();
@@ -657,18 +666,29 @@ export class ItemFormComponent implements OnInit {
           window.history.back()
           // window.location.reload()
         }
-      })
-    } else if(this.mode == 'edit') {
-      this.http.post(environment.apiUrl + this.editUrl, formBody, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-          }
-      }).subscribe((data) => {
-      //   this.openSnackBar(data['message'])
+        // })
+      } else {
         this.loading = false
-        window.history.back()
-        // window.location.reload()
+      }
+    } else if(this.mode == 'edit') {
+      const responseForm = await fetch(environment.apiUrl + this.editUrl, {
+        "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
       })
+      const response = await responseForm.json()
+      if(response.status) {
+        // this.http.post(environment.apiUrl + this.editUrl, data, {
+        //     headers: {
+        //       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        //     }
+        // }).subscribe((data) => {
+        //   this.openSnackBar(data['message'])
+          this.loading = false
+          window.history.back()
+          // window.location.reload()
+      // })
+      } else {
+        this.loading = false
+      }
     }
   }
 }

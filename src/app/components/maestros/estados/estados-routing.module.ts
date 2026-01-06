@@ -8,12 +8,12 @@ import { TableListComponent } from './../../table-list/table-list.component';
     { 
       path: 'estados',      component: TableListComponent, data: {
         title: 'Estados',
-        url: '/api/v1/estados/search',
+        url: '/api/v1/maestros/estados/search',
         tableId: 'estados',
         tableInfo: [
-          { headerName: 'Codigo País', key: 'cpais', primary_key: true},
           { headerName: 'Codigo Estado', key: 'cestado', primary_key: true },
           { headerName: 'Descripción del Estado', key: 'xestado' },
+          { headerName: 'País', key: 'xpais'},
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -25,15 +25,24 @@ import { TableListComponent } from './../../table-list/table-list.component';
       path: 'estados/create',   component: ItemFormComponent, data: {
         title: 'Crear Nuevo Estado',
         mode: 'create',
-        mainUrl: '/api/v1/maestros/estados/',
-        createUrl: '/api/v1/estados/create',
+        mainUrl: '/api/v1/maestros/maestros/estados/',
+        createUrl: '/api/v1/maestros/estados/create',
         formId: 'create_estados',
-        fields: [      
+        fields: [  
           {
-            fieldName: 'Descripción del Estado', class: 'col-md-6',
             type: 'text',
+            fieldName: 'Nombre del Estado', class: 'col-md-8',
+            required: true,
             key: 'xestado',
             bdType: 'text'
+          },
+          { 
+            type: 'select',
+            fieldName: 'País', class: 'col-md-4',
+            required: true,
+            url: '/api/v1/maestros/paises',
+            key: 'cpais',
+            bdType: 'number'
           }
         ]
       } 
@@ -42,16 +51,25 @@ import { TableListComponent } from './../../table-list/table-list.component';
       path: 'estados/info/:id',   component: ItemFormComponent, data: {
         title: 'Información del Estado',
         mode: 'info',
-        mainUrl: '/api/v1/estados/get/',
-        editUrl: '/api/v1/estados/edit/',
+        mainUrl: '/api/v1/maestros/estados/get/',
+        editUrl: '/api/v1/maestros/estados/edit/',
         formId: 'edit_estados',
-        disableUrl: '/api/v1/estados/disable/',
-        fields: [     
+        // disableUrl: '/api/v1/maestros/estados/disable/',
+        fields: [  
           {
-            fieldName: 'Descripción del Estado', class: 'col-md-6',
+            fieldName: 'Nombre del Estado', class: 'col-md-8',
             type: 'text',
+            required: true,
             key: 'xestado',
             bdType: 'text'
+          },
+          { 
+            type: 'select',
+            fieldName: 'País', class: 'col-md-4',
+            required: true,
+            url: '/api/v1/maestros/paises',
+            key: 'cpais',
+            bdType: 'number'
           }
         ]
       } 
