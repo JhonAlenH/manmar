@@ -37,8 +37,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           },
           {
             type: 'text',
-            fieldName: 'Abreviatura', class: 'col-md-4',
+            fieldName: 'Abreviatura', class: 'col-md-2',
             key: 'xabreviatura',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Representación', class: 'col-md-2',
+            key: 'xrepresentacion',
             bdType: 'text'
           }
         ]
@@ -50,9 +56,10 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         mode: 'info',
         mainUrl: '/api/v1/maestros/monedas/get/',
         createUrl: '/api/v1/maestros/monedas/edit',
+        editUrl: '/api/v1/maestros/monedas/edit/',
         formId: 'edit_monedas',
         disableUrl: '/api/v1/maestros/monedas/disable/',
-        fields: [     
+        fields: [      
           {
             type: 'text',
             fieldName: 'Descripción de Moneda', class: 'col-md-8',
@@ -61,8 +68,14 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           },
           {
             type: 'text',
-            fieldName: 'Abreviatura', class: 'col-md-4',
+            fieldName: 'Abreviatura', class: 'col-md-2',
             key: 'xabreviatura',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Representación', class: 'col-md-2',
+            key: 'xrepresentacion',
             bdType: 'text'
           }
         ]

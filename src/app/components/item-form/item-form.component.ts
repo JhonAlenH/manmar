@@ -635,8 +635,8 @@ export class ItemFormComponent implements OnInit {
     this.loading = true
     e.preventDefault()
     
-    const values = this.fields.filter((item:any) => item.defaultValue).map((item2)=> {return { 
-      key: item2.key, value: item2.defaultValue
+    const values = this.fields.map((item2)=> {return { 
+      key: item2.key, value: item2.defaultValue || null
     }})
     let data:any = {}
     for (const value of values) {

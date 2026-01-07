@@ -45,6 +45,11 @@ const routes: Routes =[
       {
         path: '',
         loadChildren: () => 
+            import('../../components/maestros/ciudades/ciudades.module').then(x=>x.ClientesModule)
+      },
+      {
+        path: '',
+        loadChildren: () => 
             import('../../components/maestros/clientes/clientes.module').then(x=>x.ClientesModule)
       },
       {

@@ -28,22 +28,23 @@ import { TableListComponent } from './../../table-list/table-list.component';
         mainUrl: '/api/v1/maestros/maestros/estados/',
         createUrl: '/api/v1/maestros/estados/create',
         formId: 'create_estados',
-        fields: [  
-          {
-            type: 'text',
-            fieldName: 'Nombre del Estado', class: 'col-md-8',
-            required: true,
-            key: 'xestado',
-            bdType: 'text'
-          },
+        fields: [
           { 
             type: 'select',
-            fieldName: 'País', class: 'col-md-4',
+            fieldName: 'País', class: 'col-md-2',
             required: true,
             url: '/api/v1/maestros/paises',
             key: 'cpais',
             bdType: 'number'
-          }
+          },
+          {
+            type: 'text',
+            fieldName: 'Nombre del Estado', class: 'col-md-10',
+            required: true,
+            key: 'xestado',
+            bdType: 'text'
+          },
+          
         ]
       } 
     },
@@ -55,22 +56,23 @@ import { TableListComponent } from './../../table-list/table-list.component';
         editUrl: '/api/v1/maestros/estados/edit/',
         formId: 'edit_estados',
         // disableUrl: '/api/v1/maestros/estados/disable/',
-        fields: [  
-          {
-            fieldName: 'Nombre del Estado', class: 'col-md-8',
-            type: 'text',
-            required: true,
-            key: 'xestado',
-            bdType: 'text'
-          },
+        fields: [
           { 
             type: 'select',
-            fieldName: 'País', class: 'col-md-4',
+            fieldName: 'País', class: 'col-md-2',
             required: true,
             url: '/api/v1/maestros/paises',
             key: 'cpais',
             bdType: 'number'
-          }
+          },
+          {
+            type: 'text',
+            fieldName: 'Nombre del Estado', class: 'col-md-10',
+            required: true,
+            key: 'xestado',
+            bdType: 'text'
+          },
+          
         ]
       } 
     },

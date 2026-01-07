@@ -13,7 +13,7 @@ export class MaestrosComponent implements OnInit {
       text: 'Generales', icon: 'fa-solid fa-gear' , id: 'generales', items: [
         {text: 'Países', icon: 'fa-solid fa-flag', url: 'paises'},
         {text: 'Estados', icon: 'fa-solid fa-road', url: 'estados'},
-        {text: 'Ciudades', icon: 'fa-solid fa-map-location-dot', url: '#'},
+        {text: 'Ciudades', icon: 'fa-solid fa-map-location-dot', url: 'ciudades'},
       ]
     },
     {
