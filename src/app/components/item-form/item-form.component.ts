@@ -111,6 +111,9 @@ export class ItemFormComponent implements OnInit {
     }
     for (const field of this.fields) {
       field.options = []
+      if(field.type == 'password') {
+        field.showB = true
+      }
       if (field.form_control) { field.display = 'none' } else { field.display = 'block' }
     }
     
@@ -631,6 +634,11 @@ export class ItemFormComponent implements OnInit {
       }
     }
   }
+
+  showInput(field:any){
+    field.type = field.type == 'password'? 'text' : 'password'
+  }
+
   async submitForm(e:any, formIdContainer:any) {
     this.loading = true
     e.preventDefault()

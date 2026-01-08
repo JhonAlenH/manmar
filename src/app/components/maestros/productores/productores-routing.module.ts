@@ -258,7 +258,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'password',
             fieldName: 'Contraseña', class: 'col-md-2',
-            key: 'xcontraseña',
+            key: 'xcontrasena',
             bdType: 'text'
           },
           {
