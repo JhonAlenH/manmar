@@ -11,7 +11,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         url: '/api/v1/maestros/ramos/search',
         tableId: 'ramos',
         tableInfo: [
-          { headerName: 'Ramo', key: 'id', primary_key: true },
+          { headerName: 'Ramo', key: 'cramo', primary_key: true },
           { headerName: 'Descripción', key: 'xramo' },
         ],
         extraInfo: [
@@ -30,12 +30,12 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         fields: [      
           {
             type: 'text',
-            fieldName: 'Descripción del Ramo', class: 'col-md-12',
+            fieldName: 'Nombre del Ramo', class: 'col-md-12',
             key: 'xramo',
             bdType: 'text'
           }
         ]
-      } 
+      }
     },
     { 
       path: 'ramos/info/:id',   component: ItemFormComponent, data: {
@@ -48,7 +48,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         fields: [     
           {
             type: 'text',
-            fieldName: 'Descripción del Ramo', class: 'col-md-12',
+            fieldName: 'Nombre del Ramo', class: 'col-md-12',
             key: 'xramo',
             bdType: 'text'
           }

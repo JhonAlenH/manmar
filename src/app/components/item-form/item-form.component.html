@@ -42,7 +42,7 @@
                     [value]="field.defaultValue"
                     (change)="assignValue(field,$event)"
                   >
-                  <button class="btn" type="button" *ngIf="field.showB" style="position: absolute; bottom: 6px; right: 20px; padding: 2px 4px !important;" (click)="showInput(field)" [disabled]="disabledInputs || field.disabledField">
+                  <button class="btn" type="button" *ngIf="field.showB" style="position: absolute; bottom: 8px; right: 25px; padding: 2px 4px !important;" (click)="showInput(field)" [disabled]="disabledInputs || field.disabledField">
                     <i *ngIf="field.type == 'password'" class="fa-solid fa-eye"></i>
                     <i *ngIf="field.type == 'text'" class="fa-solid fa-eye-slash"></i>
                   </button>

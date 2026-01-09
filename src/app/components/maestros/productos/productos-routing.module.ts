@@ -11,7 +11,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
         url: '/api/v1/maestros/productos/search',
         tableId: 'productos',
         tableInfo: [
-          { headerName: 'ID', key: 'id', primary_key: true },
+          { headerName: 'ID', key: 'cproducto', primary_key: true },
           { headerName: 'Producto', key: 'xproducto' },
           { headerName: 'Ramo', key: 'xramo' },
           { headerName: 'Cedente', key: 'xcedente' },
@@ -89,15 +89,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           },
           { 
             type: 'select',
-            fieldName: 'Moneda', class: 'col-md-2',
-            required: true,
-            url: '/api/v1/maestros/monedas',
-            key: 'cmoneda',
-            bdType: 'number'
-          },
-          { 
-            type: 'select',
-            fieldName: 'Ramo', class: 'col-md-2',
+            fieldName: 'Ramo', class: 'col-md-4',
             required: true,
             url: '/api/v1/maestros/ramos',
             key: 'cramo',
@@ -105,10 +97,18 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           },
           { 
             type: 'select',
-            fieldName: 'Cedente', class: 'col-md-2',
+            fieldName: 'Cedente', class: 'col-md-4',
             required: true,
             url: '/api/v1/maestros/cedentes',
             key: 'ccedente',
+            bdType: 'number'
+          },
+          { 
+            type: 'select',
+            fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/monedas',
+            key: 'cmoneda',
             bdType: 'number'
           },
           { 

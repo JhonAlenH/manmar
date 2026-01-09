@@ -195,11 +195,16 @@ export class ItemFormComponent implements OnInit {
           if (field.url_id) {
             fields.push(field.url_id)
           }
+
           for (const id of fields) {
             const fieldToGet = this.fields.find((item:any) => item.key == id)
             if(fieldToGet) {
               extraParam += '/' + fieldToGet.defaultValue
             }
+          }
+
+          if (field.userVar && this.currentUser[field.userVar]) {
+            extraParam = '/' + this.currentUser[field.userVar]
           }
           // if(!field.url_id && !field.url_ids) {
             const responseRaw = await fetch(environment.apiUrl + field.url + extraParam,{

@@ -13,7 +13,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         tableInfo: [
           { headerName: 'Codigo', key: 'cmetodologiapago', primary_key: true },
           { headerName: 'Descripción', key: 'xmetodologiapago' },
-          { headerName: 'País', key: 'cpais' }
+          { headerName: 'Cuotas', key: 'ncuotas' }
         ],
         extraInfo: [
           {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
@@ -30,15 +30,22 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         formId: 'create_metodologiapago',
         fields: [ 
           {
-            fieldName: 'Descripción', class: 'col-md-8',
-            type: 'text',
             key: 'xmetodologiapago',
+            fieldName: 'Nombre de Metodología', class: 'col-md-8',
+            required:true,
+            type: 'text',
             bdType: 'text'
           },        
           {
-            fieldName: 'País', class: 'col-md-4',
-            type: 'text',
-            key: 'cpais',
+            key: 'ndias',
+            fieldName: 'Nº Días', class: 'col-md-2',
+            type: 'number',
+            bdType: 'text'
+          },
+          {
+            key: 'ncuotas',
+            fieldName: 'Nº Cuotas', class: 'col-md-2',
+            type: 'number',
             bdType: 'text'
           }
         ]
@@ -52,17 +59,24 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         editUrl: '/api/v1/maestros/metodologiapago/edit/',
         formId: 'edit_metodologiapago',
         disableUrl: '/api/v1/maestros/metodologiapago/disable/',
-        fields: [     
+        fields: [ 
           {
-            fieldName: 'Descripción', class: 'col-md-8',
-            type: 'text',
             key: 'xmetodologiapago',
+            fieldName: 'Nombre de Metodología', class: 'col-md-8',
+            required:true,
+            type: 'text',
             bdType: 'text'
           },        
           {
-            fieldName: 'País', class: 'col-md-4',
-            type: 'text',
-            key: 'cpais',
+            key: 'ndias',
+            fieldName: 'Nº Días', class: 'col-md-2',
+            type: 'number',
+            bdType: 'text'
+          },
+          {
+            key: 'ncuotas',
+            fieldName: 'Nº Cuotas', class: 'col-md-2',
+            type: 'number',
             bdType: 'text'
           }
         ]

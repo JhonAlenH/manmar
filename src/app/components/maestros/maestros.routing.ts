@@ -70,6 +70,11 @@ const routes: Routes =[
       {
         path: '',
         loadChildren: () => 
+            import('../../components/maestros/usuarios/usuarios.module').then(x=>x.UsuariosModule)
+      },
+      {
+        path: '',
+        loadChildren: () => 
             import('../../components/maestros/marcas/marcas.module').then(x=>x.MarcasModule)
       },
     ]

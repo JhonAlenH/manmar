@@ -32,6 +32,9 @@ export class TableListComponent implements OnInit {
   tableInfo = []
   extraInfo = []
 
+  currentUser!: any
+  userVar:any = null
+
   tableData: any = []
   noCreate = false
   filtersData: any[] = []
@@ -57,6 +60,10 @@ export class TableListComponent implements OnInit {
     this._snackBar.dismiss();
   }
   ngOnInit() {
+    const storedSession = localStorage.getItem('user');
+    const jsonD = JSON.parse(storedSession);
+    this.currentUser = jsonD.data?.user
+
     this.openSnackBarLoading()
     this.route.url.subscribe( v => {
       
@@ -80,6 +87,7 @@ export class TableListComponent implements OnInit {
     this.sub = this.route.data.subscribe(v => {
       this.title = v.title
       this.url = v.url
+      this.userVar = v.userVar || null
       this.noCreate = v.noCreate
       this.redirectUrl = v.redirectUrl
       this.tableInfo = v.tableInfo
@@ -88,7 +96,6 @@ export class TableListComponent implements OnInit {
       
       if(v.filtersData) {
         this.filtersData = v.filtersData
-        console.log(this.filtersData);
         if(v.filterDefaultKey) {
           const filterDefaultItem = this.filtersData.find(item=> item.key == v.filterDefaultKey)
           filterDefaultItem.controlValue = this.filterValue
@@ -106,8 +113,10 @@ export class TableListComponent implements OnInit {
 
       this.displayedColumns.push(item.action)
     })
-
-    this.http.post(environment.apiUrl + this.url, {}).subscribe((data) => {
+    console.log(this.currentUser['productor'])
+    this.userVar = this.userVar && this.currentUser[this.userVar] ? '/' + this.currentUser[this.userVar] : ''
+    
+    this.http.post(environment.apiUrl + this.url + this.userVar, {}).subscribe((data) => {
       console.log(data)
       let dataRecived:any = []
       if(data['data']){

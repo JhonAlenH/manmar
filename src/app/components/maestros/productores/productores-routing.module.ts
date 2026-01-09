@@ -29,91 +29,6 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
         mainUrl: '/api/v1/maestros/productores/get/',
         createUrl: '/api/v1/maestros/productores/create', 
         formId: 'create_productores',
-        fields: [   
-          {
-            type: 'text',
-            fieldName: 'Nombre del Productor', class: 'col-md-10',
-            key: 'xproductor',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'Cédula', class: 'col-md-2',
-            key: 'xrif',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'Codigo Super.', class: 'col-md-3',
-            key: 'csuper',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'País', class: 'col-md-3',
-            key: 'cpais',
-            bdType: 'text'
-          },  
-          {
-            type: 'text',
-            fieldName: 'Estado', class: 'col-md-3',
-            key: 'cestado',
-            bdType: 'text'
-          }, 
-          {
-            type: 'text',
-            fieldName: 'Ciudad', class: 'col-md-3',
-            key: 'cciudad',
-            bdType: 'text'
-          },          
-          {
-            type: 'text',
-            fieldName: 'Dirección', class: 'col-md-12',
-            key: 'xdireccion',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'Teléfono', class: 'col-md-4',
-            key: 'xtelefono',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'eMail', class: 'col-md-4',
-            key: 'xcorreo',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'No Cuenta Nacional', class: 'col-md-4',
-            key: 'xcta_nacional',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: 'No. Cuenta Extranjero', class: 'col-md-4',
-            key: 'xcta_extranjero',
-            bdType: 'text'
-          },
-          {
-            type: 'text',
-            fieldName: '% de Comisión', class: 'col-md-2',
-            key: 'pcomision',
-            bdType: 'text'
-          }       
-        ]
-      } 
-    },
-    { 
-      path: 'productores/info/:id',   component: ItemFormComponent, data: {
-        title: 'Información del Productor',
-        mode: 'info',
-        mainUrl: '/api/v1/maestros/productores/get/',
-        createUrl: '/api/v1/maestros/productores/create/',
-        editUrl: '/api/v1/maestros/productores/edit/',
-        formId: 'edit_ejecutivos',
-        disableUrl: '/api/v1/maestros/productores/disable/',
         fields: [
           {
             type: 'text',
@@ -124,7 +39,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           },
           {
             type: 'text',
-            required: true,
+            required: false,
             fieldName: 'Codigo Super.', class: 'col-md-2',
             key: 'csuper',
             bdType: 'text'
@@ -132,7 +47,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           { 
             type: 'select',
             fieldName: 'Tipo Productor', class: 'col-md-2',
-            required: false,
+            required: true,
             url: '/api/v1/maestros/tipo_produc',
             key: 'ctipo_productor',
             bdType: 'number'
@@ -155,7 +70,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           { 
             type: 'select',
             fieldName: 'País', class: 'col-md-2',
-            required: false,
+            required: true,
             url: '/api/v1/maestros/paises',
             binding_change_fields: ['cestado'],
             change_fields: ['cestado', 'cciudad'],
@@ -165,7 +80,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'select',
             fieldName: 'Estado', class: 'col-md-2',
-            required: false,
+            required: true,
             key: 'cestado',
             url_id: 'cpais',
             binding_change_fields: ['cciudad'],
@@ -176,7 +91,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'select',
             fieldName: 'Ciudad', class: 'col-md-2',
-            required: false,
+            required: true,
             key: 'cciudad',
             url_id: 'cestado',
             url: '/api/v1/maestros/ciudades',
@@ -203,18 +118,27 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'hidden',
             fieldName: 'Datos Bancarios', class: 'col-md-12 my-4 text',
-            key: 'vacio',
+            key: 'datos_bancarios',
             bdType: 'text'
           },
           {
             type: 'text',
-            fieldName: 'Nº de Cuenta', class: 'col-md-3',
+            fieldName: 'Nº de Cuenta', class: 'col-md-4',
+            required: true,
             key: 'xcuenta',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'RIF Bancario', class: 'col-md-2',
+            required: true,
+            key: 'cci_rif_banco',
             bdType: 'text'
           },
           {
             type: 'select',
             fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
             url: '/api/v1/maestros/monedas',
             binding_change_fields: ['cbanco'],
             change_fields: ['cbanco'],
@@ -223,7 +147,8 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           },
           {
             type: 'select',
-            fieldName: 'Banco', class: 'col-md-3',
+            fieldName: 'Banco', class: 'col-md-4',
+            required: true,
             url: '/api/v1/maestros/bancos',
             url_id: 'cmoneda',
             key: 'cbanco',
@@ -231,13 +156,13 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           },
           {
             type: 'text',
-            fieldName: 'Teléfono', class: 'col-md-2',
+            fieldName: 'Teléfono', class: 'col-md-4',
             key: 'xtelefono_banco',
             bdType: 'text'
           },
           {
             type: 'simple-select',
-            fieldName: 'Tipo de Cuenta', class: 'col-md-2',
+            fieldName: 'Tipo de Cuenta', class: 'col-md-4',
             required: true,
             values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Corriente', value: 'C'}, {text: 'Ahorro', value: 'A'}, {text: 'Otra', value: 'O'}], 
             key: 'itipo_cuenta',
@@ -246,18 +171,197 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           {
             type: 'hidden',
             fieldName: 'Datos de Usuario', class: 'col-md-12 my-4 text',
-            key: 'vacio',
+            key: 'datos_usuario',
             bdType: 'text'
           },
           {
             type: 'text',
             fieldName: 'Usuario', class: 'col-md-2',
+            required: true,
             key: 'xusuario',
             bdType: 'text'
           },
           {
             type: 'password',
             fieldName: 'Contraseña', class: 'col-md-2',
+            required: true,
+            key: 'xcontrasena',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Observacion', class: 'col-md-8',
+            key: 'xobservacion',
+            bdType: 'text'
+          },
+        ]
+      } 
+    },
+    { 
+      path: 'productores/info/:id',   component: ItemFormComponent, data: {
+        title: 'Información del Productor',
+        mode: 'info',
+        mainUrl: '/api/v1/maestros/productores/get/',
+        createUrl: '/api/v1/maestros/productores/create/',
+        editUrl: '/api/v1/maestros/productores/edit/',
+        formId: 'edit_ejecutivos',
+        disableUrl: '/api/v1/maestros/productores/disable/',
+        fields: [
+          {
+            type: 'text',
+            fieldName: 'Nombre del Productor', class: 'col-md-8',
+            required: true,
+            key: 'xproductor',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            required: false,
+            fieldName: 'Codigo Super.', class: 'col-md-2',
+            key: 'csuper',
+            bdType: 'text'
+          },
+          { 
+            type: 'select',
+            fieldName: 'Tipo Productor', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/tipo_produc',
+            key: 'ctipo_productor',
+            bdType: 'number'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Identificacion', class: 'col-md-1',
+            required: true,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Venezolano', value: 'V'}, {text: 'Extranjero', value: 'E'}, {text: 'Jurídico', value: 'J'}, {text: 'Pasaporte', value: 'P'}], 
+            key: 'itipodoc',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Cédula', class: 'col-md-3',
+            required: true,
+            key: 'cci_rif',
+            bdType: 'text'
+          },
+          { 
+            type: 'select',
+            fieldName: 'País', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/paises',
+            binding_change_fields: ['cestado'],
+            change_fields: ['cestado', 'cciudad'],
+            key: 'cpais',
+            bdType: 'number'
+          },
+          {
+            type: 'select',
+            fieldName: 'Estado', class: 'col-md-2',
+            required: true,
+            key: 'cestado',
+            url_id: 'cpais',
+            binding_change_fields: ['cciudad'],
+            change_fields: ['cciudad'],
+            url: '/api/v1/maestros/estados',
+            bdType: 'number'
+          },
+          {
+            type: 'select',
+            fieldName: 'Ciudad', class: 'col-md-2',
+            required: true,
+            key: 'cciudad',
+            url_id: 'cestado',
+            url: '/api/v1/maestros/ciudades',
+            bdType: 'number'
+          },
+          {
+            type: 'text',
+            fieldName: 'Teléfono', class: 'col-md-2',
+            key: 'xtelefono',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Dirección', class: 'col-md-6',
+            key: 'xdireccion',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Correo', class: 'col-md-4',
+            key: 'xcorreo',
+            bdType: 'text'
+          },
+          {
+            type: 'hidden',
+            fieldName: 'Datos Bancarios', class: 'col-md-12 my-4 text',
+            key: 'datos_bancarios',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Nº de Cuenta', class: 'col-md-4',
+            required: true,
+            key: 'xcuenta',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'RIF Bancario', class: 'col-md-2',
+            required: true,
+            key: 'cci_rif_banco',
+            bdType: 'text'
+          },
+          {
+            type: 'select',
+            fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/monedas',
+            binding_change_fields: ['cbanco'],
+            change_fields: ['cbanco'],
+            key: 'cmoneda',
+            bdType: 'number'
+          },
+          {
+            type: 'select',
+            fieldName: 'Banco', class: 'col-md-4',
+            required: true,
+            url: '/api/v1/maestros/bancos',
+            url_id: 'cmoneda',
+            key: 'cbanco',
+            bdType: 'number'
+          },
+          {
+            type: 'text',
+            fieldName: 'Teléfono', class: 'col-md-4',
+            key: 'xtelefono_banco',
+            bdType: 'text'
+          },
+          {
+            type: 'simple-select',
+            fieldName: 'Tipo de Cuenta', class: 'col-md-4',
+            required: true,
+            values: [{text: 'Selecciona una opcion...', value: '', selected: true},{text: 'Corriente', value: 'C'}, {text: 'Ahorro', value: 'A'}, {text: 'Otra', value: 'O'}], 
+            key: 'itipo_cuenta',
+            bdType: 'text'
+          },
+          {
+            type: 'hidden',
+            fieldName: 'Datos de Usuario', class: 'col-md-12 my-4 text',
+            key: 'datos_usuario',
+            bdType: 'text'
+          },
+          {
+            type: 'text',
+            fieldName: 'Usuario', class: 'col-md-2',
+            required: true,
+            key: 'xusuario',
+            bdType: 'text'
+          },
+          {
+            type: 'password',
+            fieldName: 'Contraseña', class: 'col-md-2',
+            required: true,
             key: 'xcontrasena',
             bdType: 'text'
           },
