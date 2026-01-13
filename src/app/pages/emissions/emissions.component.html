@@ -176,13 +176,13 @@
               <div class="col-md-4 mx-auto">
                 <mat-form-field class="example-full-width">
                   <mat-label>Suma Asegurada</mat-label>
-                  <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="formatWithSeparator($event)" (change)="SumBs()">
+                  <input matInput placeholder="Coloque Suma Asegurada" formControlName="msuma_aseg" type="text" (input)="checkFormat($event,'msuma_aseg')" (change)="SumBs()">
                 </mat-form-field>
               </div>
               <div class="col-md-4 mx-auto">
                 <mat-form-field class="example-full-width">
                   <mat-label>Prima</mat-label>
-                  <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="formatPrima($event)" (change)="SumBs()">
+                  <input matInput placeholder="Coloque Prima" formControlName="mprima" type="text" (input)="checkFormat($event,'mprima')" (change)="SumBs()">
                 </mat-form-field>
               </div>
               <div class="col-md-4 mx-auto">

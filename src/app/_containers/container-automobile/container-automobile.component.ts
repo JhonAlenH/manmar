@@ -158,10 +158,10 @@ export class ContainerAutomobileComponent implements OnInit {
   });
 
   constructor( private _formBuilder: FormBuilder,
-               private http: HttpClient,
-               private modalService: NgbModal,
-               private dateUtilService: DateUtilService,
-               private cdr: ChangeDetectorRef
+    private http: HttpClient,
+    private modalService: NgbModal,
+    private dateUtilService: DateUtilService,
+    private cdr: ChangeDetectorRef
   ) { }
   
 
@@ -169,7 +169,6 @@ export class ContainerAutomobileComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
     this.currentUser = this.currentUser.data.user
-    console.log(this.currentUser)
     this.vehicleFormGroup.get('cproductor')?.setValue(this.currentUser.productor.cproductor);
     this.getColor();
     // this.getExecutive();
@@ -178,6 +177,9 @@ export class ContainerAutomobileComponent implements OnInit {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.receiptData) {
+      const fhasta = new Date(changes.receiptData?.currentValue.fhasta)
+      fhasta.setDate(fhasta.getDate() - 1)
+      changes.receiptData.currentValue.fhasta = fhasta
       this.vehicleFormGroup.get('pcomision')?.setValue(this.receiptData.pcomision || 0);
       this.vehicleFormGroup.get('mcomision')?.setValue(this.receiptData.mcomision || 0);
       let mcomision_bs = this.receiptData.mcomision 
@@ -185,12 +187,28 @@ export class ContainerAutomobileComponent implements OnInit {
         mcomision_bs = this.receiptData.mcomision * this.receiptData.bcv;
       }
       this.mcomision_bs = Number(mcomision_bs.toFixed(2))
+      console.log(fhasta)
       this.updateReceiptData(changes.receiptData.currentValue);
     }
   }
+  formatDate(dateTo:any) {
+    var date = new Date(dateTo);
+    date.setDate(date.getDate() + 1);
+    return date.toLocaleDateString('en-GB');
+  }
+  
+  formatWithSeparator(valueTo: any) {
+    const value = Number(valueTo)
+    console.log(valueTo)
+    // value = (value / 100).toFixed(2);
+    const formattedValue = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(valueTo);
+    return formattedValue
+  }
 
   updateReceiptData(data: any) {
-    console.log('aqui',this.vehicleFormGroup.get('pcomision')?.value)
     let dataCompleta = {
       fdesde: data.fdesde,
       fhasta: data.fhasta,
@@ -205,12 +223,15 @@ export class ContainerAutomobileComponent implements OnInit {
           ncuota: receipt.id,
           fdesde_rec: this.formatDateToString(new Date(receipt.fdesde_rec)),
           fhasta_rec: this.formatDateToString(new Date(receipt.fhasta_rec)),
+          fdesde_rec_format: this.formatDate(receipt.fdesde_rec),
+          fhasta_rec_format: this.formatDate(receipt.fhasta_rec),
           ptasamon: this.receiptData.bcv,
           ctomador: this.receiptData.ctomador || this.receiptData.casegurado,
           msumaaseg: this.convertStringToNumber(this.receiptData.msuma),
           msumaasegext: this.receiptData.msumaext,
           mprima: Number((receipt.mprima * this.receiptData.bcv).toFixed(2)),
           mprimaext: Number(receipt.mprima.toFixed(2)),
+          mprimaext_fomat: receipt.mprima.toFixed(2),
           pcomision: this.vehicleFormGroup.get('pcomision')?.value,
           mcomision: Number((receipt.mcomision * this.receiptData.bcv).toFixed(2)),
           mcomisionext: Number(receipt.mcomision.toFixed(2)),
@@ -280,7 +301,6 @@ export class ContainerAutomobileComponent implements OnInit {
 
   checkClickOutside(event:any, item:any) {
     if (event.srcElement.id == 'item-create') {
-      console.log(event.srcElement.id)
       this[item] = false
     }
   }
@@ -457,10 +477,7 @@ export class ContainerAutomobileComponent implements OnInit {
       mcomision_bs = primaCalculada * this.receiptData.bcv;
     }
     // Formatear con separadores de miles y decimales
-    this.mcomision_bs = new Intl.NumberFormat('de-DE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(mcomision_bs);
+    this.mcomision_bs = mcomision_bs
     
     this.updateReceiptData(this.receiptData);
 
@@ -493,7 +510,6 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   addNote(event: any){
-    
     const form = new FormData()
     form.append( "file", event.target.files[0], event.target.files[0].name)
     form.append( "fileName", event.target.files[0].name)
@@ -502,8 +518,6 @@ export class ContainerAutomobileComponent implements OnInit {
       this.documentosList.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
       const newImgInput = <HTMLInputElement> document.getElementById('newFile')
       newImgInput.value = null
-
-      console.log(this.documentosList);
     });
   }
   
@@ -517,9 +531,8 @@ export class ContainerAutomobileComponent implements OnInit {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  onSubmit(){
 
-  
+  onSubmit(){
     const fdesdeString = this.formatDateToString(new Date(this.receiptData.fdesde));
     const fhastaString = this.receiptData.fhasta;
 
@@ -556,8 +569,7 @@ export class ContainerAutomobileComponent implements OnInit {
       documentos: this.documentosList
     }
 
-    console.log(data)
-      // Validación de campos obligatorios
+    // Validación de campos obligatorios
     const camposObligatorios = {
       ccedente: 'Cédente',
       cmoneda: 'Moneda',

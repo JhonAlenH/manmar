@@ -232,8 +232,6 @@ export class ContainerGenericComponent implements OnInit {
       this.documentosList.push({xarchivo: event.target.files[0].name, xruta: environment.apiUrl + data['data']['url'], xtitulo: '', type: 'create'})      
       const newImgInput = <HTMLInputElement> document.getElementById('newFile')
       newImgInput.value = null
-
-      console.log(this.documentosList);
     });
   }
   
@@ -299,35 +297,34 @@ export class ContainerGenericComponent implements OnInit {
       documentos: this.documentosList
     }
 
-    console.log(data)
-        // Validación de campos obligatorios
-        const camposObligatorios = {
-          ccedente: 'Cédente',
-          cmoneda: 'Moneda',
-          cramo: 'Ramo',
-          xpoliza: 'Póliza',
-          fdesde_pol: 'Fecha Desde',
-          fhasta_pol: 'Fecha Hasta',
-          cmetodologiapago: 'Metodología de Pago',
-          msuma: 'Suma Asegurada',
-          msumaext: 'Suma Asegurada (Ext)',
-          mprima: 'Prima',
-          mprimaext: 'Prima (Ext)'
-      };
-  
-      const camposFaltantes = Object.keys(camposObligatorios).filter(campo => !data[campo] || data[campo] === 0);
-  
-      if (camposFaltantes.length > 0) {
-          const nombresCamposFaltantes = camposFaltantes.map(campo => camposObligatorios[campo]).join(', ');
-          Swal.fire({
-              title: "Por favor, complete los siguientes campos:",
-              text: `\n${nombresCamposFaltantes}`,
-              icon: "warning",
-              confirmButtonText: "<strong>Aceptar</strong>",
-              confirmButtonColor: "#5e72e4",
-          });
-          return;
-      }
+    // Validación de campos obligatorios
+    const camposObligatorios = {
+      ccedente: 'Cédente',
+      cmoneda: 'Moneda',
+      cramo: 'Ramo',
+      xpoliza: 'Póliza',
+      fdesde_pol: 'Fecha Desde',
+      fhasta_pol: 'Fecha Hasta',
+      cmetodologiapago: 'Metodología de Pago',
+      msuma: 'Suma Asegurada',
+      msumaext: 'Suma Asegurada (Ext)',
+      mprima: 'Prima',
+      mprimaext: 'Prima (Ext)'
+    };
+
+    const camposFaltantes = Object.keys(camposObligatorios).filter(campo => !data[campo] || data[campo] === 0);
+
+    if (camposFaltantes.length > 0) {
+        const nombresCamposFaltantes = camposFaltantes.map(campo => camposObligatorios[campo]).join(', ');
+        Swal.fire({
+            title: "Por favor, complete los siguientes campos:",
+            text: `\n${nombresCamposFaltantes}`,
+            icon: "warning",
+            confirmButtonText: "<strong>Aceptar</strong>",
+            confirmButtonColor: "#5e72e4",
+        });
+        return;
+    }
 
     if(this.commissionSum > 100){
       Swal.fire({

@@ -100,7 +100,6 @@ export class SearchContractsComponent implements OnInit {
 
   onCedentsSelection(event: any){
     const selectedCedents = this.cedentsList.find(cedents => cedents.value === event.option.value);
-    console.log(selectedCedents)
     this.searchFormGroup.get('ccedente')?.setValue(selectedCedents.id);
   }
 
@@ -173,7 +172,6 @@ export class SearchContractsComponent implements OnInit {
   }
 
   sendRecord(row: any) {
-    console.log(row)
     this.router.navigate(['detail-contract'], { state: row });
 
   }

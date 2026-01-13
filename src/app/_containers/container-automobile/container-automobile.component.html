@@ -114,9 +114,9 @@
           </thead>
           <tbody>
             <tr scope="row" *ngFor="let item of receiptList">
-              <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
-              <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
-              <td style="white-space: nowrap">{{ item.mprimaext }}</td>
+              <td style="white-space: nowrap">{{ item.fdesde_rec_format }}</td>
+              <td style="white-space: nowrap">{{ item.fhasta_rec_format }}</td>
+              <td style="white-space: nowrap">{{ item.mprimaext_fomat }}</td>
             </tr>
           </tbody>
         </table>
@@ -150,7 +150,7 @@
                   <input matInput formControlName="mcomision">
                 </mat-form-field>
                 <div class="small-text">
-                  <h5>Monto en Bs: {{mcomision_bs}}</h5>
+                  <h5>Monto en Bs: {{formatWithSeparator(mcomision_bs)}}</h5>
                 </div>
               </div>
             </div> 

@@ -19,7 +19,6 @@ export class ReportItemComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.data.subscribe( async v => {this.data = v})
-    console.log(this.data)
     this.checkData()
   }
   async checkData() {
@@ -61,7 +60,6 @@ export class ReportItemComponent implements OnInit {
       field.value = ''
     }
     this.checkIfComplete()
-    console.log(field)
   }
 
   async getReport(){
@@ -72,7 +70,6 @@ export class ReportItemComponent implements OnInit {
     for (const value of values) {
       data[value.key] = value.value
     }
-    console.log(data)
     const responseReport = await fetch(environment.apiUrl + this.data.urlExport, {
       "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
     })

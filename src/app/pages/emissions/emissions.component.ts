@@ -240,7 +240,7 @@ export class EmissionsComponent implements OnInit {
     xpoliza: [''],
     msuma_aseg: [''],
     msuma_aseg_bs: [''],
-    mprima: ['0,00'],
+    mprima: [''],
     mprima_bs: [''],
     cmetodologiapago: [''],
     xmetodologiapago: [''],
@@ -308,24 +308,31 @@ export class EmissionsComponent implements OnInit {
 
   checkClickOutside(event:any, item:any) {
     if (event.srcElement.id == 'item-create') {
-      console.log(event.srcElement.id)
       this[item] = false
     }
   }
 
-  formatWithSeparator(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2);
-    event.target.value = value;
-    this.msuma_aseg = event.target.value;
-    this.emissionsFormGroup.get('msuma_aseg')?.setValue(event.target.value)
+  unFormatWithSeparator(value: any) {
+    let valueF = value.replace('.', '');
+    valueF = valueF.replace(',', '.');
+    valueF = Number(valueF)
+    valueF = parseFloat(valueF.toFixed(2));
+    return valueF;
   }
 
-  formatPrima(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
+  checkFormat(event: any, field:any) {
+    let value = this.formatWithSeparator(event.target.value);
+
+    this.emissionsFormGroup.get(field)?.setValue(value);
+  }
+  formatWithSeparator(valueTo: any) {
+    let value = valueTo.replace(/\D/g, '');
     value = (value / 100).toFixed(2);
-    event.target.value = value;
-    this.emissionsFormGroup.get('mprima')?.setValue(event.target.value)
+    const formattedValue = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+    return formattedValue
   }
 
   getCedents(){
@@ -374,7 +381,6 @@ export class EmissionsComponent implements OnInit {
     let data = {
       xcedula: this.emissionsFormGroup.get('xcedula')?.value
     }
-    console.log(data)
     this.http.get(environment.apiUrl + `/api/v1/valrep/takers/${data.xcedula}`).subscribe((response: any) => {
       if(response.status){
         if(response.data.ctomador){
@@ -713,12 +719,14 @@ export class EmissionsComponent implements OnInit {
   }
 
   SumBs() {
-    const mprima = parseFloat(this.emissionsFormGroup.get('mprima')?.value);
-    let msuma_aseg_bs = this.msuma_aseg
+    const mprima = this.unFormatWithSeparator(this.emissionsFormGroup.get('mprima')?.value || '0,00');
+    const msuma_aseg = this.unFormatWithSeparator(this.emissionsFormGroup.get('msuma_aseg')?.value || '0,00');
+
+    let msuma_aseg_bs = msuma_aseg
     let mprima_bs = mprima
-    console.log(this.emissionsFormGroup.get('cmoneda')?.value)
+    
     if(this.emissionsFormGroup.get('cmoneda')?.value != '1') {
-      msuma_aseg_bs = this.msuma_aseg * this.bcv;
+      msuma_aseg_bs = msuma_aseg * this.bcv;
       mprima_bs = mprima * this.bcv;
     }
 
@@ -731,9 +739,9 @@ export class EmissionsComponent implements OnInit {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(mprima_bs);
-  
-    this.emissionsFormGroup.get('msuma_aseg_bs')?.setValue(formattedMsumaAsegBs);
-    this.emissionsFormGroup.get('mprima_bs')?.setValue(formattedPriBs);
+    
+    this.emissionsFormGroup.get('msuma_aseg_bs')?.setValue(formattedMsumaAsegBs || '0,00');
+    this.emissionsFormGroup.get('mprima_bs')?.setValue(formattedPriBs || '0,00');
     
     if(msuma_aseg_bs != 0){
       this.ActivaSumBs = true;
@@ -750,16 +758,18 @@ export class EmissionsComponent implements OnInit {
 
   receipt() {
     this.containerAuto = false;
-    const {
+    let {
       ccedente, cramo, cproducto, cmoneda, fdesde, fhasta, ctomador, casegurado,
       xpoliza, msuma_aseg, msuma_aseg_bs, mprima, mprima_bs, cmetodologiapago
     } = this.emissionsFormGroup.getRawValue();
 
-    const mprimaNumeric = Number(mprima);
-    const mcomision = mprimaNumeric * this.comisionProducto / 100;
-  
+    
     if (cramo && fdesde && fhasta && mprima && cmetodologiapago) {
-      
+      mprima = this.unFormatWithSeparator(mprima)
+      msuma_aseg = this.unFormatWithSeparator(msuma_aseg)
+      const mprimaNumeric = Number(mprima);
+      const mcomision = mprimaNumeric * this.comisionProducto / 100;
+
       this.containerAuto = true;
       this.receiptData = {
         fdesde: fdesde,

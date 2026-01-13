@@ -420,7 +420,6 @@ export class DetailContractsComponent implements OnInit {
           }
         
           // Hacer que 'loadFile' sea accesible desde el código inline de la alerta
-          console.log('algo')
           window['loadFile'] = loadFile;
         } else {
           Swal.fire({

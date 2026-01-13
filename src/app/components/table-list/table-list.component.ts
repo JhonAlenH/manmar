@@ -75,10 +75,7 @@ export class TableListComponent implements OnInit {
         urlSplited.splice(0,1)
         urlSplited.pop()
         urlSplited.pop()
-        console.log(urlSplited);
         url = '/'+ urlSplited.join('/')
-        console.log(url)
-        console.log(this.filterValue);
       }
       this.infoUrl = `${url}/info/`
       // this.infoUrl = `${url}/`
@@ -99,7 +96,6 @@ export class TableListComponent implements OnInit {
         if(v.filterDefaultKey) {
           const filterDefaultItem = this.filtersData.find(item=> item.key == v.filterDefaultKey)
           filterDefaultItem.controlValue = this.filterValue
-          console.log(filterDefaultItem);
         }
       }
       
@@ -113,11 +109,9 @@ export class TableListComponent implements OnInit {
 
       this.displayedColumns.push(item.action)
     })
-    console.log(this.currentUser['productor'])
     this.userVar = this.userVar && this.currentUser[this.userVar] ? '/' + this.currentUser[this.userVar] : ''
     
     this.http.post(environment.apiUrl + this.url + this.userVar, {}).subscribe((data) => {
-      console.log(data)
       let dataRecived:any = []
       if(data['data']){
         dataRecived = data['data']

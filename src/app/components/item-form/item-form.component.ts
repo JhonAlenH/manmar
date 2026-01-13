@@ -163,7 +163,6 @@ export class ItemFormComponent implements OnInit {
           if(field.change_fields) {
             for (const fieldCha of field.change_fields) {
               const gettedField = this.fields.find(fieldA => fieldA.key == fieldCha)
-              console.log(gettedField)
               if(gettedField.reverse) {
                 gettedField.display = 'none'
               }

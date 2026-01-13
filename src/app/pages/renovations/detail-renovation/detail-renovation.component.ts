@@ -122,7 +122,6 @@ export class DetailRenovationComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
     this.currentUser = this.currentUser.data.user;
-    console.log(this.currentUser)
 
     if (!this.bcv) {
       fetch('https://apisys2000.lamundialdeseguros.com/api/v1/valrep/tasaBCV')
@@ -202,7 +201,6 @@ export class DetailRenovationComponent implements OnInit {
 
   calcularFechaHasta() {
     const fechaDesde = new Date(this.renovFormGroup.get('fdesde')?.value);
-    console.log(fechaDesde)
     const fechaHasta = new Date(fechaDesde.getFullYear() + 1, fechaDesde.getMonth(), fechaDesde.getDate() + 1);
     const fechaHastaISO = fechaHasta.toISOString().split('T')[0]; // Obtener la fecha en formato 'YYYY-MM-DD'
     this.renovFormGroup.get('fhasta')?.setValue(fechaHastaISO);

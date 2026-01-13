@@ -189,7 +189,6 @@ export class RenovationsComponent implements OnInit {
   }
 
   sendRecord(row: any) {
-    console.log(row)
     this.router.navigate(['detail-renovation'], { state: row });
 
   }

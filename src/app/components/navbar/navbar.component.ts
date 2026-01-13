@@ -21,7 +21,6 @@ export class NavbarComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     const jsonD = JSON.parse(storedSession);
     this.currentUser = jsonD.data?.user
-    console.log(this.currentUser)
     this.listTitles = ROUTES.filter(listTitle => listTitle);
   }
   getTitle(){

@@ -599,7 +599,6 @@ export class AdministratorComponent implements OnInit {
   onPanelOpen2(cedenteId: number): void {
     // Filtrar primero por ccedente
     let filteredFee = this.feeChargedList.filter((item: any) => item.ccedente === cedenteId);
-    console.log(filteredFee)
     
     this.fee = filteredFee;
     this.dataSource.data = this.fee
@@ -925,7 +924,6 @@ export class AdministratorComponent implements OnInit {
           return contract;
         });
         this.abonosList = correctedAbono;
-        console.log(this.abonosList)
       } else {
         this.getCoins();
         this.abonosList = []; // Lista vacía si no hay abonos existentes
@@ -1460,7 +1458,6 @@ export class AdministratorComponent implements OnInit {
     };
     this.http.post(environment.apiUrl + '/api/v1/emission/search-distribution', data).subscribe((response: any) => {
       this.distributionList = response.distribucion;
-      console.log(this.distributionList)
       // Agrupar por productor y sumar comisiones
       this.productores = this.distributionList.reduce((acc: any[], item: any) => {
         // Solo agregamos productores que no tienen un valor en 'fpago_p'
@@ -1799,7 +1796,6 @@ export class AdministratorComponent implements OnInit {
   listarComisiones(cejecutivo: string) {
     this.detalleEjecutivos = []
     this.http.post(environment.apiUrl + `/api/v1/emission/searchContracts/${cejecutivo}`, {}).subscribe((data:any) => {
-      console.log(data);
       const ejecutivo = data.data
       this.detalleEjecutivos = ejecutivo
       this.dialogRef = this.dialog.open(this.ListarComisiones, {
