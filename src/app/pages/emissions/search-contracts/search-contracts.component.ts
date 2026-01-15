@@ -97,7 +97,14 @@ export class SearchContractsComponent implements OnInit {
       .map(cedent => cedent.value)
       .filter(cedent => cedent.toLowerCase().includes(filterValue));
   }
-
+  onCedentsChanges(event: any){
+    const selectedCedent = this.cedentsList.find(cedents => cedents.value.toLowerCase() === event.target.value.toLowerCase());
+    if(selectedCedent){
+      this.searchFormGroup.get('ccedente')?.setValue(selectedCedent.id);
+    } else {
+      this.searchFormGroup.get('ccedente')?.setValue('');
+    }
+  }
   onCedentsSelection(event: any){
     const selectedCedents = this.cedentsList.find(cedents => cedents.value === event.option.value);
     this.searchFormGroup.get('ccedente')?.setValue(selectedCedents.id);
@@ -126,6 +133,15 @@ export class SearchContractsComponent implements OnInit {
     return this.tradeList
       .map(trade => trade.value)
       .filter(trade => trade.toLowerCase().includes(filterValue));
+  }
+
+  onTradeChanges(event: any){
+    const selectedTrade = this.tradeList.find(trade => trade.value.toLowerCase() === event.target.value.toLowerCase());
+    if(selectedTrade){
+      this.searchFormGroup.get('cramo')?.setValue(selectedTrade.id);
+    } else {
+      this.searchFormGroup.get('cramo')?.setValue('');
+    }
   }
 
   onTradeSelection(event: any) {

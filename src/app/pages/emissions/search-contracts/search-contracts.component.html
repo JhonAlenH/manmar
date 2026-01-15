@@ -19,35 +19,37 @@
                           <mat-form-field class="example-full-width">
                             <mat-label>Cedentes</mat-label>
                             <input type="text"
-                                    placeholder="Seleccione Cedentes"
-                                    aria-label="Seleccione"
-                                    matInput
-                                    [formControl]="cedentsControl"
-                                    [matAutocomplete]="cedents"
-                                    formControlName="xcedente"
-                                    required>
-                                    <mat-autocomplete #cedents="matAutocomplete" (optionSelected)="onCedentsSelection($event)">
-                                    <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
-                                      {{ cedents }}
-                                    </mat-option>
-                                  </mat-autocomplete>
+                              (change)="onCedentsChanges($event)"
+                              placeholder="Seleccione Cedentes"
+                              aria-label="Seleccione"
+                              matInput
+                              [formControl]="cedentsControl"
+                              [matAutocomplete]="cedents"
+                              formControlName="xcedente"
+                              required>
+                              <mat-autocomplete #cedents="matAutocomplete" (optionSelected)="onCedentsSelection($event)">
+                              <mat-option *ngFor="let cedents of filteredCedents | async" [value]="cedents">
+                                {{ cedents }}
+                              </mat-option>
+                            </mat-autocomplete>
                           </mat-form-field>
                         </div>
                         <div class="col-md-4">
                           <mat-form-field class="example-full-width">
                             <mat-label>Ramo</mat-label>
                             <input type="text"
-                                    placeholder="Seleccione Ramo"
-                                    aria-label="Seleccione"
-                                    matInput
-                                    [formControl]="tradeControl"
-                                    [matAutocomplete]="trade"
-                                    required>
-                                    <mat-autocomplete #trade="matAutocomplete" (optionSelected)="onTradeSelection($event)">
-                                    <mat-option *ngFor="let trade of filteredTrade | async" [value]="trade">
-                                      {{ trade }}
-                                    </mat-option>
-                                  </mat-autocomplete>
+                              (change)="onTradeChanges($event)"
+                              placeholder="Seleccione Ramo"
+                              aria-label="Seleccione"
+                              matInput
+                              [formControl]="tradeControl"
+                              [matAutocomplete]="trade"
+                              required>
+                              <mat-autocomplete #trade="matAutocomplete" (optionSelected)="onTradeSelection($event)">
+                              <mat-option *ngFor="let trade of filteredTrade | async" [value]="trade">
+                                {{ trade }}
+                              </mat-option>
+                            </mat-autocomplete>
                           </mat-form-field>
                         </div>
                       </div>
