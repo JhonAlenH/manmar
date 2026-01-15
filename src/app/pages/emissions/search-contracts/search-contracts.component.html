@@ -107,9 +107,14 @@
                         <td mat-cell *matCellDef="let element"> {{ element?.estado }} </td>
                       </ng-container>
 
-                      <ng-container matColumnDef="fcreacion">
-                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Creacion </th>
-                          <td mat-cell *matCellDef="let element"> {{ element.fcreacion }} </td>
+                      <ng-container matColumnDef="fdesde">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Desde </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.fdesde }} </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="fhasta">
+                          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Hasta </th>
+                          <td mat-cell *matCellDef="let element"> {{ element.fhasta }} </td>
                       </ng-container>
 
                       <!-- <ng-container matColumnDef="iestado">
