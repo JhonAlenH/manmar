@@ -187,7 +187,6 @@ export class ContainerAutomobileComponent implements OnInit {
         mcomision_bs = this.receiptData.mcomision * this.receiptData.bcv;
       }
       this.mcomision_bs = Number(mcomision_bs.toFixed(2))
-      console.log(fhasta)
       this.updateReceiptData(changes.receiptData.currentValue);
     }
   }
@@ -199,7 +198,6 @@ export class ContainerAutomobileComponent implements OnInit {
   
   formatWithSeparator(valueTo: any) {
     const value = Number(valueTo)
-    console.log(valueTo)
     // value = (value / 100).toFixed(2);
     const formattedValue = new Intl.NumberFormat('de-DE', {
       minimumFractionDigits: 2,
@@ -534,7 +532,9 @@ export class ContainerAutomobileComponent implements OnInit {
 
   onSubmit(){
     const fdesdeString = this.formatDateToString(new Date(this.receiptData.fdesde));
-    const fhastaString = this.receiptData.fhasta;
+    let fhasta:any = new Date(this.receiptData.fhasta)
+    fhasta.setDate(fhasta.getDate() + 1)
+    const fhastaString = fhasta;
 
     let data = {
       xpoliza: this.receiptData.xpoliza,
@@ -608,7 +608,6 @@ export class ContainerAutomobileComponent implements OnInit {
       });
       return
     }
-
     this.http.post(environment.apiUrl + `/api/v1/emission/create`, data).subscribe((response: any) => {
       if(response.status){
         Swal.fire({
