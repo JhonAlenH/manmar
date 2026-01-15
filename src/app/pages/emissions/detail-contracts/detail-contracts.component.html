@@ -51,8 +51,9 @@
                     <mat-panel-title>
                       <strong class="me-2">{{i+1}}. </strong> {{vigencia.fdesde}} - {{vigencia.fhasta}}
                     </mat-panel-title>
-                    <mat-panel-description class="text-end">
-                      <span>{{vigencia.moneda.xrepresentacion}} {{vigencia.mprimaext.toFixed(2)}}</span>
+                    <mat-panel-description class="text-end justify-content-between">
+                      <span><small>Monto Prima:</small> {{vigencia.moneda.xrepresentacion}} {{vigencia.mprimaext.toFixed(2)}}</span>
+                      <span><small>Estatus:</small> {{vigencia.estado}}</span>
                     </mat-panel-description>
                   </mat-expansion-panel-header>
                   <div class="">
