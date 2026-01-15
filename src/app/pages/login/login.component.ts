@@ -32,6 +32,10 @@ export class LoginComponent implements OnInit, OnDestroy {
         next: () => {
             const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
             this.router.navigate([returnUrl]);
+        },
+        error: (error) => {
+          alert(error.error.message)
+          console.log(error.error)
         }
     });
   }

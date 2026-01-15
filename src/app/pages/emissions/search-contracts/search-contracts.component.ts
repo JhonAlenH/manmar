@@ -20,7 +20,7 @@ import { DateUtilService } from './../../../_services/date-util.service';
 export class SearchContractsComponent implements OnInit {
 
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'cci_rif_asegurado', 'fcreacion'];
+  displayedColumns: string[] = ['xpoliza', 'xcedente', 'xramo', 'xasegurado', 'cci_rif_asegurado', 'estado', 'fcreacion'];
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
