@@ -178,7 +178,7 @@ export class ItemFormComponent implements OnInit {
   async getFieldsData() {
     this.multipleValuesFields = this.fields.filter(field => field.type == 'multiple-select')
     for(const field of this.fields) {
-      if(!this.firstItem) {
+      if(this.mode != 'info') {
         field.defaultValue = ''
       }
       // select options added
@@ -239,9 +239,7 @@ export class ItemFormComponent implements OnInit {
         }
       }
       if (!field.defaultValue) { field.defaultValue = '' }
-      
     }
-    
   }
   // change item (adde or available) to multipleSelect field
   changeItemTo(event: any, field: any, value: any) {
