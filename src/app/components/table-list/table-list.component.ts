@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from './../../../environments/environment';
 // import { ItemFormService } from '../item-form/item-form.service';
+import Swal from 'sweetalert2'
 
 @Component({
   selector: 'app-table-list',
@@ -40,6 +41,7 @@ export class TableListComponent implements OnInit {
   filtersData: any[] = []
   filterValue:any = ''
   filters: any[] = []
+  editUrl = ''
   infoUrl = ''
   createUrl = ''
   sub = new Subscription()
@@ -84,6 +86,7 @@ export class TableListComponent implements OnInit {
     this.sub = this.route.data.subscribe(v => {
       this.title = v.title
       this.url = v.url
+      this.editUrl = v.editUrl
       this.userVar = v.userVar || null
       this.noCreate = v.noCreate
       this.redirectUrl = v.redirectUrl
@@ -98,38 +101,28 @@ export class TableListComponent implements OnInit {
           filterDefaultItem.controlValue = this.filterValue
         }
       }
-      
-      if (v.extraInfo) {
-        this.extraInfo = v.extraInfo
-      }
     });
     
     this.displayedColumns = this.tableInfo.map(item => item.key)
-    this.extraInfo.forEach(item => {
-
-      this.displayedColumns.push(item.action)
-    })
+    this.displayedColumns.push('info')
     this.userVar = this.userVar && this.currentUser[this.userVar] ? '/' + this.currentUser[this.userVar] : ''
     
     this.http.post(environment.apiUrl + this.url + this.userVar, {}).subscribe((data) => {
       let dataRecived:any = []
       if(data['data']){
         dataRecived = data['data']
-        if(this.extraInfo.length > 0) {
-          dataRecived = dataRecived.map(item => {
-            if (!item.id) {
-              const primary_key = this.tableInfo.find(infoItem => infoItem.primary_key == true)
-              item.id = item[primary_key.key]
+        dataRecived = dataRecived.map(item => {
+          if (!item.id) {
+            const primary_key = this.tableInfo.find(infoItem => infoItem.primary_key == true)
+            item.id = item[primary_key.key]
+          }
+          if(this.redirectUrl) {
+            for (const iterator of this.extraInfo) {
+              iterator.url = this.redirectUrl
             }
-            if(this.redirectUrl) {
-              for (const iterator of this.extraInfo) {
-                iterator.url = this.redirectUrl
-              }
-            }
-            item.extraInfo = this.extraInfo         
-            return item
-          })
-        }
+          }       
+          return item
+        })
         
       } else {
         this.tableExtraInfo = 'No hay datos que coincidan con el filtro'
@@ -147,7 +140,30 @@ export class TableListComponent implements OnInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
-
+  async editItem(item:any) {
+    let title = '¿Desea deshabilitar el item?'
+    if(!item.bactivo){
+      title = '¿Desea habilitar el item?'
+    }
+    Swal.fire({
+      title,
+      icon: "warning",
+      confirmButtonText: "<strong>Aceptar</strong>",
+      confirmButtonColor: "#5e72e4",
+    }).then(async (result) => {
+      if(result.isConfirmed) {
+        item.bactivo = !item.bactivo
+        const data = {bactivo: item.bactivo}
+        const responseRaw = await fetch(environment.apiUrl + this.editUrl + item.id, {
+          "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
+        })
+        const response = await responseRaw.json()
+        if(response.status) {
+          window.location.reload()
+        }
+      }
+    });
+  }
   changeData(filters: any) {
     this.openSnackBarLoading()
     this.http.get(environment.apiUrl + this.url + '/' + this.ccompania, filters).subscribe((response: any) => {

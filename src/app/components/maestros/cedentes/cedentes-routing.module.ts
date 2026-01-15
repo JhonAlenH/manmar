@@ -9,6 +9,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       path: 'cedentes',      component: TableListComponent, data: {
         title: 'Cedentes',
         url: '/api/v1/maestros/cedentes/search',
+        editUrl: '/api/v1/maestros/cedentes/edit/',
         tableId: 'cedentes',
         tableInfo: [
           { headerName: 'Cedente', key: 'ccedente', primary_key: true },

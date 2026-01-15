@@ -9,6 +9,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       path: 'bancos',      component: TableListComponent, data: {
         title: 'Bancos',
         url: '/api/v1/maestros/bancos/search',
+        editUrl: '/api/v1/maestros/bancos/edit/',
         tableId: 'bancos',
         tableInfo: [
           { headerName: 'ID', key: 'cbanco', primary_key: true },
@@ -18,8 +19,8 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
           { headerName: 'País', key: 'xpais' },
         ],
         extraInfo: [
-          {headerName: 'Informacion', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
-          // {headerName: 'Certificado', action:'see_certify', icon: 'fa-solid fa-paperclip', url:'/api/v1/plan/verCertificado/'}
+          {headerName: 'Acciones', action:'info', icon: 'fa-solid fa-edit', url:'info/'},
+          {headerName: 'Desabilitar', action:'see_certify', icon: 'fa-solid fa-paperclip', url:'/api/v1/plan/verCertificado/'}
         ]
       }
     },

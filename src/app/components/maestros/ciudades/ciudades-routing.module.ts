@@ -9,6 +9,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
       path: 'ciudades',      component: TableListComponent, data: {
         title: 'Ciudades',
         url: '/api/v1/maestros/ciudades/search',
+        editUrl: '/api/v1/maestros/ciudades/edit/',
         tableId: 'ciudades',
         tableInfo: [
           { headerName: 'Codigo', key: 'cciudad', primary_key: true },

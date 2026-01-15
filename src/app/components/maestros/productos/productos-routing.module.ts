@@ -9,6 +9,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
       path: 'productos',      component: TableListComponent, data: {
         title: 'Productos',
         url: '/api/v1/maestros/productos/search',
+        editUrl: '/api/v1/maestros/productos/edit/',
         tableId: 'productos',
         tableInfo: [
           { headerName: 'ID', key: 'cproducto', primary_key: true },

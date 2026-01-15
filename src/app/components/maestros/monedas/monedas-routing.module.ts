@@ -9,6 +9,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       path: 'monedas',      component: TableListComponent, data: {
         title: 'Monedas',
         url: '/api/v1/maestros/monedas/search',
+        editUrl: '/api/v1/maestros/monedas/edit/',
         tableId: 'monedas',
         tableInfo: [
           { headerName: 'Codigo', key: 'cmoneda', primary_key: true },

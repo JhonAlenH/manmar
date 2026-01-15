@@ -9,6 +9,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
       path: 'metodologiapago',      component: TableListComponent, data: {
         title: 'Metodologia de Pago',    
         url: '/api/v1/maestros/metodologiapago/search',
+        editUrl: '/api/v1/maestros/metodologiapago/edit/',
         tableId: 'metodologiapago',
         tableInfo: [
           { headerName: 'Codigo', key: 'cmetodologiapago', primary_key: true },

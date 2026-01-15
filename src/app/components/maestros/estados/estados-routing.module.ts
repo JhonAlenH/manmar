@@ -9,6 +9,7 @@ import { TableListComponent } from './../../table-list/table-list.component';
       path: 'estados',      component: TableListComponent, data: {
         title: 'Estados',
         url: '/api/v1/maestros/estados/search',
+        editUrl: '/api/v1/maestros/estados/edit/',
         tableId: 'estados',
         tableInfo: [
           { headerName: 'Codigo Estado', key: 'cestado', primary_key: true },
