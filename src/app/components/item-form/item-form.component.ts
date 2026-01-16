@@ -212,6 +212,7 @@ export class ItemFormComponent implements OnInit {
             console.log(responseRaw)
             if (responseRaw.ok) {
               const response = await responseRaw.json()
+              console.log(response)
               
               if (response.status) {
                 field.options = response.data
@@ -656,7 +657,7 @@ export class ItemFormComponent implements OnInit {
         value.value.setDate(value.value.getDate() + 2)
         value.value = value.value.toLocaleDateString('en-US')
       }
-      data[value.key] = value.value
+      data[value.key] = value.value.toUpperCase() || value.value
     }
     
     // url to create in create mode 
