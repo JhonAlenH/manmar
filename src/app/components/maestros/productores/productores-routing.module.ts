@@ -126,6 +126,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             type: 'text',
             fieldName: 'Nº de Cuenta', class: 'col-md-4',
             required: true,
+            maxlength: 22,
             key: 'xcuenta',
             bdType: 'text'
           },
@@ -303,6 +304,7 @@ import { ItemFormComponent } from './../../item-form/item-form.component';
             type: 'text',
             fieldName: 'Nº de Cuenta', class: 'col-md-4',
             required: true,
+            maxlength: 22,
             key: 'xcuenta',
             bdType: 'text'
           },

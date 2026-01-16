@@ -646,10 +646,15 @@ export class ItemFormComponent implements OnInit {
     e.preventDefault()
     
     const values = this.fields.map((item2)=> {return { 
-      key: item2.key, value: item2.defaultValue || null
+      key: item2.key, value: item2.defaultValue, type: item2.type || null
     }})
     let data:any = {}
     for (const value of values) {
+      if(value.type == 'date') {
+        value.value = new Date(value.value)
+        value.value.setDate(value.value.getDate() + 2)
+        value.value = value.value.toLocaleDateString('en-US')
+      }
       data[value.key] = value.value
     }
     
