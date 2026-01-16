@@ -24,7 +24,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
       }
     },
     { 
-      path: 'producto/create',   component: ItemFormComponent, data: {
+      path: 'productos/create',   component: ItemFormComponent, data: {
         title: 'Crear Nuevo Producto',
         mode: 'create',
         mainUrl: '/api/v1/maestros/productos/get/',
@@ -40,15 +40,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           },
           { 
             type: 'select',
-            fieldName: 'Moneda', class: 'col-md-2',
-            required: true,
-            url: '/api/v1/maestros/monedas',
-            key: 'cmoneda',
-            bdType: 'number'
-          },
-          { 
-            type: 'select',
-            fieldName: 'Ramo', class: 'col-md-2',
+            fieldName: 'Ramo', class: 'col-md-4',
             required: true,
             url: '/api/v1/maestros/ramos',
             key: 'cramo',
@@ -56,10 +48,18 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
           },
           { 
             type: 'select',
-            fieldName: 'Cedente', class: 'col-md-2',
+            fieldName: 'Cedente', class: 'col-md-4',
             required: true,
             url: '/api/v1/maestros/cedentes',
             key: 'ccedente',
+            bdType: 'number'
+          },
+          { 
+            type: 'select',
+            fieldName: 'Moneda', class: 'col-md-2',
+            required: true,
+            url: '/api/v1/maestros/monedas',
+            key: 'cmoneda',
             bdType: 'number'
           },
           { 

@@ -240,6 +240,15 @@ export class DetailContractsComponent implements OnInit {
     vigencia.documentos.splice(index, 1)
   }
   
+  formatWithSeparator(valueTo: any) {
+    const value = Number(valueTo)
+    // value = (value / 100).toFixed(2);
+    const formattedValue = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(valueTo);
+    return formattedValue
+  }
 
   async onCobrar(item: any) {
     await this.getBanks();

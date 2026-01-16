@@ -52,7 +52,7 @@
                       <strong class="me-2">{{i+1}}. </strong> {{vigencia.fdesde}} - {{vigencia.fhasta}}
                     </mat-panel-title>
                     <mat-panel-description class="text-end justify-content-between">
-                      <span><small>Monto Prima:</small> {{vigencia.moneda.xrepresentacion}} {{vigencia.mprimaext.toFixed(2)}}</span>
+                      <span><small>Monto Prima:</small> {{vigencia.moneda.xrepresentacion}} {{formatWithSeparator(vigencia.mprimaext)}}</span>
                       <span><small>Estatus:</small> {{vigencia.estado}}</span>
                     </mat-panel-description>
                   </mat-expansion-panel-header>
@@ -105,38 +105,38 @@
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Suma Asegurada</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(vigencia.msumaext).toFixed(2)" type="text">
+                          <input disabled matInput [value]="formatWithSeparator(vigencia.msumaext)" type="text">
                           <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Suma Asegurada en Bs: {{(vigencia.msuma).toFixed(2)}}</h5>
+                          <h5>Suma Asegurada en Bs: {{formatWithSeparator(vigencia.msuma)}}</h5>
                         </div>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Prima</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(vigencia.mprimaext).toFixed(2)" type="text">
+                          <input disabled matInput [value]="formatWithSeparator(vigencia.mprimaext)" type="text">
                           <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Prima en Bs: {{(vigencia.mprima).toFixed(2)}}</h5>
+                          <h5>Prima en Bs: {{formatWithSeparator(vigencia.mprima)}}</h5>
                         </div>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Porcentaje de Comision</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(vigencia.pcomision).toFixed(2)" type="text">
+                          <input disabled matInput [value]="formatWithSeparator(vigencia.pcomision)" type="text">
                           <span matSuffix>% &nbsp;</span>
                         </mat-form-field>
                       </div>
                       <div class="col-md-3">
                         <h5 class="text-center"><strong>Comision</strong></h5>
                         <mat-form-field class="example-full-width">
-                          <input disabled matInput [value]="(vigencia.mcomisionext).toFixed(2)" type="text">
+                          <input disabled matInput [value]="formatWithSeparator(vigencia.mcomisionext)" type="text">
                           <span matSuffix>{{vigencia.moneda.xrepresentacion}} &nbsp;</span>
                         </mat-form-field>
                         <div class="small-text">
-                          <h5>Comision en Bs: {{(vigencia.mcomision).toFixed(2)}}</h5>
+                          <h5>Comision en Bs: {{formatWithSeparator(vigencia.mcomision)}}</h5>
                         </div>
                       </div>
                     </div>
@@ -160,7 +160,7 @@
                                 <td style="white-space: nowrap">{{ item.ncuota }}</td>
                                 <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
                                 <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
-                                <td style="white-space: nowrap">{{ item.mprimaext | currency }}</td>
+                                <td style="white-space: nowrap">{{ formatWithSeparator(item.mprimaext) }} {{vigencia.moneda?.xrepresentacion}}</td>
                                 <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                                   {{ item.estado }}
                                 </td>
