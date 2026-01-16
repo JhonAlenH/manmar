@@ -209,6 +209,7 @@ export class ItemFormComponent implements OnInit {
             const responseRaw = await fetch(environment.apiUrl + field.url + extraParam,{
               "method": "GET", "headers": { "CONTENT-TYPE": "Application/json"}
             })
+            console.log(responseRaw)
             if (responseRaw.ok) {
               const response = await responseRaw.json()
               
