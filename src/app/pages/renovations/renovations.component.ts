@@ -119,6 +119,15 @@ export class RenovationsComponent implements OnInit {
       .filter(cedent => cedent.toLowerCase().includes(filterValue));
   }
 
+  onCedentsChanges(event: any){
+    const selectedCedent = this.cedentsList.find(cedents => cedents.value.toLowerCase() === event.target.value.toLowerCase());
+    if(selectedCedent){
+      this.renoFormGroup.get('ccedente')?.setValue(selectedCedent.id);
+    } else {
+      this.renoFormGroup.get('ccedente')?.setValue('');
+    }
+  }
+
   onCedentsSelection(event: any){
     const selectedCedents = this.cedentsList.find(cedents => cedents.value === event.option.value);
     this.renoFormGroup.get('ccedente')?.setValue(selectedCedents.id);
@@ -141,6 +150,15 @@ export class RenovationsComponent implements OnInit {
         );
       }
     });
+  }
+
+  onTradeChanges(event: any){
+    const selectedTrade = this.tradeList.find(trade => trade.value.toLowerCase() === event.target.value.toLowerCase());
+    if(selectedTrade){
+      this.renoFormGroup.get('cramo')?.setValue(selectedTrade.id);
+    } else {
+      this.renoFormGroup.get('cramo')?.setValue('');
+    }
   }
 
   private _filterTrade(value: string): string[] {
