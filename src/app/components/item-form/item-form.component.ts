@@ -685,6 +685,7 @@ export class ItemFormComponent implements OnInit {
         }
         // })
       } else {
+        alert(`Error al guardar: ${response.message}`)
         this.loading = false
       }
     } else if(this.mode == 'edit') {
@@ -704,6 +705,8 @@ export class ItemFormComponent implements OnInit {
           // window.location.reload()
       // })
       } else {
+        console.log('aqui')
+        alert(`Error al editar: ${response.message}`)
         this.loading = false
       }
     }
