@@ -124,7 +124,7 @@
                   <mat-icon>add</mat-icon>
                 </button>
                 <div id="item-create" class="item-create" *ngIf="newAsegurado" (click)="checkClickOutside($event, 'newAsegurado')">
-                  <app-item-form [dataComponent]="clientDataComponent" (created)="getClients(); this.newAsegurado = false"></app-item-form>
+                  <app-item-form [dataComponent]="clientDataComponent" (created)="checkCreation(); this.newAsegurado = false"></app-item-form>
                 </div>
               </div>
             </div>
@@ -158,7 +158,7 @@
                   <mat-icon>add</mat-icon>
                 </button>
                 <div id="item-create" class="item-create" *ngIf="newTomador" (click)="checkClickOutside($event, 'newTomador')">
-                  <app-item-form [dataComponent]="clientDataComponent" (created)="getClients(); this.newTomador = false"></app-item-form>
+                  <app-item-form [dataComponent]="clientDataComponent" (created)="checkCreation(); this.newTomador = false"></app-item-form>
                 </div>
               </div>
             </div>

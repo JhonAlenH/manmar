@@ -558,9 +558,17 @@ export class EmissionsComponent implements OnInit {
       .filter(coins => coins.toLowerCase().includes(filterValue));
   }
 
+  checkCreation() {
+    setTimeout(() => {
+      this.getClients()
+    }, 500);
+  }
+
   getClients(){
+    console.log('obtengo')
     this.http.post(environment.apiUrl + '/api/v1/valrep/clients', null).subscribe((response: any) => {
       this.insuranceList = []
+      this.takersList = []
       if (response.data.clients) {
         for (const client of response.data.clients) {
           this.insuranceList.push({

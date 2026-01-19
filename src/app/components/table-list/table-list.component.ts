@@ -140,6 +140,7 @@ export class TableListComponent implements OnInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
   async editItem(item:any) {
     let title = '¿Desea deshabilitar el item?'
     if(!item.bactivo){
