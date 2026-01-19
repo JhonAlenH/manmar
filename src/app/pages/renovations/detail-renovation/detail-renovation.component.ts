@@ -173,8 +173,10 @@ export class DetailRenovationComponent implements OnInit {
       // this.renovFormGroup.get('xmoneda')?.setValue(this.vigencia.moneda.xmoneda)
       this.renovFormGroup.get('xpoliza')?.setValue(this.data.xpoliza)
       this.renovFormGroup.get('cmetodologiapago')?.setValue(this.vigencia?.metodologia_pago.cmetodologiapago)
-      this.renovFormGroup.get('msuma_aseg')?.setValue((this.vigencia.msumaext).toFixed(2));
-      this.renovFormGroup.get('mprima')?.setValue((this.vigencia.mprimaext).toFixed(2));
+      this.renovFormGroup.get('msuma_aseg')?.setValue(this.formatWithSeparator(this.vigencia.msumaext.toFixed(2)));
+      this.renovFormGroup.get('mprima')?.setValue(this.formatWithSeparator(this.vigencia.mprimaext.toFixed(2)));
+      this.SumBs('mprima');
+      this.SumBs('msuma_aseg');
       this.renovFormGroup.get('pcomision')?.setValue((this.vigencia.producto?.pcomision).toFixed(2));
       this.renovFormGroup.get('cproducto')?.setValue(this.vigencia.producto.cproducto);
       this.renovFormGroup.get('cramo')?.setValue(this.vigencia.producto?.ramo?.cramo);
@@ -184,12 +186,97 @@ export class DetailRenovationComponent implements OnInit {
       this.calcularFechaHasta();
       // this.searchDistribution();
 
-      this.format('mprima')
-      this.format('msuma_aseg')
-
       this.updateReceiptData()
 
     })
+  }
+
+  unFormatWithSeparator(value: any) {
+    let valueF = value.replace('.', '');
+    valueF = valueF.replace(',', '.');
+    valueF = Number(valueF)
+    valueF = parseFloat(valueF.toFixed(2));
+    return valueF;
+  }
+
+  onlyFormatWithSeparator(valueTo: any) {
+    let value = valueTo;
+    if(typeof valueTo !== 'number'){
+      value = valueTo.replace(/\D/g, '');
+    }
+    const formattedValue = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+    return formattedValue
+  }
+
+  formatWithSeparator(valueTo: any) {
+    let value = valueTo;
+    if(typeof valueTo !== 'number'){
+      value = valueTo.replace(/\D/g, '');
+    }
+    value = (value / 100).toFixed(2);
+    const formattedValue = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+    return formattedValue
+  }
+
+  checkFormat(event: any, field:any) {
+    let value = this.formatWithSeparator(event.target.value);
+
+    this.renovFormGroup.get(field)?.setValue(value);
+  }
+
+  SumBs(formControlName:any) {
+    const value = this.renovFormGroup.get(formControlName)?.value
+    // this.fixItems(formControl)
+    const monto = this.unFormatWithSeparator(value)
+    const name = formControlName + '_bs'
+
+    const numberBs = (monto * this.bcv).toFixed(2);
+    this[name] = this.formatWithSeparator(numberBs)
+    this.calculateComisionMonto()
+
+    /*
+    const mprima = this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value || '0,00');
+    const msuma_aseg = this.unFormatWithSeparator(this.renovFormGroup.get('msuma_aseg')?.value || '0,00');
+
+    let msuma_aseg_bs = msuma_aseg
+    let mprima_bs = mprima
+    
+    if(this.renovFormGroup.get('cmoneda')?.value != '1') {
+      msuma_aseg_bs = msuma_aseg * this.bcv;
+      mprima_bs = mprima * this.bcv;
+    }
+
+    const formattedMsumaAsegBs = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(msuma_aseg_bs);
+
+    const formattedPriBs = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(mprima_bs);
+    
+    this.renovFormGroup.get('msuma_aseg_bs')?.setValue(formattedMsumaAsegBs || '0,00');
+    this.renovFormGroup.get('mprima_bs')?.setValue(formattedPriBs || '0,00');
+    
+    if(msuma_aseg_bs != 0){
+      this.ActivaSumBs = true;
+    }
+
+    if(mprima_bs != 0){
+      this.ActivaPriBs = true;
+    }
+
+    if(msuma_aseg_bs != 0 && mprima_bs != 0){
+      this.receipt()
+    }
+      */
   }
 
   formatNumber(value: number | string): string {
@@ -212,7 +299,7 @@ export class DetailRenovationComponent implements OnInit {
     
   }
 
-  formatWithSeparator(formControl:any) {
+  fixItems(formControl:any) {
     let value:any = Number(formControl?.value);
     if(!value) {
       value = 0
@@ -222,14 +309,14 @@ export class DetailRenovationComponent implements OnInit {
   }
 
   format(formControlName:any){
-    const formControl = this.renovFormGroup.get(formControlName)
-    this.formatWithSeparator(formControl)
+    const value = this.renovFormGroup.get(formControlName)?.value
 
-    const monto = Number(formControl?.value)
+    const monto = this.unFormatWithSeparator(value)
     const name = formControlName + '_bs'
 
-    this[name] = Number((monto * this.bcv).toFixed(2));
-    this.calculateComisionMonto()
+    const numberBs = Number((monto * this.bcv).toFixed(2));
+    this[name] = this.formatWithSeparator(numberBs)
+    // this.calculateComisionMonto()
   }
 
 
@@ -293,8 +380,8 @@ export class DetailRenovationComponent implements OnInit {
     let dataCompleta = {
       fdesde: this.renovFormGroup.get('fdesde')?.value,
       fhasta: this.renovFormGroup.get('fhasta')?.value,
-      mprima: this.renovFormGroup.get('mprima')?.value,
-      pcomision: this.renovFormGroup.get('pcomision')?.value,
+      mprima: this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value),
+      pcomision: this.unFormatWithSeparator(this.renovFormGroup.get('pcomision')?.value) /100,
       cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
     }
     this.receiptList = [];
@@ -344,12 +431,12 @@ export class DetailRenovationComponent implements OnInit {
   calculateComisionMonto() {
     const mcomision = Number(((Number(this.renovFormGroup.get('pcomision')?.value) /100) * Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
     this.renovFormGroup.get('mcomision_ext')?.setValue(mcomision);
-    this.formatWithSeparator(this.renovFormGroup.get('mcomision_ext'))
+    this.fixItems(this.renovFormGroup.get('mcomision_ext'))
   }
   calculateComisionPorcentaje() {
     const pcomision =  Number(((Number(this.renovFormGroup.get('mcomision_ext')?.value) * 100) / Number(this.renovFormGroup.get('mprima')?.value)).toFixed(2))
     this.renovFormGroup.get('pcomision')?.setValue(pcomision);
-    this.formatWithSeparator(this.renovFormGroup.get('mcomision_ext'))
+    this.fixItems(this.renovFormGroup.get('mcomision_ext'))
   }
 
   onSubmit(){
@@ -398,7 +485,7 @@ export class DetailRenovationComponent implements OnInit {
           msuma: this.convertStringToNumber(this.msuma_aseg_bs),
           msumaext: this.renovFormGroup.get('msuma_aseg')?.value,
           mprima: this.convertStringToNumber(this.mprima_bs),
-          mprimaext: parseFloat(this.renovFormGroup.get('mprima')?.value),
+          mprimaext: this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value),
           cusuario: this.currentUser.cusuario,
           recibos: this.receiptList,
           ptasamon: this.bcv,

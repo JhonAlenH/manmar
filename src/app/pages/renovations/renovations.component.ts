@@ -56,7 +56,7 @@ export class RenovationsComponent implements OnInit {
     ccedente: [''],
     cramo: [''],
     mes: [''],
-    year: ['']
+    year: [''],
   });
 
   constructor( private _formBuilder: FormBuilder,
