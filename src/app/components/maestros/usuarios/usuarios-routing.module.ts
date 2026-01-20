@@ -14,6 +14,7 @@ import { ItemFormComponent } from '../../item-form/item-form.component';
         tableId: 'usuarios',
         tableInfo: [
           { headerName: 'Código', key: 'cusuario', primary_key: true },
+          { headerName: 'Nombre', key: 'xpersona' },
           { headerName: 'Usuario', key: 'xusuario' },
           { headerName: 'Rol', key: 'xrol' }
         ],

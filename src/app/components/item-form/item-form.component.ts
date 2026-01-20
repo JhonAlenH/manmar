@@ -657,7 +657,8 @@ export class ItemFormComponent implements OnInit {
         value.value.setDate(value.value.getDate() + 2)
         value.value = value.value.toLocaleDateString('en-US')
       }
-      data[value.key] = value.value.toUpperCase() || value.value
+      console.log(value)
+      data[value.key] = typeof value.value == 'string' ? value?.value?.toUpperCase() : value.value
     }
     
     // url to create in create mode 

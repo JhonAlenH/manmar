@@ -192,8 +192,8 @@ export class DetailRenovationComponent implements OnInit {
   }
 
   unFormatWithSeparator(value: any) {
-    let valueF = value.replace('.', '');
-    valueF = valueF.replace(',', '.');
+    let valueF = value.replaceAll('.', '');
+    valueF = valueF.replaceAll(',', '.');
     valueF = Number(valueF)
     valueF = parseFloat(valueF.toFixed(2));
     return valueF;
@@ -393,8 +393,8 @@ export class DetailRenovationComponent implements OnInit {
           fhasta_rec: this.adjustDate(receipt.fhasta_rec),
           ptasamon: this.bcv,
           ctomador: this.renovFormGroup.get('ctomador')?.value,
-          msumaaseg: this.convertStringToNumber(this.msuma_aseg_bs),
-          msumaasegext: this.renovFormGroup.get('msuma_aseg')?.value,
+          msumaaseg: this.unFormatWithSeparator(this.msuma_aseg_bs),
+          msumaasegext: this.unFormatWithSeparator(this.renovFormGroup.get('msuma_aseg')?.value),
           mprima: Number((receipt.mprima * this.bcv).toFixed(2)),
           mprimaext: Number(receipt.mprima.toFixed(2)),
           pcomision: this.renovFormGroup.get('pcomision')?.value,
@@ -471,51 +471,61 @@ export class DetailRenovationComponent implements OnInit {
       });
       return
     }
+    if(this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value) == 0 || this.unFormatWithSeparator(this.renovFormGroup.get('msuma_aseg')?.value) == 0){
+      Swal.fire({
+        title: "Error en los montos, por favor verificar",
+        icon: "warning",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5e72e4",
+      });
+      return
+    }
     let dataSubmit = {
-          cpoliza: this.id,
-          cproductor_convenio: this.currentUser.productor.cproductor,
-          cmoneda: this.renovFormGroup.get('cmoneda')?.value,
-          xpoliza: this.data.xpoliza,
-          cproducto: this.renovFormGroup.get('cproducto')?.value,
-          fdesde: this.renovFormGroup.get('fdesde')?.value,
-          fhasta: this.renovFormGroup.get('fhasta')?.value,
-          femision: new Date(),
-          cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
-          iestado: 'V',
-          msuma: this.convertStringToNumber(this.msuma_aseg_bs),
-          msumaext: this.renovFormGroup.get('msuma_aseg')?.value,
-          mprima: this.convertStringToNumber(this.mprima_bs),
-          mprimaext: this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value),
-          cusuario: this.currentUser.cusuario,
-          recibos: this.receiptList,
-          ptasamon: this.bcv,
-          pcomision: this.renovFormGroup.get('pcomision')?.value,
-          documentos: []
-        }
+      cpoliza: this.id,
+      cproductor_convenio: this.currentUser.productor.cproductor,
+      cmoneda: this.renovFormGroup.get('cmoneda')?.value,
+      xpoliza: this.data.xpoliza,
+      cproducto: this.renovFormGroup.get('cproducto')?.value,
+      fdesde: this.renovFormGroup.get('fdesde')?.value,
+      fhasta: this.renovFormGroup.get('fhasta')?.value,
+      femision: new Date(),
+      cmetodologiapago: this.renovFormGroup.get('cmetodologiapago')?.value,
+      iestado: 'V',
+      msuma: this.convertStringToNumber(this.msuma_aseg_bs),
+      msumaext: this.convertStringToNumber(this.renovFormGroup.get('msuma_aseg')?.value),
+      mprima: this.convertStringToNumber(this.mprima_bs),
+      mprimaext: this.unFormatWithSeparator(this.renovFormGroup.get('mprima')?.value),
+      cusuario: this.currentUser.cusuario,
+      recibos: this.receiptList,
+      ptasamon: this.bcv,
+      pcomision: this.unFormatWithSeparator(this.renovFormGroup.get('pcomision')?.value) / 100,
+      documentos: []
+    }
+    console.log(dataSubmit)
     this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.id}`, dataSubmit).subscribe((response: any) => {
-          if(response.status){
-            Swal.fire({
-              icon: "success",
-              title: `${response.message}`,
-              showConfirmButton: false,
-              timer: 4000
-            }).then((result) => {
-              location.reload()
-            });
-          }
-      },(err) => {
+      if(response.status){
         Swal.fire({
-          icon: "error",
-          title: "Ha ocurrido un Error",
-          text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
-          confirmButtonText: "<strong>Aceptar</strong>",
-          confirmButtonColor: "#5e72e4",
+          icon: "success",
+          title: `${response.message}`,
+          showConfirmButton: false,
+          timer: 4000
         }).then((result) => {
-            if (result.isConfirmed) {
-                // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
-            }
+          location.reload()
         });
-      })
+      }
+    },(err) => {
+      Swal.fire({
+        icon: "error",
+        title: "Ha ocurrido un Error",
+        text: "Estimado usuario, se ha presentado un error inesperado, por favor, contacta al equipo técnico para mayor información",
+        confirmButtonText: "<strong>Aceptar</strong>",
+        confirmButtonColor: "#5e72e4",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+        }
+      });
+    })
   }
 
 

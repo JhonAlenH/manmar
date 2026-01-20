@@ -30,7 +30,8 @@ export class RenovationsComponent implements OnInit {
   searchOn:boolean = false;
   cedentsList: any[] = [];
   tradeList: any[] = [];
-  months: { name: string, value: number }[] = [
+  months: { name: string, value: any }[] = [
+    { name: 'Seleccione el Mes', value: '' },
     { name: 'Enero', value: 1 },
     { name: 'Febrero', value: 2 },
     { name: 'Marzo', value: 3 },
@@ -44,7 +45,7 @@ export class RenovationsComponent implements OnInit {
     { name: 'Noviembre', value: 11 },
     { name: 'Diciembre', value: 12 }
   ];
-  years: number[] = []; 
+  years: any[] = []; 
 
   cedentsControl = new FormControl('');
   tradeControl = new FormControl('');
@@ -72,8 +73,12 @@ export class RenovationsComponent implements OnInit {
     const storedSession = localStorage.getItem('user');
     this.currentUser = JSON.parse(storedSession);
 
-    const currentYear = new Date().getFullYear();
-    this.years = Array.from({ length: 6 }, (_, index) => currentYear + index);
+    let currentYear = new Date().getFullYear();
+    currentYear--
+    this.years = Array.from({ length: 6 }, (_, index) => {
+      return { value: currentYear + index, name: (currentYear + index).toString() };
+    });
+    this.years.unshift({value: '', name: 'Seleccione el Año'});
 
     if(this.currentUser){
       this.getCedents();
@@ -197,13 +202,17 @@ export class RenovationsComponent implements OnInit {
     })
   }
 
-  recordatorio(){
-    this.snackBar.open('Recuerda colocar el año para completar la búsqueda', '', {
-      duration: 5000,
-      verticalPosition: 'top',
-      horizontalPosition: 'center',
-      panelClass: ['yellow-snackbar']
-    });
+  recordatorio(event: any){
+    if(event.value == ''){
+      this.renoFormGroup.get('year')?.setValue('');
+    } else {
+      this.snackBar.open('Recuerda colocar el año para completar la búsqueda', '', {
+        duration: 5000,
+        verticalPosition: 'top',
+        horizontalPosition: 'center',
+        panelClass: ['yellow-snackbar']
+      });
+    }
   }
 
   sendRecord(row: any) {

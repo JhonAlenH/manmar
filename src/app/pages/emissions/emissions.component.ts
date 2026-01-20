@@ -509,9 +509,10 @@ export class EmissionsComponent implements OnInit {
             confirmButtonText: "<strong>Aceptar</strong>",
             confirmButtonColor: "#5e72e4",
           }).then((result) => {
-              if (result.isConfirmed) {
-                  // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
-              }
+            this.emissionsFormGroup.get('xpoliza')?.setValue('');
+            if (result.isConfirmed) {
+                // location.reload(); // Recarga la página si el usuario hizo clic en el botón de aceptar
+            }
           });
         }
 
