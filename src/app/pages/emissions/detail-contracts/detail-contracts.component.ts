@@ -146,7 +146,7 @@ export class DetailContractsComponent implements OnInit {
           mcomisionext += recibo.mcomisionext
         }
 
-        vigencia.pcomision = vigencia.recibos[0].pcomision
+        vigencia.pcomision = vigencia.recibos[0]?.pcomision || 0
         vigencia.mcomision = mcomision
         vigencia.mcomisionext = mcomisionext
       }
@@ -442,6 +442,36 @@ export class DetailContractsComponent implements OnInit {
       }
     });
     
+  }
+
+  async changePolicy(cpoliza: any) {
+    const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatus/' + cpoliza, {
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+    })
+    const response = await responseRaw.json()
+    if (response.status) {
+      this.snackBar.open('La póliza ha sido anulada correctamente.', 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-success']
+      });
+    }
+  }
+
+  async changeContract(cvigencia: any) {
+    const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatusContract/' + cvigencia, {
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+    })
+    const response = await responseRaw.json()
+    if (response.status) {
+      this.snackBar.open('La vigencia ha sido anulada correctamente.', 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-success']
+      });
+    }
   }
 
   formatDate = (value:any) => {

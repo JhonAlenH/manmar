@@ -19,7 +19,8 @@
                   </div>
                   <div class="col-sm-6">
                     <div class="d-flex align-items-center justify-content-end">
-
+                      <button *ngIf="poliza.iestado" type="button" mat-raised-button color="warn" (click)="changePolicy(poliza.cpoliza)">Anular Póliza</button>
+                      <button *ngIf="!poliza.iestado" type="button" mat-raised-button color="primary" (click)="changePolicy(poliza.cpoliza)">Habilitar Póliza</button>
                       <!-- <i class="fi fi-tr-money-transfer-coin-arrow me-2" style="font-size: 20px;"></i>
                       <span class="text-center"><strong>Tasa de Cambio: </strong>{{cmoneda}}{{bcv}}</span> -->
                     </div>
@@ -94,7 +95,8 @@
                       
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center justify-content-end">
-                          <span class="text-center"><strong>Estado: </strong>{{vigencia.estado}}</span>
+                          <button *ngIf="vigencia.iestado != 'V'" type="button" mat-raised-button color="warn" (click)="changeContract(vigencia.cvigencia)">Anular Vigencia</button>
+                          <button *ngIf="vigencia.iestado == 'A'" type="button" mat-raised-button color="primary" (click)="changeContract(vigencia.cvigencia)">Habilitar Vigencia</button>
                         </div>
                       </div>
                     </div>
