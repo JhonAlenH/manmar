@@ -150,7 +150,8 @@
                                 <th scope="col"><strong class="header-table-receipt">Cuota</strong></th>
                                 <th scope="col"><strong class="header-table-receipt">Fecha Desde</strong></th>
                                 <th scope="col"><strong class="header-table-receipt">Fecha Hasta</strong></th>
-                                <th scope="col"><strong class="header-table-receipt">Monto</strong></th>
+                                <th scope="col"><strong class="header-table-receipt">Monto (Bs.)</strong></th>
+                                <th scope="col"><strong class="header-table-receipt">Monto (Ext.)</strong></th>
                                 <th scope="col"><strong class="header-table-receipt">Estado</strong></th>
                                 <th scope="col"><strong class="header-table-receipt">Fecha de Cobro</strong></th>
                               </tr>
@@ -158,13 +159,14 @@
                             <tbody>
                               <tr scope="row" *ngFor="let item of vigencia.recibos">
                                 <td style="white-space: nowrap">{{ item.ncuota }}</td>
-                                <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
-                                <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
+                                <td style="white-space: nowrap">{{ formatDate(item.fdesde_rec) }}</td>
+                                <td style="white-space: nowrap">{{ formatDate(item.fhasta_rec) }}</td>
+                                <td style="white-space: nowrap">{{ formatWithSeparator(item.mprima) }} Bs.</td>
                                 <td style="white-space: nowrap">{{ formatWithSeparator(item.mprimaext) }} {{vigencia.moneda?.xrepresentacion}}</td>
                                 <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                                   {{ item.estado }}
                                 </td>
-                                <td style="white-space: nowrap">{{ item.fcobro || 'Sin Cobrar' }}</td>
+                                <td style="white-space: nowrap">{{ formatDate(item.fcobro) || 'Sin Cobrar' }}</td>
                                 <td style="white-space: nowrap">
                                   <!-- Mostrar el botón si xruta_rec está vacío -->
                                   <button *ngIf="!item.fcobro && (item.ncuota == vigencia.receiptP)" class="button" (click)="onCobrar(item)">

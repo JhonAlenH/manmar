@@ -443,5 +443,12 @@ export class DetailContractsComponent implements OnInit {
     });
     
   }
+
+  formatDate = (value:any) => {
+    const date = new Date(value)
+    date.setDate(date.getDate() + 1);
+
+    return date.toLocaleDateString('en-GB')
+  }
   
 }
