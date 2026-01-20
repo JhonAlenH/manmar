@@ -166,7 +166,7 @@
                                 <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                                   {{ item.estado }}
                                 </td>
-                                <td style="white-space: nowrap">{{ formatDate(item.fcobro) || 'Sin Cobrar' }}</td>
+                                <td style="white-space: nowrap">{{ item.fcobro ? formatDate(item.fcobro) : 'Sin Cobrar' }}</td>
                                 <td style="white-space: nowrap">
                                   <!-- Mostrar el botón si xruta_rec está vacío -->
                                   <button *ngIf="!item.fcobro && (item.ncuota == vigencia.receiptP)" class="button" (click)="onCobrar(item)">
