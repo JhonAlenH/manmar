@@ -141,8 +141,8 @@
                       </thead>
                       <tbody>
                         <tr scope="row" *ngFor="let item of receiptList">
-                          <td style="white-space: nowrap">{{ item.fdesde_rec }}</td>
-                          <td style="white-space: nowrap">{{ item.fhasta_rec }}</td>
+                          <td style="white-space: nowrap">{{ formatDate(item.fdesde_rec) }}</td>
+                          <td style="white-space: nowrap">{{ formatDate(item.fhasta_rec) }}</td>
                           <td style="white-space: nowrap">{{ onlyFormatWithSeparator(item.mprimaext) }}</td>
                         </tr>
                       </tbody>

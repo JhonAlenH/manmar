@@ -566,7 +566,6 @@ export class EmissionsComponent implements OnInit {
   }
 
   getClients(){
-    console.log('obtengo')
     this.http.post(environment.apiUrl + '/api/v1/valrep/clients', null).subscribe((response: any) => {
       this.insuranceList = []
       this.takersList = []

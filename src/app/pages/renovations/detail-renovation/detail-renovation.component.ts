@@ -177,7 +177,7 @@ export class DetailRenovationComponent implements OnInit {
       this.renovFormGroup.get('mprima')?.setValue(this.formatWithSeparator(this.vigencia.mprimaext.toFixed(2)));
       this.SumBs('mprima');
       this.SumBs('msuma_aseg');
-      this.renovFormGroup.get('pcomision')?.setValue((this.vigencia.producto?.pcomision).toFixed(2));
+      this.renovFormGroup.get('pcomision')?.setValue((this.vigencia.producto?.pcomision || 0).toFixed(2));
       this.renovFormGroup.get('cproducto')?.setValue(this.vigencia.producto.cproducto);
       this.renovFormGroup.get('cramo')?.setValue(this.vigencia.producto?.ramo?.cramo);
       this.getMethod();
@@ -501,7 +501,6 @@ export class DetailRenovationComponent implements OnInit {
       pcomision: this.unFormatWithSeparator(this.renovFormGroup.get('pcomision')?.value) / 100,
       documentos: []
     }
-    console.log(dataSubmit)
     this.http.post(environment.apiUrl + `/api/v1/renovations/create/${this.id}`, dataSubmit).subscribe((response: any) => {
       if(response.status){
         Swal.fire({
@@ -528,6 +527,11 @@ export class DetailRenovationComponent implements OnInit {
     })
   }
 
+  formatDate = (value:any) => {
+    const date = new Date(value)
+    date.setDate(date.getDate() + 1);
 
+    return date.toLocaleDateString('en-GB')
+  }
 
 }

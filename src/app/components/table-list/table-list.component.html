@@ -21,20 +21,20 @@
                 <div *ngFor="let item of tableInfo">
                   <ng-container [matColumnDef]="item.key">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> {{item.headerName}} </th>
-                    <td mat-cell *matCellDef="let element"> {{ element[item.key] }} </td>
+                    <td mat-cell *matCellDef="let element" [style]="!element.bactivo ? 'background-color: #ff000030;':''"> {{ element[item.key] }} </td>
                   </ng-container>
                 </div>
                   <ng-container matColumnDef="info">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Acciones </th>
-                    <td mat-cell *matCellDef="let element">
-                      <div>
+                    <td mat-cell *matCellDef="let element" [style]="!element.bactivo ? 'background-color: #ff000030;':''">
+                      <div >
                         <div class="d-flex">
                           <a mat-icon-button [routerLink]="'info/'+element.id" >
-                            <i class="fa-solid fa-edit"></i>
+                            <i class="fa-solid fa-pencil"></i>
                           </a>
                           <a mat-icon-button (click)="editItem(element)" >
-                            <i *ngIf="element.bactivo"  class="fa-solid fa-toggle-on"></i>
-                            <i *ngIf="!element.bactivo" class="fa-solid fa-toggle-off"></i>
+                            <i *ngIf="element.bactivo" style="color: green;"  class="fa-solid fa-toggle-on"></i>
+                            <i *ngIf="!element.bactivo" style="color: red;" class="fa-solid fa-toggle-off"></i>
                           </a>
                         </div>
                       </div>
