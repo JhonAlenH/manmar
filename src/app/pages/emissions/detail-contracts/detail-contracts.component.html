@@ -163,7 +163,7 @@
                                 <td style="white-space: nowrap">{{ item.ncuota }}</td>
                                 <td style="white-space: nowrap">{{ formatDate(item.fdesde_rec) }}</td>
                                 <td style="white-space: nowrap">{{ formatDate(item.fhasta_rec) }}</td>
-                                <td style="white-space: nowrap">{{ formatWithSeparator(item.mprima) }} Bs.</td>
+                                <td style="white-space: nowrap">{{ item.fcobro ? formatWithSeparator(item.mprima) : '*' + formatWithSeparator(item.mprimaext * bcv) }} Bs. </td>
                                 <td style="white-space: nowrap">{{ formatWithSeparator(item.mprimaext) }} {{vigencia.moneda?.xrepresentacion}}</td>
                                 <td [ngClass]="{'red-text': item.iestadorec === 'P', 'green-text': item.iestadorec === 'C'}">
                                   {{ item.estado }}
