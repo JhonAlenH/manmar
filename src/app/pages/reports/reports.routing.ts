@@ -22,7 +22,7 @@ const routes: Routes =[
             {
               type: 'range-date',
               fieldName: 'Fecha Desde', class: 'col-md-6',
-              required: true,
+              // required: true,
               key: 'fdesde',
             },
             { 

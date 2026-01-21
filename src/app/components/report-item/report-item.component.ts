@@ -20,6 +20,7 @@ export class ReportItemComponent implements OnInit {
   ngOnInit(): void {
     this.route.data.subscribe( async v => {this.data = v})
     this.checkData()
+    
   }
   async checkData() {
     for (const field of this.data.fields) {
@@ -40,6 +41,7 @@ export class ReportItemComponent implements OnInit {
       }
       
     }
+    this.checkIfComplete()
   }
   changeValue(event:any, field:any) {
     field.value = event.currentTarget.value
