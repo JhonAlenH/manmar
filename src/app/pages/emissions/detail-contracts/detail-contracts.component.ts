@@ -444,9 +444,9 @@ export class DetailContractsComponent implements OnInit {
     
   }
 
-  async changePolicy(cpoliza: any) {
+  async changePolicy(cpoliza: any, type: any) {
     const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatus/' + cpoliza, {
-      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type})
     })
     const response = await responseRaw.json()
     if (response.status) {
@@ -456,20 +456,40 @@ export class DetailContractsComponent implements OnInit {
         horizontalPosition: 'right',
         panelClass: ['snackbar-success']
       });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      this.snackBar.open(response.message, 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'bottom',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-danger']
+      });
     }
   }
 
-  async changeContract(cvigencia: any) {
+  async changeContract(cvigencia: any, type: any) {
     const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatusContract/' + cvigencia, {
-      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({})
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type})
     })
     const response = await responseRaw.json()
     if (response.status) {
       this.snackBar.open('La vigencia ha sido anulada correctamente.', 'Cerrar', {
         duration: 4000,
-        verticalPosition: 'top',
+        verticalPosition: 'bottom',
         horizontalPosition: 'right',
         panelClass: ['snackbar-success']
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      this.snackBar.open(response.message, 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-danger']
       });
     }
   }
