@@ -1,5 +1,5 @@
 import {Component, OnInit } from '@angular/core';
-import {FormBuilder, FormControl} from '@angular/forms';
+import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
@@ -44,42 +44,57 @@ export class DetailContractsComponent implements OnInit {
   bankList: any[] = [];
   currentUser!: any
   id:any;
+  itemNull:any;
   // // // Datos de la póliza
   poliza:any = null;
   // // //
   receiptList: any[] = [];
   documentosList: any = []
+  motivList: any[] = [
+    'Falta de pago',
+    'Error en datos',
+    'Por petición del cliente',
+    'Duplicidad de póliza',
+    'Otro'
+  ]
+
+  nullFormGroup = this._formBuilder.group({
+    xitem: ['',[Validators.required]],
+    cproceso: ['', [Validators.required]],
+    xdetalles: ['', [Validators.required]],
+    fcreacion: ['', [Validators.required]],
+  });
 
   constructor( private _formBuilder: FormBuilder,
-               private http: HttpClient,
-               private dateUtilService: DateUtilService,
-               private modalService: NgbModal,
-               private snackBar: MatSnackBar,
-               private route: ActivatedRoute,
-               private router: Router,
-               private dateAdapter: DateAdapter<Date>,
-               ) {
-                if(this.router.getCurrentNavigation().extras.state == undefined){
-                  this.router.navigate(['search-contract']);
-                }else{
-                  this.id = this.router.getCurrentNavigation().extras.state.cpoliza;        
-                }
-                dateAdapter.setLocale('es');
+    private http: HttpClient,
+    private dateUtilService: DateUtilService,
+    private modalService: NgbModal,
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private router: Router,
+    private dateAdapter: DateAdapter<Date>,
+  ) {
+    if(this.router.getCurrentNavigation().extras.state == undefined){
+      this.router.navigate(['search-contract']);
+    }else{
+      this.id = this.router.getCurrentNavigation().extras.state.cpoliza;        
+    }
+    dateAdapter.setLocale('es');
 
-                fetch('https://ve.dolarapi.com/v1/dolares')
-                .then((response) => response.json())
-                .then(data => {
-                  data.forEach((item: any) => {
-                    if (item.fuente === 'oficial') {
-                      this.bcv = Number((item.promedio).toFixed(2));
-                    }
-                  });
-                })
-                .catch(error => {
-                  console.error('Error al obtener la tasa del BCV:', error);
-                  // Continuar con el valor predeterminado de `this.bcv`
-                })
-               }
+    fetch('https://ve.dolarapi.com/v1/dolares')
+    .then((response) => response.json())
+    .then(data => {
+      data.forEach((item: any) => {
+        if (item.fuente === 'oficial') {
+          this.bcv = Number((item.promedio).toFixed(2));
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error al obtener la tasa del BCV:', error);
+      // Continuar con el valor predeterminado de `this.bcv`
+    })
+  }
 
   ngOnInit(): void {
     const storedSession = localStorage.getItem('user');
@@ -444,6 +459,49 @@ export class DetailContractsComponent implements OnInit {
     
   }
 
+  enableNullModal(item: any, type: any, enable: any) {
+    this.itemNull = null
+    let url = ''
+    if(type == 'poliza') {
+      url = '/api/v1/emission/updateStatus/'
+    } else {
+      url = '/api/v1/emission/updateStatusContract/'
+    }
+    if(enable){
+      this.itemNull = {
+        item: item,
+        type: type,
+        url
+      };
+    } else {
+      this.changeEstatus(item, type, url, !enable)
+    }
+  }
+
+  async changeEstatus(cpoliza: any, type: any, url: any, enable: any) {
+    const responseRaw = await fetch(environment.apiUrl + url + cpoliza, {
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type: enable ? 'enable' : 'disable'})
+    })
+    const response = await responseRaw.json()
+    if (response.status) {
+      this.snackBar.open(`La ${type} ha sido anulada correctamente.`, 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'top',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-success']
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      this.snackBar.open(response.message, 'Cerrar', {
+        duration: 4000,
+        verticalPosition: 'bottom',
+        horizontalPosition: 'right',
+        panelClass: ['snackbar-danger']
+      });
+    }
+  }
   async changePolicy(cpoliza: any, type: any) {
     const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatus/' + cpoliza, {
       "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type})

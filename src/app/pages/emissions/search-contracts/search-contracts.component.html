@@ -83,11 +83,6 @@
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Póliza </th>
                         <td mat-cell *matCellDef="let element"> {{ element.xpoliza }} </td>
                       </ng-container>
-                      
-                      <ng-container matColumnDef="xcedente">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Cedente </th>
-                        <td mat-cell *matCellDef="let element">{{ element?.xcedente }}</td>
-                      </ng-container>
             
                       <ng-container matColumnDef="xramo">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Ramo </th>
@@ -102,6 +97,16 @@
                       <ng-container matColumnDef="cci_rif_asegurado">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header> Cédula </th>
                         <td mat-cell *matCellDef="let element"> {{ element?.cci_rif_asegurado }} </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="xtomador">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Tomador </th>
+                        <td mat-cell *matCellDef="let element"> {{ element?.xtomador }} </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="cci_rif_tomador">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Cédula </th>
+                        <td mat-cell *matCellDef="let element"> {{ element?.cci_rif_tomador }} </td>
                       </ng-container>
                       
                       <ng-container matColumnDef="estado">
