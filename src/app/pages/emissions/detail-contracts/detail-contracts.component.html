@@ -19,8 +19,8 @@
                   </div>
                   <div class="col-sm-6">
                     <div class="d-flex align-items-center justify-content-end">
-                      <button *ngIf="poliza.iestado" type="button" mat-raised-button color="warn" (click)="enableNullModal(poliza.cpoliza, 'poliza', 'disable')">Anular Póliza</button>
-                      <button *ngIf="!poliza.iestado" type="button" mat-raised-button color="primary" (click)="enableNullModal(poliza.cpoliza, 'poliza', 'enable')">Habilitar Póliza</button>
+                      <button *ngIf="poliza.iestado" type="button" mat-raised-button color="warn" (click)="enableNullModal(poliza.cpoliza, 'poliza', false)">Anular Póliza</button>
+                      <button *ngIf="!poliza.iestado" type="button" mat-raised-button color="primary" (click)="enableNullModal(poliza.cpoliza, 'poliza', true)">Habilitar Póliza</button>
                       <!-- <i class="fi fi-tr-money-transfer-coin-arrow me-2" style="font-size: 20px;"></i>
                       <span class="text-center"><strong>Tasa de Cambio: </strong>{{cmoneda}}{{bcv}}</span> -->
                     </div>
@@ -95,8 +95,8 @@
                       
                       <div class="col-sm-3">
                         <div class="d-flex align-items-center justify-content-end">
-                          <button *ngIf="vigencia.iestado == 'V'" type="button" mat-raised-button color="warn" (click)="changeContract(vigencia.cvigencia, 'disable')">Anular Vigencia</button>
-                          <button *ngIf="vigencia.iestado == 'A'" type="button" mat-raised-button color="primary" (click)="changeContract(vigencia.cvigencia, 'enable')">Habilitar Vigencia</button>
+                          <button type="button" *ngIf="vigencia.iestado == 'V'" type="button" mat-raised-button color="warn" (click)="enableNullModal(vigencia.cvigencia, 'vigencia', false)">Anular Vigencia</button>
+                          <button type="button" *ngIf="vigencia.iestado == 'A'" type="button" mat-raised-button color="primary" (click)="enableNullModal(vigencia.cvigencia, 'vigencia', true)">Habilitar Vigencia</button>
                         </div>
                       </div>
                     </div>
@@ -297,7 +297,7 @@
                   </div>
                 </div>
                 <div class="d-flex justify-content-end">
-                  <button type="button" [disabled]="nullFormGroup.invalid" (click)="" mat-raised-button color="warn">Anular {{itemNull?.type}}</button>
+                  <button type="button" [disabled]="nullFormGroup.invalid" (click)="setDataToNull()" mat-raised-button color="warn">Anular {{itemNull?.type}}</button>
                 </div>
               </form>
             </div>

@@ -460,9 +460,10 @@ export class DetailContractsComponent implements OnInit {
     
   }
 
-  enableNullModal(item: any, type: any, enable: any) {
+  enableNullModal(item: any, type: any, enable: boolean) {
     this.itemNull = null
-    this.activeModal = true;
+    this.nullFormGroup.reset()
+
     let url = ''
 
     if(type == 'poliza') {
@@ -475,12 +476,18 @@ export class DetailContractsComponent implements OnInit {
       item: item,
       type: type,
       url,
-      enable
+      enable: enable,
+      cusuario_creacion: this.currentUser.cusuario,
     }
     this.itemNull = data
-
-    if(!enable){
-      this.changeEstatus(item, type, url, data)
+    
+    if(enable){
+      data.fcreacion = new Date()
+      data.xcambio = `Reactivación de ${type}`
+      data.xdetalles = `Reactivación de ${type}`
+      this.changeEstatus(data)
+    } else {
+      this.activeModal = true;
     }
   }
 
@@ -490,20 +497,31 @@ export class DetailContractsComponent implements OnInit {
     }
   }
 
-  async changeEstatus(cpoliza: any, type: any, url: any, data:any) {
-    const responseRaw = await fetch(environment.apiUrl + url + cpoliza, {
+  setDataToNull() {
+    const data = {
+      ...this.itemNull,
+      fcreacion: this.nullFormGroup.get('fcreacion')?.value,
+      xcambio: this.nullFormGroup.get('xmotivo')?.value,
+      xdetalles: this.nullFormGroup.get('xdetalles')?.value,
+      cusuario_creacion: this.currentUser.cusuario
+    }
+    this.changeEstatus(data)
+  }
+
+  async changeEstatus(data:any) {
+    const responseRaw = await fetch(environment.apiUrl + data.url + data.item, {
       "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
     })
     const response = await responseRaw.json()
     if (response.status) {
-      this.snackBar.open(`La ${type} ha sido anulada correctamente.`, 'Cerrar', {
+      this.snackBar.open(`La ${data.type} ${data.enable ? 'ha sido reactivada correctamente.' : 'ha sido anulada correctamente.'}`, 'Cerrar', {
         duration: 4000,
         verticalPosition: 'top',
         horizontalPosition: 'right',
         panelClass: ['snackbar-success']
       });
       setTimeout(() => {
-        window.location.reload();
+        // window.location.reload();
       }, 1000);
     } else {
       this.snackBar.open(response.message, 'Cerrar', {
@@ -514,6 +532,7 @@ export class DetailContractsComponent implements OnInit {
       });
     }
   }
+
   async changePolicy(cpoliza: any, type: any) {
     const responseRaw = await fetch(environment.apiUrl + '/api/v1/emission/updateStatus/' + cpoliza, {
       "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type})
