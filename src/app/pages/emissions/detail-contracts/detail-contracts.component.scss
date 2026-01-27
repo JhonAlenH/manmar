@@ -141,3 +141,13 @@
 .green-text {
   color: green;
 }
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  width: 60%;
+  background-color: white;
+  padding: 30px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, .075);
+  gap: 20px;
+}

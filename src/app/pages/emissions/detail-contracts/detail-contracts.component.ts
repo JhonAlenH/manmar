@@ -45,6 +45,8 @@ export class DetailContractsComponent implements OnInit {
   currentUser!: any
   id:any;
   itemNull:any;
+  maxDate = new Date();
+  activeModal:boolean = false;
   // // // Datos de la póliza
   poliza:any = null;
   // // //
@@ -59,8 +61,7 @@ export class DetailContractsComponent implements OnInit {
   ]
 
   nullFormGroup = this._formBuilder.group({
-    xitem: ['',[Validators.required]],
-    cproceso: ['', [Validators.required]],
+    xmotivo: ['', [Validators.required]],
     xdetalles: ['', [Validators.required]],
     fcreacion: ['', [Validators.required]],
   });
@@ -461,26 +462,37 @@ export class DetailContractsComponent implements OnInit {
 
   enableNullModal(item: any, type: any, enable: any) {
     this.itemNull = null
+    this.activeModal = true;
     let url = ''
+
     if(type == 'poliza') {
       url = '/api/v1/emission/updateStatus/'
     } else {
       url = '/api/v1/emission/updateStatusContract/'
     }
-    if(enable){
-      this.itemNull = {
-        item: item,
-        type: type,
-        url
-      };
-    } else {
-      this.changeEstatus(item, type, url, !enable)
+
+    let data:any = {
+      item: item,
+      type: type,
+      url,
+      enable
+    }
+    this.itemNull = data
+
+    if(!enable){
+      this.changeEstatus(item, type, url, data)
     }
   }
 
-  async changeEstatus(cpoliza: any, type: any, url: any, enable: any) {
+  checkClickOutside(event:any) {
+    if (event.srcElement.id == 'modal-item') {
+      this.activeModal = false
+    }
+  }
+
+  async changeEstatus(cpoliza: any, type: any, url: any, data:any) {
     const responseRaw = await fetch(environment.apiUrl + url + cpoliza, {
-      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify({type: enable ? 'enable' : 'disable'})
+      "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
     })
     const response = await responseRaw.json()
     if (response.status) {
