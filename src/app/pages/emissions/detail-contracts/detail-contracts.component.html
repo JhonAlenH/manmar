@@ -50,11 +50,11 @@
                 <mat-expansion-panel *ngFor="let vigencia of poliza.vigencias; let i = index">
                   <mat-expansion-panel-header>
                     <mat-panel-title>
-                      <strong class="me-2">{{i+1}}. </strong> {{vigencia.fdesde}} - {{vigencia.fhasta}}
+                      <strong class="me-2">{{(poliza.vigencias.length) - (i)}}. </strong> {{vigencia.fdesde}} - {{vigencia.fhasta}}
                     </mat-panel-title>
                     <mat-panel-description class="text-end justify-content-between">
                       <span><small>Monto Prima:</small> {{vigencia.moneda.xrepresentacion}} {{formatWithSeparator(vigencia.mprimaext)}}</span>
-                      <span><small>Estatus:</small> {{vigencia.estado}}</span>
+                      <span><small>Estatus:</small> {{i == (poliza.vigencias.length - 1) && vigencia.iestado === 'R' ? 'Emisión' : vigencia.estado}}</span>
                     </mat-panel-description>
                   </mat-expansion-panel-header>
                   <div class="">
@@ -270,7 +270,7 @@
 
             <div class="item-create" id="modal-item" *ngIf="activeModal" (click)="checkClickOutside($event)">
               <form class="modal-form" [formGroup]="nullFormGroup">
-                <h2 style="text-transform: uppercase; font-weight: 700;">Anular {{itemNull?.type}} - {{itemNull?.item}}</h2>
+                <h2 style="text-transform: uppercase; font-weight: 700;">Anular {{itemNull?.type}}</h2>
 
                 <div class="row">
                   <div class="col-md-6">

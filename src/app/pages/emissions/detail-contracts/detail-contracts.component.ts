@@ -474,6 +474,7 @@ export class DetailContractsComponent implements OnInit {
 
     let data:any = {
       item: item,
+      xitem: item,
       type: type,
       url,
       enable: enable,
@@ -521,7 +522,7 @@ export class DetailContractsComponent implements OnInit {
         panelClass: ['snackbar-success']
       });
       setTimeout(() => {
-        // window.location.reload();
+        window.location.reload();
       }, 1000);
     } else {
       this.snackBar.open(response.message, 'Cerrar', {
