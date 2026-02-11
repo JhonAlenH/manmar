@@ -653,9 +653,9 @@ export class ItemFormComponent implements OnInit {
     let data:any = {}
     for (const value of values) {
       if(value.type == 'date') {
-        value.value = new Date(value.value)
-        value.value.setDate(value.value.getDate() + 2)
-        value.value = value.value.toLocaleDateString('en-US')
+        value.value = value.value ? new Date(value.value): null
+        if(value.value) value.value.setDate(value.value.getDate() + 2)
+        value.value =  value.value? value.value.toLocaleDateString('en-US') : null
       }
       console.log(value)
       data[value.key] = typeof value.value == 'string' ? value?.value?.toUpperCase() : value.value

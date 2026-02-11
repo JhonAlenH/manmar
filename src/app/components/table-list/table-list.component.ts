@@ -155,6 +155,7 @@ export class TableListComponent implements OnInit {
       if(result.isConfirmed) {
         item.bactivo = !item.bactivo
         const data = {bactivo: item.bactivo}
+        console.log(environment.apiUrl + this.editUrl + item.id, data)
         const responseRaw = await fetch(environment.apiUrl + this.editUrl + item.id, {
           "method": "POST", "headers": { "CONTENT-TYPE": "Application/json"}, body: JSON.stringify(data)
         })

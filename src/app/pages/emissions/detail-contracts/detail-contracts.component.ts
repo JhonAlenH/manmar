@@ -482,6 +482,7 @@ export class DetailContractsComponent implements OnInit {
     }
     this.itemNull = data
     
+    console.log(data)
     if(enable){
       data.fcreacion = new Date()
       data.xcambio = `Reactivación de ${type}`
