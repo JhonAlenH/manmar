@@ -524,9 +524,11 @@ export class ContainerAutomobileComponent implements OnInit {
   }
 
   formatDateToString = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
-    const day = String(date.getDate()).padStart(2, '0');
+    const wdate = new Date(date)
+    wdate.setDate(date.getDate() + 1)
+    const year = wdate.getFullYear();
+    const month = String(wdate.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por lo que sumamos 1
+    const day = String(wdate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
